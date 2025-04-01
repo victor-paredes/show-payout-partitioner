@@ -293,6 +293,22 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
     );
   }
 
+  const handleAnimationStart = (data?: any) => {
+    if (data && data.sectors) {
+      data.sectors.forEach((sector: any, i: number) => {
+        if (i < chartData.length) {
+          chartData[i].startAngle = sector.startAngle;
+          chartData[i].endAngle = sector.endAngle;
+          chartData[i].cx = sector.cx;
+          chartData[i].cy = sector.cy;
+          chartData[i].innerRadius = sector.innerRadius;
+          chartData[i].outerRadius = sector.outerRadius;
+          chartData[i].midAngle = (sector.startAngle + sector.endAngle) / 2;
+        }
+      });
+    }
+  };
+
   const emptyPieData = [{ name: "empty", value: 1 }];
 
   return (
@@ -357,21 +373,7 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
                       isAnimationActive={false}
                       onMouseEnter={(_, index) => handleChartHover(index)}
                       onMouseLeave={() => handleChartHover(null)}
-                      onAnimationStart={(data: any) => {
-                        if (data && data.sectors) {
-                          data.sectors.forEach((sector: any, i: number) => {
-                            if (i < chartData.length) {
-                              chartData[i].startAngle = sector.startAngle;
-                              chartData[i].endAngle = sector.endAngle;
-                              chartData[i].cx = sector.cx;
-                              chartData[i].cy = sector.cy;
-                              chartData[i].innerRadius = sector.innerRadius;
-                              chartData[i].outerRadius = sector.outerRadius;
-                              chartData[i].midAngle = (sector.startAngle + sector.endAngle) / 2;
-                            }
-                          });
-                        }
-                      }}
+                      onAnimationStart={handleAnimationStart}
                     >
                       {chartData.map((entry, index) => (
                         <Cell 
