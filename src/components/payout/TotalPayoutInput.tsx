@@ -14,7 +14,7 @@ const TotalPayoutInput = ({ totalPayout, onChange }: TotalPayoutInputProps) => {
       <CardHeader>
         <CardTitle className="flex items-center">
           <Calculator className="mr-2 h-5 w-5 text-blue-600" />
-          Total Show Payout
+          Total Payout
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -24,7 +24,7 @@ const TotalPayoutInput = ({ totalPayout, onChange }: TotalPayoutInputProps) => {
             type="number"
             min="0"
             placeholder="Enter total amount"
-            value={totalPayout === 0 ? "" : totalPayout}
+            value={totalPayout === 0 ? "100" : totalPayout}
             onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
             className="text-xl font-medium"
           />

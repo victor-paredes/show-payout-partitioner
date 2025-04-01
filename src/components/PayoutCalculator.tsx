@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from "react";
 import TotalPayoutInput from "./payout/TotalPayoutInput";
 import RecipientsList from "./payout/RecipientsList";
@@ -7,7 +6,6 @@ import { useRecipients } from "@/hooks/useRecipients";
 import { usePayoutCalculation } from "@/hooks/usePayoutCalculation";
 import { RecipientType } from "@/components/RecipientRow";
 
-// Update the Recipient interface to use the RecipientType from RecipientRow
 interface Recipient {
   id: string;
   name: string;
@@ -41,12 +39,16 @@ const PayoutCalculator = () => {
     valuePerShare
   } = usePayoutCalculation(recipients);
 
-  // State for tracking hover across components
   const [hoveredRecipientId, setHoveredRecipientId] = useState<string | null>(null);
 
   const calculatorRef = useRef<HTMLDivElement>(null);
 
-  // Handle click outside to deselect all recipients
+  useEffect(() => {
+    if (totalPayout === 0) {
+      setTotalPayout(100);
+    }
+  }, []);
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (calculatorRef.current && !calculatorRef.current.contains(event.target as Node) && selectedRecipients.size > 0) {
@@ -60,14 +62,12 @@ const PayoutCalculator = () => {
     };
   }, [selectedRecipients, setSelectedRecipients]);
 
-  // Update recipient payouts based on calculations
   useEffect(() => {
     if (totalPayout <= 0) {
       setRecipients(recipients.map(r => ({ ...r, payout: 0 })));
       return;
     }
 
-    // Update payouts for each recipient
     const updatedRecipients = recipients.map(recipient => {
       const type = recipient.type || (recipient.isFixedAmount ? "$" : "shares");
       
@@ -96,14 +96,12 @@ const PayoutCalculator = () => {
      recipients.map(r => r.value).join(','),
      valuePerShare]);
 
-  // Handle recipient hover from any component
   const handleRecipientHover = (id: string | null) => {
     setHoveredRecipientId(id);
   };
-
+  
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6" ref={calculatorRef}>
-      {/* Left Column - Input Sections (2/3 width) */}
       <div className="md:col-span-2 space-y-6">
         <TotalPayoutInput 
           totalPayout={totalPayout} 
@@ -128,7 +126,6 @@ const PayoutCalculator = () => {
         />
       </div>
 
-      {/* Right Column - Summary (1/3 width) */}
       <div className="md:sticky md:top-4 h-fit">
         <PayoutSummary
           totalPayout={totalPayout}
