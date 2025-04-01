@@ -1,4 +1,3 @@
-
 import React, { useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/format";
@@ -248,58 +247,22 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
 
           <div className="border-t pt-4 mt-4">
             {hasSurplus && (
-              <div 
-                className={`flex justify-between p-1 rounded mb-3 border border-gray-200 ${
-                  hoveredRecipientId === "surplus" 
-                    ? 'bg-blue-100' 
-                    : ''
-                }`}
-                onMouseEnter={() => onRecipientHover?.("surplus")}
-                onMouseLeave={() => onRecipientHover?.(null)}
-              >
-                <div className="flex items-center">
-                  <div 
-                    className="w-3 h-3 rounded-sm mr-2" 
-                    style={{ 
-                      backgroundColor: hoveredRecipientId === "surplus" 
-                        ? "#000000" 
-                        : SURPLUS_COLOR 
-                    }}
-                  />
-                  <span>Surplus</span>
-                  <span className="text-xs text-gray-500 ml-2">
-                    ({((surplus / totalPayout) * 100).toFixed(1)}%)
-                  </span>
-                </div>
-                <div className="font-medium">{formatCurrency(surplus)}</div>
+              <div className="flex items-center">
+                <span>Surplus</span>
+                <span className="text-xs text-gray-500 ml-2">
+                  ({((surplus / totalPayout) * 100).toFixed(1)}%)
+                </span>
+                <span className="ml-auto">{formatCurrency(surplus)}</span>
               </div>
             )}
             
             {hasOverdraw && (
-              <div 
-                className={`flex justify-between p-1 rounded mb-3 border border-gray-200 ${
-                  hoveredRecipientId === "overdraw" 
-                    ? 'bg-blue-100' 
-                    : ''
-                }`}
-                onMouseEnter={() => onRecipientHover?.("overdraw")}
-                onMouseLeave={() => onRecipientHover?.(null)}
-              >
-                <div className="flex items-center">
-                  <div 
-                    className="w-3 h-3 rounded-sm mr-2" 
-                    style={{ 
-                      backgroundColor: hoveredRecipientId === "overdraw" 
-                        ? "#000000" 
-                        : SURPLUS_COLOR 
-                    }}
-                  />
-                  <span>Overdraw</span>
-                  <span className="text-xs text-gray-500 ml-2">
-                    ({((overdraw / totalPayout) * 100).toFixed(1)}%)
-                  </span>
-                </div>
-                <div className="font-medium">{formatCurrency(overdraw)}</div>
+              <div className="flex items-center">
+                <span>Overdraw</span>
+                <span className="text-xs text-gray-500 ml-2">
+                  ({((overdraw / totalPayout) * 100).toFixed(1)}%)
+                </span>
+                <span className="ml-auto">{formatCurrency(overdraw)}</span>
               </div>
             )}
 
