@@ -163,7 +163,9 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
         onMouseLeave={() => setIsInputHover(false)}
       >
         <div 
-          className="w-4 h-4 rounded-sm" 
+          className={`w-4 h-4 rounded-sm transition-all ${
+            isHighlighted ? "border border-black" : ""
+          }`} 
           style={{ backgroundColor: recipientColor }}
         />
         <div className="relative inline-block">
