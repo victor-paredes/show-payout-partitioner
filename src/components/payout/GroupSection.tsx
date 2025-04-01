@@ -47,25 +47,25 @@ const GroupSection: React.FC<GroupSectionProps> = ({
   const getDropIndicator = () => {
     if (!dragSourceId || !activeDroppableId) return null;
     
+    // Add to Group: Show when dragging from ungrouped to this group
     if (dragSourceId === 'ungrouped' && activeDroppableId === group.id) {
       return (
         <div className="flex items-center justify-center py-2 text-green-600 bg-green-50 rounded-md border border-green-200 mt-2">
           <span className="text-sm font-medium">+ Add to Group</span>
         </div>
       );
-    } else if (dragSourceId === group.id && activeDroppableId === 'ungrouped') {
-      return (
-        <div className="flex items-center justify-center py-2 text-amber-600 bg-amber-50 rounded-md border border-amber-200 mt-2">
-          <span className="text-sm font-medium">- Remove from Group</span>
-        </div>
-      );
-    } else if (dragSourceId !== group.id && activeDroppableId === group.id && dragSourceId !== 'ungrouped') {
+    } 
+    // Moving between groups: Show when dragging from a different group to this group
+    else if (dragSourceId !== group.id && activeDroppableId === group.id && dragSourceId !== 'ungrouped') {
       return (
         <div className="flex items-center justify-center py-2 text-blue-600 bg-blue-50 rounded-md border border-blue-200 mt-2">
-          <span className="text-sm font-medium">+ Add to Group</span>
+          <span className="text-sm font-medium">+ Move to Group</span>
         </div>
       );
     }
+    
+    // Removed the case where we show "Remove from Group" when dragSourceId === group.id
+    // This will now only be shown in the UngroupedSection component
     
     return null;
   };

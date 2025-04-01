@@ -39,7 +39,11 @@ const UngroupedSection: React.FC<UngroupedSectionProps> = ({
   const getDropIndicator = () => {
     if (!dragSourceId || !activeDroppableId) return null;
     
-    if (dragSourceId && dragSourceId !== 'ungrouped' && activeDroppableId === 'ungrouped') {
+    // Only show the "Remove from Group" indicator when:
+    // 1. The drag source is a group (not ungrouped)
+    // 2. The drop target is ungrouped
+    // 3. We are hovering over the ungrouped area (activeDroppableId === 'ungrouped')
+    if (dragSourceId !== 'ungrouped' && activeDroppableId === 'ungrouped') {
       return (
         <div className="flex items-center justify-center py-2 text-amber-600 bg-amber-50 rounded-md border border-amber-200 mt-2">
           <span className="text-sm font-medium">- Remove from Group</span>
