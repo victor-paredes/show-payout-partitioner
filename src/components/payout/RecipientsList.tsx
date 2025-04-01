@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, Trash2, X, ArrowRight, ArrowDown, Users } from "lucide-react";
-import { Recipient, Group } from "@/hooks/useRecipients";
+import { Recipient, Group } from "@/hooks/useRecipientsManager";
 import ConfirmationModal from "@/components/ConfirmationModal";
 import {
   DndContext,
@@ -297,11 +297,11 @@ const RecipientsList = ({
             ) : (
               <>
                 {/* Always show groups, even when empty */}
-                {groupedRecipients.recipientsByGroup.map(({ group, recipients }) => (
+                {groupedRecipients.recipientsByGroup.map(({ group, recipients: groupRecipients }) => (
                   <GroupSection
                     key={group.id}
                     group={group}
-                    recipients={recipients}
+                    recipients={groupRecipients}
                     removeGroup={removeGroup}
                     addRecipients={addRecipients}
                     updateRecipient={updateRecipient}
