@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -266,14 +267,6 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
             }
             onClick={handleValueInputClick}
           />
-        </div>
-
-        <div className="w-28 text-right">
-          <span className="font-medium">
-            {recipient.type === "$" ? formatCurrency(recipient.payout) : 
-             recipient.type === "%" ? `${recipient.payout.toFixed(2)}%` : 
-             formatCurrency(recipient.payout)}
-          </span>
         </div>
 
         <Button
