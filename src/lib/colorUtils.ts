@@ -1,29 +1,48 @@
+
 /**
  * Standard color palette for the application
  * Used by both RecipientRow and PayoutSummary components
  */
 export const COLORS = [
-  // Vibrant Rainbow Colors
-  "#FF0000", // Pure Red
-  "#FF4500", // Orange Red
-  "#FF7F00", // Orange
-  "#FFD700", // Gold/Yellow
-  "#FFFF00", // Bright Yellow
-  "#9ACD32", // Yellow Green
-  "#00FF00", // Pure Green
-  "#32CD32", // Lime Green
-  "#00FA9A", // Medium Spring Green
-  "#00FFFF", // Cyan/Aqua
-  "#1E90FF", // Dodger Blue
-  "#0000FF", // Pure Blue
-  "#4169E1", // Royal Blue
-  "#8A2BE2", // Blue Violet
-  "#9400D3", // Deep Violet
-  "#800080", // Purple
-  "#FF00FF", // Magenta
-  "#FF1493", // Deep Pink
-  "#DC143C", // Crimson
-  "#FF4500", // Orange Red (repeated to ensure color variety)
+  // Reds
+  "#E11D48", // Crimson
+  "#DC2626", // Fire Red
+  
+  // Oranges
+  "#F97316", // Vivid Orange
+  "#F59E0B", // Amber
+  
+  // Yellows
+  "#EAB308", // Golden Yellow
+  "#FACC15", // Sunny Yellow
+  
+  // Greens
+  "#22C55E", // Lime Green
+  "#16A34A", // Bright Green
+  "#059669", // Vivid Green
+  
+  // Teals/Cyans
+  "#06B6D4", // Bright Cyan
+  "#0891B2", // Cyan
+  
+  // Blues
+  "#0EA5E9", // Vivid Sky Blue
+  "#2563EB", // Royal Blue
+  
+  // Indigos/Purples
+  "#4F46E5", // Indigo
+  "#7C3AED", // Electric Purple
+  
+  // Magentas/Pinks
+  "#D946EF", // Magenta Pink
+  "#EC4899", // Hot Pink
+  
+  // Browns/Earthy
+  "#78350F", // Chocolate
+  "#B45309", // Cinnamon
+  
+  // Slate/Navy
+  "#1E3A8A", // Dark Navy
 ];
 
 /**
