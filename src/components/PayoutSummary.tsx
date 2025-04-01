@@ -66,7 +66,7 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
     const { payload } = props;
     
     return (
-      <div className="flex flex-wrap justify-center gap-2 text-sm mt-1">
+      <div className="flex flex-wrap justify-center text-sm mt-1">
         {payload.map((entry: any, index: number) => {
           const recipientId = chartData[index]?.id;
           const isHighlighted = recipientId === hoveredRecipientId;
