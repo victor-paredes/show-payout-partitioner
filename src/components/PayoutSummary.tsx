@@ -231,37 +231,38 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
           )}
 
           <div className="border-t pt-4 mt-4">
+            {/* Move Surplus here, before Individual Payouts title */}
+            {hasSurplus && (
+              <div 
+                className={`flex justify-between p-1 rounded mb-3 ${
+                  hoveredRecipientId === "surplus" 
+                    ? 'bg-blue-100' 
+                    : ''
+                }`}
+                onMouseEnter={() => onRecipientHover?.("surplus")}
+                onMouseLeave={() => onRecipientHover?.(null)}
+              >
+                <div className="flex items-center">
+                  <div 
+                    className="w-3 h-3 rounded-sm mr-2" 
+                    style={{ 
+                      backgroundColor: hoveredRecipientId === "surplus" 
+                        ? "#000000" 
+                        : SURPLUS_COLOR 
+                    }}
+                  />
+                  <span>Surplus</span>
+                  <span className="text-xs text-gray-500 ml-2">
+                    ({((surplus / totalPayout) * 100).toFixed(1)}%)
+                  </span>
+                </div>
+                <div className="font-medium">{formatCurrency(surplus)}</div>
+              </div>
+            )}
+
             <h3 className="font-semibold mb-3">Individual Payouts</h3>
             <div className="space-y-2">
-              {/* Show surplus if it exists */}
-              {hasSurplus && (
-                <div 
-                  className={`flex justify-between p-1 rounded ${
-                    hoveredRecipientId === "surplus" 
-                      ? 'bg-blue-100' 
-                      : ''
-                  }`}
-                  onMouseEnter={() => onRecipientHover?.("surplus")}
-                  onMouseLeave={() => onRecipientHover?.(null)}
-                >
-                  <div className="flex items-center">
-                    <div 
-                      className="w-3 h-3 rounded-sm mr-2" 
-                      style={{ 
-                        backgroundColor: hoveredRecipientId === "surplus" 
-                          ? "#000000" 
-                          : SURPLUS_COLOR 
-                      }}
-                    />
-                    <span>Surplus</span>
-                    <span className="text-xs text-gray-500 ml-2">
-                      ({((surplus / totalPayout) * 100).toFixed(1)}%)
-                    </span>
-                  </div>
-                  <div className="font-medium">{formatCurrency(surplus)}</div>
-                </div>
-              )}
-              
+              {/* Remove the previous Surplus section here */}
               {recipients.map((recipient) => {
                 const recipientChartData = chartData.find(item => item.id === recipient.id);
                 const percentage = recipientChartData ? recipientChartData.percentage : "0";
