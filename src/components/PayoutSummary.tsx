@@ -1,4 +1,3 @@
-
 import React, { useRef, useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/format";
@@ -34,55 +33,30 @@ interface PayoutSummaryProps {
 }
 
 const COLORS = [
-  // Primary colors and variations
   "#3B82F6", // Blue
   "#F97316", // Orange
   "#10B981", // Green
   "#EF4444", // Red
   "#8B5CF6", // Purple
   "#F59E0B", // Amber
-  
-  // Secondary colors
-  "#EC4899", // Pink
-  "#14B8A6", // Teal
-  "#6366F1", // Indigo
-  "#84CC16", // Lime
-  "#D97706", // Dark Amber
-  "#0EA5E9", // Sky Blue
-  
-  // Tertiary colors
-  "#DC2626", // Bright Red
-  "#2563EB", // Royal Blue
-  "#059669", // Emerald
-  "#7C3AED", // Violet
-  "#EA580C", // Dark Orange
-  "#0891B2", // Cyan
-  
-  // Additional vibrant hues
   "#DB2777", // Fuchsia
   "#16A34A", // Green
   "#9333EA", // Purple
   "#D946EF", // Magenta
   "#B45309", // Brown
   "#4F46E5", // Indigo
-  
-  // Mixed mid-tones
   "#0D9488", // Dark Teal
   "#A21CAF", // Dark Magenta
   "#15803D", // Forest Green
   "#B91C1C", // Burgundy
   "#1E40AF", // Navy Blue
   "#C2410C", // Burnt Orange
-
-  // Softer but distinct hues
   "#0284C7", // Ocean Blue
   "#4338CA", // Deep Blue
   "#A16207", // Gold
   "#BE185D", // Raspberry
   "#0F766E", // Deep Teal
   "#7E22CE", // Royal Purple
-  
-  // Additional distinct colors
   "#1D4ED8", // Cobalt Blue
   "#065F46", // Hunter Green
   "#9D174D", // Crimson
@@ -112,12 +86,11 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
   const summaryRef = useRef<HTMLDivElement>(null);
   const [isCalculationStable, setIsCalculationStable] = useState<boolean>(false);
   
-  // Reset calculation stability when recipients or total payout changes
   useEffect(() => {
     setIsCalculationStable(false);
     const timer = setTimeout(() => {
       setIsCalculationStable(true);
-    }, 100); // Short delay to ensure calculations are complete
+    }, 100);
     
     return () => {
       clearTimeout(timer);
