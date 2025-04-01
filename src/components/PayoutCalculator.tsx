@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calculator, Plus, Trash2 } from "lucide-react";
+import { Calculator, Plus, Trash2, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import RecipientRow from "./RecipientRow";
 import PayoutSummary from "./PayoutSummary";
@@ -14,13 +14,15 @@ interface Recipient {
   isFixedAmount: boolean;
   value: number;
   payout: number;
+  isGroup: boolean;
+  groupMembers?: string[];
 }
 
 const PayoutCalculator = () => {
   const { toast } = useToast();
   const [totalPayout, setTotalPayout] = useState<number>(0);
   const [recipients, setRecipients] = useState<Recipient[]>([
-    { id: "1", name: "Recipient 1", isFixedAmount: false, value: 1, payout: 0 },
+    { id: "1", name: "Recipient 1", isFixedAmount: false, value: 1, payout: 0, isGroup: false },
   ]);
   const [remainingAmount, setRemainingAmount] = useState<number>(0);
   const [totalShares, setTotalShares] = useState<number>(0);
@@ -40,7 +42,29 @@ const PayoutCalculator = () => {
         name: defaultName, 
         isFixedAmount: false, 
         value: 1, 
-        payout: 0 
+        payout: 0,
+        isGroup: false
+      },
+    ]);
+  };
+
+  const addGroupRecipient = () => {
+    const currentRecipientCount = recipients.length;
+    const newId = (Math.max(0, ...recipients.map(r => parseInt(r.id))) + 1).toString();
+    
+    // Generate a more descriptive default name
+    const defaultName = `Group ${currentRecipientCount + 1}`;
+    
+    setRecipients([
+      ...recipients,
+      { 
+        id: newId, 
+        name: defaultName, 
+        isFixedAmount: false, 
+        value: 1, 
+        payout: 0,
+        isGroup: true,
+        groupMembers: ["Member 1"]
       },
     ]);
   };
@@ -62,6 +86,57 @@ const PayoutCalculator = () => {
       recipients.map(recipient => 
         recipient.id === id ? { ...recipient, ...updates } : recipient
       )
+    );
+  };
+
+  const updateGroupMember = (recipientId: string, index: number, memberName: string) => {
+    setRecipients(
+      recipients.map(recipient => {
+        if (recipient.id === recipientId && recipient.isGroup && recipient.groupMembers) {
+          const updatedMembers = [...recipient.groupMembers];
+          updatedMembers[index] = memberName;
+          return { ...recipient, groupMembers: updatedMembers };
+        }
+        return recipient;
+      })
+    );
+  };
+
+  const addGroupMember = (recipientId: string) => {
+    setRecipients(
+      recipients.map(recipient => {
+        if (recipient.id === recipientId && recipient.isGroup && recipient.groupMembers) {
+          const memberCount = recipient.groupMembers.length;
+          return { 
+            ...recipient, 
+            groupMembers: [...recipient.groupMembers, `Member ${memberCount + 1}`] 
+          };
+        }
+        return recipient;
+      })
+    );
+  };
+
+  const removeGroupMember = (recipientId: string, index: number) => {
+    setRecipients(
+      recipients.map(recipient => {
+        if (recipient.id === recipientId && recipient.isGroup && recipient.groupMembers) {
+          // Don't allow removing the last member
+          if (recipient.groupMembers.length <= 1) {
+            toast({
+              title: "Cannot remove",
+              description: "A group must have at least one member",
+              variant: "destructive",
+            });
+            return recipient;
+          }
+          
+          const updatedMembers = [...recipient.groupMembers];
+          updatedMembers.splice(index, 1);
+          return { ...recipient, groupMembers: updatedMembers };
+        }
+        return recipient;
+      })
     );
   };
 
@@ -140,9 +215,14 @@ const PayoutCalculator = () => {
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <span>Recipients</span>
-            <Button onClick={addRecipient} variant="outline" size="sm" className="flex items-center">
-              <Plus className="mr-1 h-4 w-4" /> Add Recipient
-            </Button>
+            <div className="flex space-x-2">
+              <Button onClick={addGroupRecipient} variant="outline" size="sm" className="flex items-center">
+                <Users className="mr-1 h-4 w-4" /> Add Group
+              </Button>
+              <Button onClick={addRecipient} variant="outline" size="sm" className="flex items-center">
+                <Plus className="mr-1 h-4 w-4" /> Add Recipient
+              </Button>
+            </div>
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -154,6 +234,9 @@ const PayoutCalculator = () => {
                 onUpdate={(updates) => updateRecipient(recipient.id, updates)}
                 onRemove={() => removeRecipient(recipient.id)}
                 valuePerShare={valuePerShare}
+                onAddGroupMember={() => addGroupMember(recipient.id)}
+                onRemoveGroupMember={(index) => removeGroupMember(recipient.id, index)}
+                onUpdateGroupMember={(index, name) => updateGroupMember(recipient.id, index, name)}
               />
             ))}
           </div>

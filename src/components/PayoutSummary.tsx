@@ -9,6 +9,8 @@ interface Recipient {
   isFixedAmount: boolean;
   value: number;
   payout: number;
+  isGroup: boolean;
+  groupMembers?: string[];
 }
 
 interface PayoutSummaryProps {
@@ -44,6 +46,16 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
     // Then by payout amount (highest first)
     return b.payout - a.payout;
   });
+
+  // Calculate group totals
+  const groupTotals = recipients
+    .filter(r => r.isGroup)
+    .map(group => ({
+      id: group.id,
+      name: group.name,
+      payout: group.payout,
+      memberCount: group.groupMembers?.length || 0
+    }));
 
   if (totalPayout <= 0) {
     return (
@@ -95,6 +107,8 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
                       {recipient.isFixedAmount 
                         ? `(Fixed: ${formatCurrency(recipient.value)})` 
                         : `(${recipient.value} shares)`}
+                      {recipient.isGroup && recipient.groupMembers && 
+                        ` - ${recipient.groupMembers.length} members`}
                     </span>
                   </div>
                   <div className="font-medium">{formatCurrency(recipient.payout)}</div>
@@ -102,6 +116,44 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
               ))}
             </div>
           </div>
+
+          {groupTotals.length > 0 && (
+            <div className="border-t pt-4 mt-4">
+              <h3 className="font-semibold mb-3">Group Details</h3>
+              <div className="space-y-4">
+                {groupTotals.map((group) => {
+                  const groupRecipient = recipients.find(r => r.id === group.id);
+                  const memberCount = groupRecipient?.groupMembers?.length || 0;
+                  
+                  return (
+                    <div key={group.id} className="bg-blue-50 p-3 rounded-md">
+                      <div className="flex justify-between font-medium mb-2">
+                        <span>{group.name}</span>
+                        <span>{formatCurrency(group.payout)}</span>
+                      </div>
+                      
+                      {groupRecipient?.groupMembers && (
+                        <div className="text-sm space-y-1">
+                          {groupRecipient.groupMembers.map((member, idx) => (
+                            <div key={idx} className="flex justify-between text-gray-600">
+                              <span>{member}</span>
+                              <span>{formatCurrency(group.payout / memberCount)}</span>
+                            </div>
+                          ))}
+                          <div className="flex justify-between font-medium text-blue-700 border-t border-blue-200 pt-1 mt-1">
+                            <span>Per Member:</span>
+                            <span>
+                              {formatCurrency(memberCount > 0 ? group.payout / memberCount : 0)}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {difference > 0.01 && (
             <div className="text-xs text-amber-600 italic mt-4">
