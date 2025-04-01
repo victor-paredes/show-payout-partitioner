@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Trash2, X } from "lucide-react";
+import { Plus, Trash2, X, ArrowRight, ArrowDown } from "lucide-react";
 import RecipientRow from "../RecipientRow";
 import { Recipient } from "@/hooks/useRecipients";
 import ConfirmationModal from "@/components/ConfirmationModal";
@@ -63,6 +63,7 @@ const RecipientsList = ({
   clearRecipients
 }: RecipientsListProps) => {
   const [confirmClearOpen, setConfirmClearOpen] = useState(false);
+  const [columnWiseTabbing, setColumnWiseTabbing] = useState(false);
   
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -84,6 +85,10 @@ const RecipientsList = ({
       clearRecipients();
     }
     setConfirmClearOpen(false);
+  };
+
+  const toggleTabbingDirection = () => {
+    setColumnWiseTabbing(!columnWiseTabbing);
   };
 
   // Create the title with the correct singular/plural form
@@ -110,12 +115,21 @@ const RecipientsList = ({
             )}
           </div>
           <div className="flex items-center space-x-2">
+            <Button
+              onClick={toggleTabbingDirection}
+              variant="outline"
+              size="sm"
+              className="flex items-center"
+              title={columnWiseTabbing ? "Switch to row-wise tabbing" : "Switch to column-wise tabbing"}
+            >
+              {columnWiseTabbing ? <ArrowDown className="h-4 w-4" /> : <ArrowRight className="h-4 w-4" />}
+            </Button>
             {recipients.length > 1 && (
               <Button 
                 onClick={handleClearClick} 
                 variant="outline" 
                 size="sm" 
-                className="flex items-center mr-2"
+                className="flex items-center"
               >
                 <Trash2 className="mr-1 h-4 w-4" /> Clear
               </Button>
@@ -149,7 +163,7 @@ const RecipientsList = ({
               items={recipients.map(r => r.id)} 
               strategy={verticalListSortingStrategy}
             >
-              {recipients.map((recipient) => (
+              {recipients.map((recipient, rowIndex) => (
                 <RecipientRow
                   key={recipient.id}
                   recipient={recipient}
@@ -160,6 +174,9 @@ const RecipientsList = ({
                   onToggleSelect={() => toggleSelectRecipient(recipient.id)}
                   isHighlighted={hoveredRecipientId === recipient.id}
                   onRecipientHover={onRecipientHover}
+                  columnWiseTabbing={columnWiseTabbing}
+                  rowIndex={rowIndex}
+                  totalRows={recipients.length}
                 />
               ))}
             </SortableContext>

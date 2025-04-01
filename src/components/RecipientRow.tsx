@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -37,6 +38,9 @@ interface RecipientRowProps {
   onToggleSelect: () => void;
   isHighlighted?: boolean;
   onRecipientHover?: (id: string | null) => void;
+  columnWiseTabbing?: boolean;
+  rowIndex?: number;
+  totalRows?: number;
 }
 
 const RecipientRow: React.FC<RecipientRowProps> = ({
@@ -48,6 +52,9 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
   onToggleSelect,
   isHighlighted,
   onRecipientHover,
+  columnWiseTabbing = false,
+  rowIndex = 0,
+  totalRows = 1
 }) => {
   const [isInputHover, setIsInputHover] = useState(false);
   const [nameWidth, setNameWidth] = useState(150);
@@ -137,6 +144,23 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
   // Use custom color if available, otherwise use the generated color
   const recipientColor = recipient.color || getRecipientColor(recipient.id);
 
+  // Calculate tab indexes based on tabbing direction
+  let nameTabIndex: number;
+  let typeTabIndex: number;
+  let valueTabIndex: number;
+
+  if (columnWiseTabbing && totalRows && totalRows > 0) {
+    // For column-wise tabbing, we go down columns: all names first, then all types, then all values
+    nameTabIndex = 1 + rowIndex;
+    typeTabIndex = 1 + totalRows + rowIndex;
+    valueTabIndex = 1 + (2 * totalRows) + rowIndex;
+  } else {
+    // For row-wise tabbing (default), we go across each row before moving to the next
+    nameTabIndex = 1 + (rowIndex * 3);
+    typeTabIndex = 2 + (rowIndex * 3);
+    valueTabIndex = 3 + (rowIndex * 3);
+  }
+
   return (
     <>
       <div 
@@ -194,6 +218,7 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
               {recipient.name || "Enter Name"}
             </span>
             <Input
+              tabIndex={nameTabIndex}
               value={recipient.name}
               onChange={(e) => onUpdate({ name: e.target.value })}
               className={`w-full text-base font-medium`}
@@ -212,7 +237,7 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
             value={currentType} 
             onValueChange={handleTypeChange}
           >
-            <SelectTrigger className="w-28">
+            <SelectTrigger tabIndex={typeTabIndex} className="w-28">
               <SelectValue placeholder="Type" />
             </SelectTrigger>
             <SelectContentNonPortal>
@@ -228,6 +253,7 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
           onClick={(e) => e.stopPropagation()}
         >
           <Input
+            tabIndex={valueTabIndex}
             type="number"
             min="0"
             step={currentType === "$" ? "10" : currentType === "%" ? "1" : "0.1"}
