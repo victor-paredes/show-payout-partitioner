@@ -83,7 +83,22 @@ const PayoutHeaderMenu: React.FC<PayoutHeaderMenuProps> = ({
           return;
         }
 
-        setPendingImportData(importedData);
+        // Transform the imported data to ensure it matches the Recipient interface
+        const processedData: Recipient[] = importedData.map(item => {
+          const type = item.type as RecipientType || "shares";
+          
+          return {
+            id: item.id,
+            name: item.name,
+            value: item.value,
+            payout: item.payout,
+            isFixedAmount: type === "$",
+            type: type,
+            ...(item.color ? { color: item.color } : {})
+          };
+        });
+
+        setPendingImportData(processedData);
         setPendingTotalPayout(importedTotalPayout || null);
         setIsImportWarningOpen(true);
       } catch (error) {
