@@ -12,6 +12,7 @@ const PayoutCalculator = () => {
   const {
     recipients,
     setRecipients,
+    groups,
     selectedRecipients,
     setSelectedRecipients,
     recipientCount,
@@ -22,7 +23,13 @@ const PayoutCalculator = () => {
     updateRecipient,
     handleDragEnd,
     clearRecipients,
-    setLastUsedId
+    setLastUsedId,
+    // Group-related functions
+    createGroup,
+    removeFromGroup,
+    dissolveGroup,
+    getSelectedRecipientsGroups,
+    isAnySelectedRecipientGrouped
   } = useRecipients();
 
   const {
@@ -168,6 +175,11 @@ const PayoutCalculator = () => {
             hoveredRecipientId={hoveredRecipientId || undefined}
             onRecipientHover={handleRecipientHover}
             clearRecipients={clearRecipients}
+            createGroup={createGroup}
+            removeFromGroup={removeFromGroup}
+            dissolveGroup={dissolveGroup}
+            getSelectedRecipientsGroups={getSelectedRecipientsGroups}
+            isAnySelectedRecipientGrouped={isAnySelectedRecipientGrouped}
           />
         </div>
 
@@ -178,6 +190,7 @@ const PayoutCalculator = () => {
             remainingAmount={remainingAmount}
             hoveredRecipientId={hoveredRecipientId || undefined}
             onRecipientHover={handleRecipientHover}
+            groups={groups}
           />
         </div>
       </div>
