@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Trash2, X, ArrowRight, ArrowDown, Users } from "lucide-react";
+import { Plus, Trash2, X, ArrowRight, ArrowDown, Users, FolderPlus, FolderMinus } from "lucide-react";
 import RecipientRow from "../RecipientRow";
 import { Recipient, Group } from "@/hooks/useRecipients";
 import ConfirmationModal from "@/components/ConfirmationModal";
@@ -15,7 +15,8 @@ import {
   useSensors,
   DragEndEvent,
   DragOverlay,
-  DragStartEvent
+  DragStartEvent,
+  DragOverEvent
 } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -86,6 +87,8 @@ const RecipientsList = ({
   const [confirmClearOpen, setConfirmClearOpen] = useState(false);
   const [columnWiseTabbing, setColumnWiseTabbing] = useState(false);
   const [activeDragId, setActiveDragId] = useState<string | null>(null);
+  const [activeDroppableId, setActiveDroppableId] = useState<string | null>(null);
+  const [dragSourceId, setDragSourceId] = useState<string | null>(null);
   
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -101,11 +104,26 @@ const RecipientsList = ({
   const handleDragStart = (event: DragStartEvent) => {
     const { active } = event;
     setActiveDragId(active.id as string);
+    
+    // Determine the source group
+    const draggedRecipient = recipients.find(r => r.id === active.id);
+    setDragSourceId(draggedRecipient?.groupId || 'ungrouped');
+  };
+
+  const handleDragOver = (event: DragOverEvent) => {
+    const { over } = event;
+    if (over) {
+      setActiveDroppableId(over.id as string);
+    } else {
+      setActiveDroppableId(null);
+    }
   };
 
   // Renamed to onDragEnd to avoid name conflict with the prop
   const onDragEnd = (event: DragEndEvent) => {
     setActiveDragId(null);
+    setActiveDroppableId(null);
+    setDragSourceId(null);
     handleDragEnd(event);
   };
 
@@ -128,8 +146,112 @@ const RecipientsList = ({
     setColumnWiseTabbing(!columnWiseTabbing);
   };
 
+  const getDropIndicator = (groupId: string) => {
+    if (!activeDragId || !activeDroppableId) return null;
+    
+    if (dragSourceId === 'ungrouped' && activeDroppableId === groupId) {
+      return (
+        <div className="flex items-center justify-center py-2 text-green-600 bg-green-50 rounded-md border border-green-200 mt-2">
+          <FolderPlus className="w-4 h-4 mr-2" />
+          <span className="text-sm font-medium">Add to Group</span>
+        </div>
+      );
+    } else if (dragSourceId === groupId && activeDroppableId === 'ungrouped') {
+      return (
+        <div className="flex items-center justify-center py-2 text-amber-600 bg-amber-50 rounded-md border border-amber-200 mt-2">
+          <FolderMinus className="w-4 h-4 mr-2" />
+          <span className="text-sm font-medium">Remove from Group</span>
+        </div>
+      );
+    } else if (dragSourceId !== groupId && activeDroppableId === groupId && dragSourceId !== 'ungrouped') {
+      return (
+        <div className="flex items-center justify-center py-2 text-blue-600 bg-blue-50 rounded-md border border-blue-200 mt-2">
+          <FolderPlus className="w-4 h-4 mr-2" />
+          <span className="text-sm font-medium">Move to this Group</span>
+        </div>
+      );
+    }
+    
+    return null;
+  };
+
   const actualRecipientCount = recipients.length;
   const recipientsTitle = `${actualRecipientCount} ${actualRecipientCount === 1 ? 'Recipient' : 'Recipients'}`;
+
+  // Function to render a group section
+  const renderGroup = ({ group, recipients }: { group: Group; recipients: Recipient[] }) => {
+    const { setNodeRef } = useDroppable({
+      id: group.id
+    });
+    
+    return (
+      <div key={group.id} className="mb-6">
+        <h3 className="text-sm font-medium mb-2 text-gray-600 flex items-center justify-between">
+          <div className="flex items-center">
+            <div 
+              className="h-2 w-2 rounded-full mr-2"
+              style={{ backgroundColor: group.color }}
+            ></div>
+            {group.name}
+            <span className="text-xs ml-2 text-gray-500">
+              ({recipients.length} recipient{recipients.length !== 1 ? 's' : ''})
+            </span>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-6 w-6 p-0 hover:text-red-500"
+            onClick={() => removeGroup(group.id)}
+          >
+            <Trash2 className="h-3 w-3" />
+          </Button>
+        </h3>
+        
+        <div 
+          ref={setNodeRef}
+          className="space-y-2 p-2 rounded-md border-2 border-dashed border-gray-200 transition-all hover:border-gray-300"
+          style={{ 
+            borderColor: group.color + '40', // Add 40 for transparency
+            background: activeDroppableId === group.id ? group.color + '10' : 'transparent'
+          }}
+        >
+          <SortableContext 
+            items={recipients.map(r => r.id)} 
+            strategy={verticalListSortingStrategy}
+          >
+            {recipients.map((recipient, rowIndex) => (
+              <RecipientRow
+                key={recipient.id}
+                recipient={recipient}
+                onUpdate={(updates) => updateRecipient(recipient.id, updates)}
+                onRemove={() => removeRecipient(recipient.id)}
+                valuePerShare={valuePerShare}
+                isSelected={selectedRecipients.has(recipient.id)}
+                onToggleSelect={() => toggleSelectRecipient(recipient.id)}
+                isHighlighted={hoveredRecipientId === recipient.id}
+                onRecipientHover={onRecipientHover}
+                columnWiseTabbing={columnWiseTabbing}
+                rowIndex={rowIndex}
+                totalRows={recipients.length}
+              />
+            ))}
+          </SortableContext>
+          
+          {getDropIndicator(group.id)}
+          
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full text-xs h-6 justify-start"
+            onClick={() => addRecipients(group.id)}
+          >
+            <Plus className="h-3 w-3 mr-1" />
+            Add Recipients
+          </Button>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <Card>
@@ -214,76 +336,20 @@ const RecipientsList = ({
           sensors={sensors} 
           collisionDetection={closestCenter}
           onDragStart={handleDragStart}
+          onDragOver={handleDragOver}
           onDragEnd={onDragEnd}
         >
           <div className="space-y-2">
-            {recipients.length === 0 ? (
+            {recipients.length === 0 && groups.length === 0 ? (
               <div className="text-center py-6 text-gray-500 italic">
                 No recipients added. Click "Add Recipient" to get started.
               </div>
             ) : (
               <>
                 {/* Grouped recipients - displayed first */}
-                {groupedRecipients.recipientsByGroup.map(({ group, recipients }) => (
-                  <div key={group.id} className="mb-6">
-                    <h3 className="text-sm font-medium mb-2 text-gray-600 flex items-center justify-between">
-                      <div className="flex items-center">
-                        <div 
-                          className="h-2 w-2 rounded-full mr-2"
-                          style={{ backgroundColor: group.color }}
-                        ></div>
-                        {group.name}
-                        <span className="text-xs ml-2 text-gray-500">
-                          ({recipients.length} recipient{recipients.length !== 1 ? 's' : ''})
-                        </span>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-6 w-6 p-0 hover:text-red-500"
-                        onClick={() => removeGroup(group.id)}
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
-                    </h3>
-                    
-                    <div 
-                      className="space-y-2 p-2 rounded-md border-2 border-dashed border-gray-200 transition-all hover:border-gray-300"
-                      style={{ borderColor: group.color + '40' }} // Add 40 for transparency
-                    >
-                      <SortableContext 
-                        items={recipients.map(r => r.id)} 
-                        strategy={verticalListSortingStrategy}
-                      >
-                        {recipients.map((recipient, rowIndex) => (
-                          <RecipientRow
-                            key={recipient.id}
-                            recipient={recipient}
-                            onUpdate={(updates) => updateRecipient(recipient.id, updates)}
-                            onRemove={() => removeRecipient(recipient.id)}
-                            valuePerShare={valuePerShare}
-                            isSelected={selectedRecipients.has(recipient.id)}
-                            onToggleSelect={() => toggleSelectRecipient(recipient.id)}
-                            isHighlighted={hoveredRecipientId === recipient.id}
-                            onRecipientHover={onRecipientHover}
-                            columnWiseTabbing={columnWiseTabbing}
-                            rowIndex={rowIndex}
-                            totalRows={recipients.length}
-                          />
-                        ))}
-                      </SortableContext>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="w-full text-xs h-6 justify-start"
-                        onClick={() => addRecipients(group.id)}
-                      >
-                        <Plus className="h-3 w-3 mr-1" />
-                        Add Recipients
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+                {groupedRecipients.recipientsByGroup.map(({ group, recipients }) => 
+                  renderGroup({ group, recipients })
+                )}
                 
                 {/* Ungrouped recipients - displayed last */}
                 <div className="mb-6">
@@ -291,6 +357,9 @@ const RecipientsList = ({
                   <div 
                     ref={setUngroupedRef}
                     className="space-y-2 p-2 rounded-md border-2 border-dashed border-gray-200 transition-all hover:border-gray-300"
+                    style={{ 
+                      background: activeDroppableId === 'ungrouped' ? 'rgba(0, 0, 0, 0.03)' : 'transparent'
+                    }}
                   >
                     <SortableContext 
                       items={groupedRecipients.ungroupedRecipients.map(r => r.id)} 
@@ -313,6 +382,13 @@ const RecipientsList = ({
                         />
                       ))}
                     </SortableContext>
+                    
+                    {dragSourceId && dragSourceId !== 'ungrouped' && activeDroppableId === 'ungrouped' && (
+                      <div className="flex items-center justify-center py-2 text-amber-600 bg-amber-50 rounded-md border border-amber-200 mt-2">
+                        <FolderMinus className="w-4 h-4 mr-2" />
+                        <span className="text-sm font-medium">Remove from Group</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </>

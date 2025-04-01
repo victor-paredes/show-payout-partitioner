@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { DragEndEvent } from "@dnd-kit/core";
@@ -140,8 +141,10 @@ export function useRecipients() {
   const removeGroup = (groupId: string) => {
     if (!groupId) return;
     
+    // Only remove the group from the groups array
     setGroups(groups.filter(group => group.id !== groupId));
     
+    // Update all recipients that were in this group to be ungrouped
     safeSetRecipients(
       recipients.map(recipient => 
         recipient.groupId === groupId 
@@ -225,18 +228,52 @@ export function useRecipients() {
     if (!over) return;
     
     if (active.id !== over.id) {
-      if (typeof over.id === 'string' && over.id.startsWith('group-')) {
-        const groupId = over.id.replace('group-', '');
+      if (typeof over.id === 'string' && over.id !== 'ungrouped' && over.id !== active.id) {
+        // If target is a group or a recipient in a group, update the groupId
+        const isGroup = groups.some(g => g.id === over.id);
         
-        safeSetRecipients(
-          recipients.map(recipient => 
-            recipient.id === active.id 
-              ? { ...recipient, groupId: groupId } 
-              : recipient
-          )
-        );
+        if (isGroup) {
+          // Target is a group, change the groupId of the recipient
+          safeSetRecipients(
+            recipients.map(recipient => 
+              recipient.id === active.id 
+                ? { ...recipient, groupId: over.id as string } 
+                : recipient
+            )
+          );
+        } 
+        else {
+          // Target is another recipient, find its group
+          const overRecipient = recipients.find(r => r.id === over.id);
+          if (overRecipient) {
+            const activeRecipient = recipients.find(r => r.id === active.id);
+            
+            if (activeRecipient && overRecipient) {
+              if (activeRecipient.groupId === overRecipient.groupId) {
+                // Same group, just reorder
+                setRecipients((items) => {
+                  const oldIndex = items.findIndex(item => item.id === active.id);
+                  const newIndex = items.findIndex(item => item.id === over.id);
+                  
+                  if (oldIndex === -1 || newIndex === -1) return items;
+                  return arrayMove(items, oldIndex, newIndex);
+                });
+              } else {
+                // Different group, move to the target's group
+                safeSetRecipients(
+                  recipients.map(recipient => 
+                    recipient.id === active.id 
+                      ? { ...recipient, groupId: overRecipient.groupId } 
+                      : recipient
+                  )
+                );
+              }
+            }
+          }
+        }
       } 
       else if (over.id === 'ungrouped') {
+        // Target is ungrouped area, remove groupId
         safeSetRecipients(
           recipients.map(recipient => 
             recipient.id === active.id 
@@ -246,29 +283,14 @@ export function useRecipients() {
         );
       }
       else if (typeof over.id === 'string' && typeof active.id === 'string') {
-        const activeRecipient = recipients.find(r => r.id === active.id);
-        const overRecipient = recipients.find(r => r.id === over.id);
-        
-        if (activeRecipient && overRecipient && 
-            activeRecipient.groupId === overRecipient.groupId) {
+        // Reordering within the same group or ungrouped area
+        setRecipients((items) => {
+          const oldIndex = items.findIndex(item => item.id === active.id);
+          const newIndex = items.findIndex(item => item.id === over.id);
           
-          setRecipients((items) => {
-            const oldIndex = items.findIndex(item => item.id === active.id);
-            const newIndex = items.findIndex(item => item.id === over.id);
-            
-            if (oldIndex === -1 || newIndex === -1) return items;
-            return arrayMove(items, oldIndex, newIndex);
-          });
-        } 
-        else if (activeRecipient && overRecipient) {
-          safeSetRecipients(
-            recipients.map(recipient => 
-              recipient.id === active.id 
-                ? { ...recipient, groupId: overRecipient.groupId } 
-                : recipient
-            )
-          );
-        }
+          if (oldIndex === -1 || newIndex === -1) return items;
+          return arrayMove(items, oldIndex, newIndex);
+        });
       }
     }
   };
