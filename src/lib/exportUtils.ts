@@ -5,10 +5,13 @@ import { jsPDF } from "jspdf";
 /**
  * Exports an HTML element to a PDF file and triggers download
  * @param element The HTML element to be exported
- * @param fileName The name of the PDF file
+ * @param fileName The default name for the PDF file
  */
-export const exportToPdf = async (element: HTMLElement, fileName: string) => {
+export const exportToPdf = async (element: HTMLElement, defaultFileName: string) => {
   try {
+    // Ask user for file name
+    const fileName = prompt("Enter a name for your PDF", defaultFileName) || defaultFileName;
+    
     // Create a canvas from the element
     const canvas = await html2canvas(element, {
       scale: 2, // Higher scale for better quality
@@ -19,32 +22,43 @@ export const exportToPdf = async (element: HTMLElement, fileName: string) => {
     
     // Get dimensions
     const imgData = canvas.toDataURL('image/png');
-    const imgWidth = 210; // A4 width in mm
-    const pageHeight = 297; // A4 height in mm
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
     
-    // Create PDF
+    // Create PDF - use the correct aspect ratio to ensure content fits properly
     const pdf = new jsPDF('p', 'mm', 'a4');
-    let position = 0;
-    
-    // Add image to PDF
-    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-    
-    // Handle if content is longer than a page
+    const pdfWidth = pdf.internal.pageSize.getWidth();
     const pdfHeight = pdf.internal.pageSize.getHeight();
-    if (imgHeight > pdfHeight) {
-      let heightLeft = imgHeight;
-      
-      while (heightLeft > 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pdfHeight;
-      }
+    
+    // Calculate the ratio to fit content within the PDF page
+    // Use margins to ensure content isn't right at the edge
+    const margin = 10; // 10mm margin
+    const maxWidth = pdfWidth - (margin * 2);
+    const maxHeight = pdfHeight - (margin * 2);
+    
+    // Calculate aspect ratio to maintain proportions
+    const aspectRatio = canvas.width / canvas.height;
+    
+    // Determine dimensions that maintain aspect ratio and fit within margins
+    let imgWidth, imgHeight;
+    
+    if (aspectRatio > maxWidth / maxHeight) {
+      // Width is the limiting factor
+      imgWidth = maxWidth;
+      imgHeight = imgWidth / aspectRatio;
+    } else {
+      // Height is the limiting factor
+      imgHeight = maxHeight;
+      imgWidth = imgHeight * aspectRatio;
     }
     
-    // Save the PDF
-    pdf.save(fileName);
+    // Center the image on the page
+    const xPosition = margin + (maxWidth - imgWidth) / 2;
+    const yPosition = margin + (maxHeight - imgHeight) / 2;
+    
+    // Add image to PDF
+    pdf.addImage(imgData, 'PNG', xPosition, yPosition, imgWidth, imgHeight);
+    
+    // Save the PDF with the custom name
+    pdf.save(`${fileName}.pdf`);
   } catch (error) {
     console.error('Error generating PDF:', error);
   }
