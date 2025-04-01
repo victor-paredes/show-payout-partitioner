@@ -51,6 +51,7 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
   const [isInputHover, setIsInputHover] = useState(false);
   const [nameWidth, setNameWidth] = useState(150); // Default width
   const nameRef = useRef<HTMLSpanElement>(null);
+  const [isDraggingInput, setIsDraggingInput] = useState(false);
   
   const {
     attributes,
@@ -103,6 +104,16 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
   // Determine current type for the select
   const currentType: RecipientType = recipient.type || 
     (recipient.isFixedAmount ? "$" : "shares");
+    
+  const handleRowClick = (e: React.MouseEvent) => {
+    // Only toggle selection if not dragging from an input
+    if (!isDraggingInput) {
+      onToggleSelect();
+    }
+    
+    // Reset drag state after click
+    setIsDraggingInput(false);
+  };
 
   return (
     <div 
@@ -117,7 +128,7 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
       } ${
         isHighlighted ? "border-black" : "border"
       }`}
-      onClick={onToggleSelect}
+      onClick={handleRowClick}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
@@ -150,6 +161,8 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
             className={`border-none p-0 h-auto text-base font-medium focus-visible:ring-0 ${inputHoverClass}`}
             placeholder="Enter Name"
             onClick={(e) => e.stopPropagation()}
+            onMouseDown={() => setIsDraggingInput(false)}
+            onMouseMove={() => setIsDraggingInput(true)}
             style={{ width: `${nameWidth}px` }}
           />
         </div>
@@ -168,7 +181,6 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
           <SelectTrigger className="w-28">
             <SelectValue placeholder="Type" />
           </SelectTrigger>
-          {/* Use the non-portal version instead of SelectContent */}
           <SelectContentNonPortal>
             <SelectItem value="shares">Shares</SelectItem>
             <SelectItem value="$">$</SelectItem>
@@ -195,6 +207,8 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
             currentType === "$" ? "Amount" : 
             "Percent"
           }
+          onMouseDown={() => setIsDraggingInput(false)}
+          onMouseMove={() => setIsDraggingInput(true)}
         />
       </div>
 
