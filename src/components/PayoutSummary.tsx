@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/format";
@@ -17,11 +16,8 @@ interface PayoutSummaryProps {
   totalPayout: number;
   recipients: Recipient[];
   remainingAmount: number;
-  totalShares: number;
-  valuePerShare: number;
 }
 
-// Define colors for the pie chart
 const COLORS = [
   "#9b87f5", // Primary Purple
   "#7E69AB", // Secondary Purple
@@ -39,30 +35,22 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
   totalPayout,
   recipients,
   remainingAmount,
-  // Removed totalShares and valuePerShare from usage
 }) => {
-  // Calculate total of fixed amounts
   const totalFixedAmount = totalPayout - remainingAmount;
   
-  // Calculate total payout (should match the input, but this verifies)
   const calculatedTotal = recipients.reduce((total, r) => total + r.payout, 0);
   
-  // Check if there's any difference due to rounding errors
   const difference = Math.abs(totalPayout - calculatedTotal);
   
-  // Sort recipients for display with fixed amounts first
   const sortedRecipients = [...recipients].sort((a, b) => {
-    // Sort by type (fixed first)
     if (a.isFixedAmount !== b.isFixedAmount) {
       return a.isFixedAmount ? -1 : 1;
     }
-    // Then by payout amount (highest first)
     return b.payout - a.payout;
   });
 
-  // Prepare data for pie chart
   const chartData = sortedRecipients
-    .filter(recipient => recipient.payout > 0) // Only include recipients with non-zero payouts
+    .filter(recipient => recipient.payout > 0)
     .map((recipient, index) => ({
       name: recipient.name || `Recipient ${index + 1}`,
       value: recipient.payout,
@@ -102,9 +90,8 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
             <div className="text-right">{formatCurrency(remainingAmount)}</div>
           </div>
 
-          {/* Add Pie Chart */}
           {chartData.length > 0 && (
-            <div className="mt-6 h-64">
+            <div className="mt-2 h-56">
               <ChartContainer 
                 config={{
                   payout: { 
@@ -119,7 +106,7 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
                     nameKey="displayName"
                     cx="50%"
                     cy="50%"
-                    outerRadius={80}
+                    outerRadius={70}
                     label={({ name, percent }) => 
                       `${name}: ${(percent * 100).toFixed(0)}%`
                     }
