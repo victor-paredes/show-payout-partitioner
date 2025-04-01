@@ -1,8 +1,8 @@
 
-import React, { useState, useRef } from "react";
+import React, { useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/format";
-import { PieChart, Pie, Cell, Legend, Tooltip } from "recharts";
+import { PieChart, Pie, Cell } from "recharts";
 import { 
   DropdownMenu,
   DropdownMenuContent,
@@ -52,8 +52,7 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
   hoveredRecipientId,
   onRecipientHover,
 }) => {
-  // Track which segment is currently being hovered within this component
-  const [internalHoveredIndex, setInternalHoveredIndex] = useState<number | null>(null);
+  // Use ref for the component we want to export as PDF
   const summaryRef = useRef<HTMLDivElement>(null);
   
   const totalFixedAmount = totalPayout - remainingAmount;
@@ -71,13 +70,13 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
 
   const chartData = sortedRecipients
     .filter(recipient => recipient.payout > 0)
-    .map((recipient, index) => {
+    .map((recipient) => {
       const percentage = totalPayout > 0 
         ? ((recipient.payout / totalPayout) * 100).toFixed(1) 
         : "0";
         
       return {
-        name: recipient.name || `Recipient ${index + 1}`,
+        name: recipient.name || "Unnamed",
         value: recipient.payout,
         percentage: percentage,
         id: recipient.id,
@@ -88,14 +87,9 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
   const hoveredChartIndex = hoveredRecipientId
     ? chartData.findIndex(item => item.id === hoveredRecipientId)
     : -1;
-    
-  // Determine the effective hovered index (from external prop or internal state)
-  const effectiveHoveredIndex = hoveredChartIndex >= 0 ? hoveredChartIndex : internalHoveredIndex;
 
   // Handle hovering on a chart element
   const handleChartHover = (index: number | null) => {
-    setInternalHoveredIndex(index);
-    
     if (onRecipientHover) {
       if (index !== null && index >= 0 && index < chartData.length) {
         onRecipientHover(chartData[index].id);
@@ -108,34 +102,8 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
   // Export the payout summary as PDF
   const handleExportPdf = () => {
     if (summaryRef.current) {
-      exportToPdf(summaryRef.current, 'payout-summary.pdf');
+      exportToPdf(summaryRef.current, 'payout-summary');
     }
-  };
-
-  // Custom renderer for the legend with percentages and hover effect
-  const renderCustomizedLegend = (props: any) => {
-    const { payload } = props;
-    
-    return (
-      <div className="flex flex-wrap justify-center text-sm mt-2">
-        {payload.map((entry: any, index: number) => (
-          <div 
-            key={`legend-${index}`} 
-            className="flex items-center cursor-pointer px-1"
-            onMouseEnter={() => handleChartHover(index)}
-            onMouseLeave={() => handleChartHover(null)}
-          >
-            <div 
-              className="h-3 w-3 mr-2 rounded-sm" 
-              style={{ 
-                backgroundColor: effectiveHoveredIndex === index ? "#000000" : entry.color 
-              }}
-            />
-            <span>{entry.value} ({chartData[index].percentage}%)</span>
-          </div>
-        ))}
-      </div>
-    );
   };
 
   if (totalPayout <= 0) {
@@ -218,11 +186,10 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
                     {chartData.map((entry, index) => (
                       <Cell 
                         key={`cell-${index}`} 
-                        fill={effectiveHoveredIndex === index ? "#000000" : COLORS[index % COLORS.length]} 
+                        fill={hoveredChartIndex === index ? "#000000" : COLORS[index % COLORS.length]} 
                       />
                     ))}
                   </Pie>
-                  <Legend content={renderCustomizedLegend} />
                 </PieChart>
               </div>
             </div>
@@ -232,23 +199,24 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
             <h3 className="font-semibold mb-3">Individual Payouts</h3>
             <div className="space-y-2">
               {recipients.map((recipient) => {
-                // Find the chart index for this recipient
-                const recipientChartIndex = chartData.findIndex(item => item.id === recipient.id);
-                const isHighlighted = recipientChartIndex === effectiveHoveredIndex;
+                // Find the chart data for this recipient to get the percentage
+                const recipientChartData = chartData.find(item => item.id === recipient.id);
+                const percentage = recipientChartData ? recipientChartData.percentage : "0";
+                const isHighlighted = hoveredRecipientId === recipient.id;
                 
                 return (
                   <div 
                     key={recipient.id} 
                     className={`flex justify-between p-1 rounded ${isHighlighted ? 'bg-gray-100' : ''}`}
-                    onMouseEnter={() => handleChartHover(recipientChartIndex)}
-                    onMouseLeave={() => handleChartHover(null)}
+                    onMouseEnter={() => onRecipientHover?.(recipient.id)}
+                    onMouseLeave={() => onRecipientHover?.(null)}
                   >
                     <div className="flex items-center">
                       <span>{recipient.name}</span>
                       <span className="text-xs text-gray-500 ml-2">
                         {recipient.isFixedAmount 
                           ? `(Fixed: ${formatCurrency(recipient.value)})` 
-                          : `(${recipient.value}x)`}
+                          : `(${recipient.value}x, ${percentage}%)`}
                       </span>
                     </div>
                     <div className="font-medium">{formatCurrency(recipient.payout)}</div>
