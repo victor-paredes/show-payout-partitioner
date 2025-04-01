@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from "react";
 import TotalPayoutInput from "./payout/TotalPayoutInput";
 import RecipientsList from "./payout/RecipientsList";
@@ -7,16 +6,13 @@ import PayoutHeaderMenu from "./payout/PayoutHeaderMenu";
 import { useRecipients, Recipient } from "@/hooks/useRecipients";
 import { usePayoutCalculation } from "@/hooks/usePayoutCalculation";
 import { useToast } from "@/hooks/use-toast";
-import GroupNameModal from "./payout/GroupNameModal";
 
 const PayoutCalculator = () => {
   const { toast } = useToast();
-  const [groupNameModalOpen, setGroupNameModalOpen] = useState(false);
   
   const {
     recipients,
     setRecipients,
-    recipientGroups,
     selectedRecipients,
     setSelectedRecipients,
     recipientCount,
@@ -27,9 +23,7 @@ const PayoutCalculator = () => {
     updateRecipient,
     handleDragEnd,
     clearRecipients,
-    setLastUsedId,
-    createGroup,
-    ungroupRecipients
+    setLastUsedId
   } = useRecipients();
 
   const {
@@ -79,6 +73,40 @@ const PayoutCalculator = () => {
     };
   }, [selectedRecipients, setSelectedRecipients]);
 
+  useEffect(() => {
+    if (totalPayout <= 0) {
+      setRecipients(recipients.map(r => ({ ...r, payout: 0 })));
+      return;
+    }
+
+    const updatedRecipients = recipients.map(recipient => {
+      const type = recipient.type || (recipient.isFixedAmount ? "$" : "shares");
+      
+      if (type === "$") {
+        return {
+          ...recipient,
+          payout: isNaN(recipient.value) ? 0 : recipient.value,
+        };
+      } else if (type === "%") {
+        return {
+          ...recipient,
+          payout: isNaN(recipient.value) ? 0 : (recipient.value / 100) * totalPayout,
+        };
+      } else {
+        return {
+          ...recipient,
+          payout: isNaN(recipient.value) ? 0 : recipient.value * valuePerShare,
+        };
+      }
+    });
+
+    setRecipients(updatedRecipients);
+  }, [totalPayout, recipients.map(r => r.id).join(','), 
+     recipients.map(r => r.name).join(','),
+     recipients.map(r => r.isFixedAmount).join(','), 
+     recipients.map(r => r.value).join(','),
+     valuePerShare]);
+
   const handleRecipientHover = (id: string | null) => {
     setHoveredRecipientId(id);
   };
@@ -119,27 +147,6 @@ const PayoutCalculator = () => {
     }
   };
 
-  // Update PayoutSummary to show grouped rows
-  const getPayoutSummaryRecipients = () => {
-    return recipients;
-  };
-
-  const handleOpenGroupNameModal = () => {
-    if (selectedRecipients.size < 2) {
-      toast({
-        title: "Group Creation Failed",
-        description: "Select at least two recipients to create a group",
-        variant: "destructive",
-      });
-      return;
-    }
-    setGroupNameModalOpen(true);
-  };
-
-  const handleCreateGroup = (groupName: string) => {
-    createGroup(groupName);
-  };
-
   return (
     <div className="space-y-2">
       <PayoutHeaderMenu 
@@ -157,7 +164,6 @@ const PayoutCalculator = () => {
 
           <RecipientsList
             recipients={recipients}
-            recipientGroups={recipientGroups}
             recipientCount={recipientCount}
             setRecipientCount={setRecipientCount}
             addRecipients={addRecipients}
@@ -171,28 +177,19 @@ const PayoutCalculator = () => {
             hoveredRecipientId={hoveredRecipientId || undefined}
             onRecipientHover={handleRecipientHover}
             clearRecipients={clearRecipients}
-            createGroup={createGroup}
-            ungroupRecipients={ungroupRecipients}
-            onOpenGroupNameModal={handleOpenGroupNameModal}
           />
         </div>
 
         <div className="md:sticky md:top-4 h-fit">
           <PayoutSummary
             totalPayout={totalPayout}
-            recipients={getPayoutSummaryRecipients()}
+            recipients={recipients}
             remainingAmount={remainingAmount}
             hoveredRecipientId={hoveredRecipientId || undefined}
             onRecipientHover={handleRecipientHover}
           />
         </div>
       </div>
-
-      <GroupNameModal
-        open={groupNameModalOpen}
-        onOpenChange={setGroupNameModalOpen}
-        onCreateGroup={handleCreateGroup}
-      />
     </div>
   );
 };

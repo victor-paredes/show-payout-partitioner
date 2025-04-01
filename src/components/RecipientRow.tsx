@@ -27,7 +27,6 @@ interface Recipient {
   payout: number;
   type?: RecipientType;
   color?: string;
-  groupId?: string;
 }
 
 interface RecipientRowProps {
@@ -42,9 +41,6 @@ interface RecipientRowProps {
   columnWiseTabbing?: boolean;
   rowIndex?: number;
   totalRows?: number;
-  isInGroup?: boolean;
-  isFirstInGroup?: boolean;
-  isLastInGroup?: boolean;
 }
 
 const RecipientRow: React.FC<RecipientRowProps> = ({
@@ -58,10 +54,7 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
   onRecipientHover,
   columnWiseTabbing = false,
   rowIndex = 0,
-  totalRows = 1,
-  isInGroup = false,
-  isFirstInGroup = false,
-  isLastInGroup = false
+  totalRows = 1
 }) => {
   const [isInputHover, setIsInputHover] = useState(false);
   const [nameWidth, setNameWidth] = useState(150);
@@ -168,18 +161,6 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
     valueTabIndex = 3 + (rowIndex * 3);
   }
 
-  // Determine group-related styling
-  const groupBorderClass = isInGroup 
-    ? isFirstInGroup 
-      ? "border-t-2 border-l-2 border-r-2 border-gray-300 rounded-t-md" 
-      : isLastInGroup 
-        ? "border-b-2 border-l-2 border-r-2 border-gray-300 rounded-b-md" 
-        : "border-l-2 border-r-2 border-gray-300"
-    : "";
-  
-  // Add margin to separate groups
-  const groupMarginClass = isInGroup && isLastInGroup ? "mb-4" : "";
-
   return (
     <>
       <div 
@@ -193,10 +174,6 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
             : ""
         } ${
           isHighlighted ? "border-black" : "border"
-        } ${
-          groupBorderClass
-        } ${
-          groupMarginClass
         }`}
         onClick={handleRowClick}
         onMouseEnter={handleMouseEnter}
