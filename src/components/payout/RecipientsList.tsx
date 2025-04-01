@@ -4,8 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, Trash2, X, ArrowRight, ArrowDown } from "lucide-react";
 import RecipientRow from "../RecipientRow";
-import { Recipient } from "@/hooks/useRecipients";
+import DividerRow, { Divider } from "../DividerRow";
+import { Recipient, PayoutItem } from "@/hooks/useRecipients";
 import ConfirmationModal from "@/components/ConfirmationModal";
+import DividerModal from "@/components/DividerModal";
 import {
   DndContext,
   closestCenter,
@@ -30,12 +32,13 @@ import {
 } from "@/components/ui/select";
 
 interface RecipientsListProps {
-  recipients: Recipient[];
+  items: PayoutItem[];
   recipientCount: string;
   setRecipientCount: (count: string) => void;
   addRecipients: () => void;
   updateRecipient: (id: string, updates: Partial<Recipient>) => void;
-  removeRecipient: (id: string) => void;
+  removeItem: (id: string) => void;
+  addDivider: (text: string, afterRecipientId: string) => void;
   selectedRecipients: Set<string>;
   toggleSelectRecipient: (id: string) => void;
   setSelectedRecipients: (selections: Set<string>) => void;
@@ -47,12 +50,13 @@ interface RecipientsListProps {
 }
 
 const RecipientsList = ({
-  recipients,
+  items,
   recipientCount,
   setRecipientCount,
   addRecipients,
   updateRecipient,
-  removeRecipient,
+  removeItem,
+  addDivider,
   selectedRecipients,
   toggleSelectRecipient,
   setSelectedRecipients,
@@ -64,6 +68,8 @@ const RecipientsList = ({
 }: RecipientsListProps) => {
   const [confirmClearOpen, setConfirmClearOpen] = useState(false);
   const [columnWiseTabbing, setColumnWiseTabbing] = useState(false);
+  const [dividerModalOpen, setDividerModalOpen] = useState(false);
+  const [activeRecipientId, setActiveRecipientId] = useState<string | null>(null);
   
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -91,6 +97,23 @@ const RecipientsList = ({
     setColumnWiseTabbing(!columnWiseTabbing);
   };
 
+  const handleAddDividerClick = (recipientId: string) => {
+    setActiveRecipientId(recipientId);
+    setDividerModalOpen(true);
+  };
+
+  const handleAddDivider = (text: string) => {
+    if (activeRecipientId) {
+      addDivider(text, activeRecipientId);
+      setActiveRecipientId(null);
+    }
+  };
+
+  // Filter just recipients (not dividers) for counting
+  const recipients = items.filter((item): item is Recipient => 
+    !('type' in item && item.type === 'divider')
+  );
+  
   // Create the title with the correct singular/plural form
   const actualRecipientCount = recipients.length;
   const recipientsTitle = `${actualRecipientCount} ${actualRecipientCount === 1 ? 'Recipient' : 'Recipients'}`;
@@ -125,7 +148,7 @@ const RecipientsList = ({
             >
               {columnWiseTabbing ? <ArrowDown className="h-4 w-4" /> : <ArrowRight className="h-4 w-4" />}
             </Button>
-            {recipients.length > 0 && (
+            {items.length > 0 && (
               <Button 
                 onClick={handleClearClick} 
                 variant="outline" 
@@ -155,7 +178,7 @@ const RecipientsList = ({
       </CardHeader>
       <CardContent>
         <div className="space-y-0">
-          {recipients.length === 0 ? (
+          {items.length === 0 ? (
             <div className="text-center py-6 text-gray-500 italic">
               No recipients added. Click "Add Recipient" to get started.
             </div>
@@ -166,25 +189,43 @@ const RecipientsList = ({
               onDragEnd={handleDragEnd}
             >
               <SortableContext 
-                items={recipients.map(r => r.id)} 
+                items={items.map(item => item.id)} 
                 strategy={verticalListSortingStrategy}
               >
-                {recipients.map((recipient, rowIndex) => (
-                  <RecipientRow
-                    key={recipient.id}
-                    recipient={recipient}
-                    onUpdate={(updates) => updateRecipient(recipient.id, updates)}
-                    onRemove={() => removeRecipient(recipient.id)}
-                    valuePerShare={valuePerShare}
-                    isSelected={selectedRecipients.has(recipient.id)}
-                    onToggleSelect={() => toggleSelectRecipient(recipient.id)}
-                    isHighlighted={hoveredRecipientId === recipient.id}
-                    onRecipientHover={onRecipientHover}
-                    columnWiseTabbing={columnWiseTabbing}
-                    rowIndex={rowIndex}
-                    totalRows={recipients.length}
-                  />
-                ))}
+                {items.map((item, index) => {
+                  // Check if item is a divider
+                  if ('type' in item && item.type === 'divider') {
+                    const divider = item as Divider;
+                    return (
+                      <DividerRow
+                        key={divider.id}
+                        divider={divider}
+                        onRemove={() => removeItem(divider.id)}
+                      />
+                    );
+                  } else {
+                    // Item is a recipient
+                    const recipient = item as Recipient;
+                    const recipientIndex = recipients.findIndex(r => r.id === recipient.id);
+                    return (
+                      <RecipientRow
+                        key={recipient.id}
+                        recipient={recipient}
+                        onUpdate={(updates) => updateRecipient(recipient.id, updates)}
+                        onRemove={() => removeItem(recipient.id)}
+                        valuePerShare={valuePerShare}
+                        isSelected={selectedRecipients.has(recipient.id)}
+                        onToggleSelect={() => toggleSelectRecipient(recipient.id)}
+                        isHighlighted={hoveredRecipientId === recipient.id}
+                        onRecipientHover={onRecipientHover}
+                        columnWiseTabbing={columnWiseTabbing}
+                        rowIndex={recipientIndex}
+                        totalRows={recipients.length}
+                        onAddDivider={handleAddDividerClick}
+                      />
+                    );
+                  }
+                })}
               </SortableContext>
             </DndContext>
           )}
@@ -200,6 +241,12 @@ const RecipientsList = ({
         cancelLabel="Go Back"
         onConfirm={handleConfirmClear}
         variant="destructive"
+      />
+
+      <DividerModal
+        open={dividerModalOpen}
+        onOpenChange={setDividerModalOpen}
+        onConfirm={handleAddDivider}
       />
     </Card>
   );

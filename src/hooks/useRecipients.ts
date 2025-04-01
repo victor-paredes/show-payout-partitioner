@@ -4,6 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 import { DragEndEvent } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
 import { RecipientType } from "@/components/RecipientRow";
+import { Divider } from "@/components/DividerRow";
 import { COLORS } from "@/lib/colorUtils";
 
 export interface Recipient {
@@ -16,30 +17,36 @@ export interface Recipient {
   color?: string;
 }
 
+export type PayoutItem = Recipient | Divider;
+
 export function useRecipients() {
   const { toast } = useToast();
-  const [recipients, setRecipients] = useState<Recipient[]>([]);
+  const [items, setItems] = useState<PayoutItem[]>([]);
   const [selectedRecipients, setSelectedRecipients] = useState<Set<string>>(new Set());
   const [recipientCount, setRecipientCount] = useState<string>("1");
   const [lastUsedId, setLastUsedId] = useState<number>(0);
+
+  // Filter just recipients (not dividers)
+  const recipients = items.filter((item): item is Recipient => 
+    !('type' in item && item.type === 'divider')
+  );
 
   const addRecipients = () => {
     const currentRecipientCount = recipients.length;
     const count = parseInt(recipientCount);
     
-    // Calculate the next available ID by analyzing existing IDs
+    // Calculate the next available ID
     let nextId = lastUsedId + 1;
     
     // Find any numeric IDs in the current recipients list
-    recipients.forEach(recipient => {
-      const idNum = parseInt(recipient.id);
+    items.forEach(item => {
+      const idNum = parseInt(item.id);
       if (!isNaN(idNum) && idNum >= nextId) {
         nextId = idNum + 1;
       }
     });
     
     const newRecipients = Array.from({ length: count }, (_, index) => {
-      // Generate a truly unique ID by using timestamp + random number
       const newId = (nextId + index).toString();
       const defaultName = `Recipient ${currentRecipientCount + index + 1}`;
       
@@ -53,8 +60,8 @@ export function useRecipients() {
       };
     });
     
-    setRecipients([
-      ...recipients,
+    setItems([
+      ...items,
       ...newRecipients,
     ]);
     
@@ -63,14 +70,37 @@ export function useRecipients() {
     setRecipientCount("1");
   };
 
-  const removeRecipient = (id: string) => {
+  const removeItem = (id: string) => {
     if (selectedRecipients.has(id)) {
       const newSelectedRecipients = new Set(selectedRecipients);
       newSelectedRecipients.delete(id);
       setSelectedRecipients(newSelectedRecipients);
     }
     
-    setRecipients(recipients.filter(recipient => recipient.id !== id));
+    setItems(items.filter(item => item.id !== id));
+  };
+
+  const addDivider = (text: string, afterRecipientId: string) => {
+    // Find the index of the recipient to add the divider after
+    const recipientIndex = items.findIndex(item => item.id === afterRecipientId);
+    
+    if (recipientIndex === -1) return;
+    
+    // Generate a new ID for the divider
+    const dividerId = `div-${Date.now()}`;
+    
+    // Create the new divider
+    const newDivider: Divider = {
+      id: dividerId,
+      type: 'divider',
+      text
+    };
+    
+    // Insert the divider after the specified recipient
+    const newItems = [...items];
+    newItems.splice(recipientIndex + 1, 0, newDivider);
+    
+    setItems(newItems);
   };
 
   const toggleSelectRecipient = (id: string) => {
@@ -85,17 +115,21 @@ export function useRecipients() {
 
   const updateRecipient = (id: string, updates: Partial<Recipient>) => {
     if (selectedRecipients.has(id) && selectedRecipients.size > 1) {
-      const updatedRecipients = recipients.map(recipient => {
-        if (selectedRecipients.has(recipient.id)) {
-          return { ...recipient, ...updates };
+      const updatedItems = items.map(item => {
+        if ('type' in item && item.type === 'divider') {
+          return item;
         }
-        return recipient;
+        
+        if (selectedRecipients.has(item.id)) {
+          return { ...item, ...updates };
+        }
+        return item;
       });
-      setRecipients(updatedRecipients);
+      setItems(updatedItems);
     } else {
-      setRecipients(
-        recipients.map(recipient => 
-          recipient.id === id ? { ...recipient, ...updates } : recipient
+      setItems(
+        items.map(item => 
+          item.id === id ? { ...item, ...updates } : item
         )
       );
     }
@@ -105,31 +139,33 @@ export function useRecipients() {
     const { active, over } = event;
     
     if (over && active.id !== over.id) {
-      setRecipients((items) => {
-        const oldIndex = items.findIndex(item => item.id === active.id);
-        const newIndex = items.findIndex(item => item.id === over.id);
+      setItems((currentItems) => {
+        const oldIndex = currentItems.findIndex(item => item.id === active.id);
+        const newIndex = currentItems.findIndex(item => item.id === over.id);
         
-        return arrayMove(items, oldIndex, newIndex);
+        return arrayMove(currentItems, oldIndex, newIndex);
       });
     }
   };
 
   const clearRecipients = () => {
-    setRecipients([]);
+    setItems([]);
     setSelectedRecipients(new Set());
     setRecipientCount("1");
     setLastUsedId(0);
   };
 
   return {
+    items,
+    setItems,
     recipients,
-    setRecipients,
     selectedRecipients,
     setSelectedRecipients,
     recipientCount,
     setRecipientCount,
     addRecipients,
-    removeRecipient,
+    removeItem,
+    addDivider,
     toggleSelectRecipient,
     updateRecipient,
     handleDragEnd,

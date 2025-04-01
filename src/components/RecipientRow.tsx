@@ -1,8 +1,7 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Trash2, GripVertical, ChevronDown, Square, Palette } from "lucide-react";
+import { Trash2, GripVertical, Plus } from "lucide-react";
 import { formatCurrency } from "@/lib/format";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -41,6 +40,7 @@ interface RecipientRowProps {
   columnWiseTabbing?: boolean;
   rowIndex?: number;
   totalRows?: number;
+  onAddDivider?: (recipientId: string) => void;
 }
 
 const RecipientRow: React.FC<RecipientRowProps> = ({
@@ -54,12 +54,14 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
   onRecipientHover,
   columnWiseTabbing = false,
   rowIndex = 0,
-  totalRows = 1
+  totalRows = 1,
+  onAddDivider
 }) => {
   const [isInputHover, setIsInputHover] = useState(false);
   const [nameWidth, setNameWidth] = useState(150);
   const nameRef = useRef<HTMLSpanElement>(null);
   const [colorPickerOpen, setColorPickerOpen] = useState(false);
+  const [showAddDivider, setShowAddDivider] = useState(false);
   
   const {
     attributes,
@@ -88,12 +90,14 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
 
   const handleMouseEnter = () => {
     setIsInputHover(false);
+    setShowAddDivider(true);
     if (onRecipientHover) {
       onRecipientHover(recipient.id);
     }
   };
 
   const handleMouseLeave = () => {
+    setShowAddDivider(false);
     if (onRecipientHover) {
       onRecipientHover(null);
     }
@@ -112,8 +116,6 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
     (recipient.isFixedAmount ? "$" : "shares");
     
   const handleRowClick = (e: React.MouseEvent) => {
-    // Don't check isDraggingInput anymore - this prevents double-click issues
-    // Just check if the click happened on an interactive element
     const target = e.target as HTMLElement;
     const isInteractiveElement = 
       target.tagName === 'INPUT' || 
@@ -128,34 +130,28 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
   };
 
   const handleNameInputClick = (e: React.MouseEvent<HTMLInputElement>) => {
-    // Select all text in the input when clicked
     const target = e.target as HTMLInputElement;
     target.select();
-    e.stopPropagation(); // Prevent row selection
+    e.stopPropagation();
   };
 
   const handleValueInputClick = (e: React.MouseEvent<HTMLInputElement>) => {
-    // Select all text in the input when clicked
     const target = e.target as HTMLInputElement;
     target.select();
-    e.stopPropagation(); // Prevent row selection
+    e.stopPropagation();
   };
 
-  // Use custom color if available, otherwise use the generated color
   const recipientColor = recipient.color || getRecipientColor(recipient.id);
 
-  // Calculate tab indexes based on tabbing direction
   let nameTabIndex: number;
   let typeTabIndex: number;
   let valueTabIndex: number;
 
   if (columnWiseTabbing && totalRows && totalRows > 0) {
-    // For column-wise tabbing, we go down columns: all names first, then all types, then all values
     nameTabIndex = 1 + rowIndex;
     typeTabIndex = 1 + totalRows + rowIndex;
     valueTabIndex = 1 + (2 * totalRows) + rowIndex;
   } else {
-    // For row-wise tabbing (default), we go across each row before moving to the next
     nameTabIndex = 1 + (rowIndex * 3);
     typeTabIndex = 2 + (rowIndex * 3);
     valueTabIndex = 3 + (rowIndex * 3);
@@ -174,7 +170,7 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
             : ""
         } ${
           isHighlighted ? "border-black" : "border"
-        }`}
+        } relative`}
         onClick={handleRowClick}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
@@ -288,6 +284,23 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
         >
           <Trash2 className="h-4 w-4" />
         </Button>
+        
+        {showAddDivider && onAddDivider && (
+          <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
+            <Button 
+              size="sm" 
+              variant="outline" 
+              className="h-7 bg-white shadow-sm flex items-center gap-1 border-gray-300"
+              onClick={(e) => {
+                e.stopPropagation();
+                onAddDivider(recipient.id);
+              }}
+            >
+              <Plus className="h-3.5 w-3.5" />
+              <span className="text-xs">Add Divider</span>
+            </Button>
+          </div>
+        )}
       </div>
 
       <ColorPickerModal
