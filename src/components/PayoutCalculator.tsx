@@ -22,6 +22,13 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy
 } from "@dnd-kit/sortable";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface Recipient {
   id: string;
@@ -40,6 +47,7 @@ const PayoutCalculator = () => {
   const [remainingAmount, setRemainingAmount] = useState<number>(0);
   const [totalShares, setTotalShares] = useState<number>(0);
   const [valuePerShare, setValuePerShare] = useState<number>(0);
+  const [recipientCount, setRecipientCount] = useState<string>("1");
 
   // Set up DnD sensors
   const sensors = useSensors(
@@ -49,22 +57,26 @@ const PayoutCalculator = () => {
     })
   );
 
-  const addRecipient = () => {
+  const addRecipients = () => {
     const currentRecipientCount = recipients.length;
-    const newId = (Math.max(0, ...recipients.map(r => parseInt(r.id))) + 1).toString();
+    const count = parseInt(recipientCount);
     
-    // Generate a more descriptive default name
-    const defaultName = `Recipient ${currentRecipientCount + 1}`;
-    
-    setRecipients([
-      ...recipients,
-      { 
+    const newRecipients = Array.from({ length: count }, (_, index) => {
+      const newId = (Math.max(0, ...recipients.map(r => parseInt(r.id))) + index + 1).toString();
+      const defaultName = `Recipient ${currentRecipientCount + index + 1}`;
+      
+      return { 
         id: newId, 
         name: defaultName, 
         isFixedAmount: false, 
         value: 1, 
         payout: 0
-      },
+      };
+    });
+    
+    setRecipients([
+      ...recipients,
+      ...newRecipients,
     ]);
   };
 
@@ -176,9 +188,21 @@ const PayoutCalculator = () => {
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <span>Recipients</span>
-            <div className="flex space-x-2">
-              <Button onClick={addRecipient} variant="outline" size="sm" className="flex items-center">
-                <Plus className="mr-1 h-4 w-4" /> Add Recipient
+            <div className="flex items-center space-x-2">
+              <Select value={recipientCount} onValueChange={setRecipientCount}>
+                <SelectTrigger className="w-16">
+                  <SelectValue placeholder="1" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Array.from({ length: 10 }, (_, i) => (
+                    <SelectItem key={i + 1} value={(i + 1).toString()}>
+                      {i + 1}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button onClick={addRecipients} variant="outline" size="sm" className="flex items-center">
+                <Plus className="mr-1 h-4 w-4" /> Add Recipient{parseInt(recipientCount) > 1 ? 's' : ''}
               </Button>
             </div>
           </CardTitle>
