@@ -2,12 +2,10 @@
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Trash2, X, ArrowRight, ArrowDown, SeparatorHorizontal } from "lucide-react";
+import { Plus, Trash2, X, ArrowRight, ArrowDown } from "lucide-react";
 import RecipientRow from "../RecipientRow";
 import { Recipient } from "@/hooks/useRecipients";
 import ConfirmationModal from "@/components/ConfirmationModal";
-import DividerModal from "@/components/DividerModal";
-import DividerRow from "@/components/DividerRow";
 import {
   DndContext,
   closestCenter,
@@ -30,12 +28,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 interface RecipientsListProps {
   recipients: Recipient[];
@@ -52,13 +44,6 @@ interface RecipientsListProps {
   hoveredRecipientId?: string;
   onRecipientHover?: (id: string | null) => void;
   clearRecipients?: () => void;
-  // Divider-related props
-  dividerModalOpen: boolean;
-  setDividerModalOpen: (open: boolean) => void;
-  prepareDividerModal: (position: "before" | "after", recipientId: string) => void;
-  addOrUpdateDivider: (text: string) => void;
-  editDivider: (dividerId: string) => void;
-  currentDividerId: string | null;
 }
 
 const RecipientsList = ({
@@ -75,14 +60,7 @@ const RecipientsList = ({
   valuePerShare,
   hoveredRecipientId,
   onRecipientHover,
-  clearRecipients,
-  // Divider-related props
-  dividerModalOpen,
-  setDividerModalOpen,
-  prepareDividerModal,
-  addOrUpdateDivider,
-  editDivider,
-  currentDividerId
+  clearRecipients
 }: RecipientsListProps) => {
   const [confirmClearOpen, setConfirmClearOpen] = useState(false);
   const [columnWiseTabbing, setColumnWiseTabbing] = useState(false);
@@ -113,9 +91,8 @@ const RecipientsList = ({
     setColumnWiseTabbing(!columnWiseTabbing);
   };
 
-  // Get only the non-divider recipients for the title count
-  const actualRecipientCount = recipients.filter(r => !r.isDivider).length;
-  const recipientsTitle = `${actualRecipientCount} ${actualRecipientCount === 1 ? 'Recipient' : 'Recipients'}`;
+  // Create the title with the correct singular/plural form
+  const recipientsTitle = `${recipients.length} ${recipients.length === 1 ? 'Recipient' : 'Recipients'}`;
 
   return (
     <Card>
@@ -147,27 +124,7 @@ const RecipientsList = ({
             >
               {columnWiseTabbing ? <ArrowDown className="h-4 w-4" /> : <ArrowRight className="h-4 w-4" />}
             </Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm">
-                  <SeparatorHorizontal className="h-4 w-4 mr-2" />
-                  Divider
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                {recipients.filter(r => !r.isDivider).map((recipient) => (
-                  <React.Fragment key={recipient.id}>
-                    <DropdownMenuItem onClick={() => prepareDividerModal("before", recipient.id)}>
-                      Add divider before {recipient.name || "Unnamed"}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => prepareDividerModal("after", recipient.id)}>
-                      Add divider after {recipient.name || "Unnamed"}
-                    </DropdownMenuItem>
-                  </React.Fragment>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-            {recipients.filter(r => !r.isDivider).length > 1 && (
+            {recipients.length > 1 && (
               <Button 
                 onClick={handleClearClick} 
                 variant="outline" 
@@ -207,31 +164,20 @@ const RecipientsList = ({
               strategy={verticalListSortingStrategy}
             >
               {recipients.map((recipient, rowIndex) => (
-                recipient.isDivider ? (
-                  <DividerRow
-                    key={recipient.id}
-                    id={recipient.id}
-                    text={recipient.dividerText || ""}
-                    onEdit={() => editDivider(recipient.id)}
-                    onRemove={() => removeRecipient(recipient.id)}
-                    isHighlighted={hoveredRecipientId === recipient.id}
-                  />
-                ) : (
-                  <RecipientRow
-                    key={recipient.id}
-                    recipient={recipient}
-                    onUpdate={(updates) => updateRecipient(recipient.id, updates)}
-                    onRemove={() => removeRecipient(recipient.id)}
-                    valuePerShare={valuePerShare}
-                    isSelected={selectedRecipients.has(recipient.id)}
-                    onToggleSelect={() => toggleSelectRecipient(recipient.id)}
-                    isHighlighted={hoveredRecipientId === recipient.id}
-                    onRecipientHover={onRecipientHover}
-                    columnWiseTabbing={columnWiseTabbing}
-                    rowIndex={rowIndex}
-                    totalRows={recipients.length}
-                  />
-                )
+                <RecipientRow
+                  key={recipient.id}
+                  recipient={recipient}
+                  onUpdate={(updates) => updateRecipient(recipient.id, updates)}
+                  onRemove={() => removeRecipient(recipient.id)}
+                  valuePerShare={valuePerShare}
+                  isSelected={selectedRecipients.has(recipient.id)}
+                  onToggleSelect={() => toggleSelectRecipient(recipient.id)}
+                  isHighlighted={hoveredRecipientId === recipient.id}
+                  onRecipientHover={onRecipientHover}
+                  columnWiseTabbing={columnWiseTabbing}
+                  rowIndex={rowIndex}
+                  totalRows={recipients.length}
+                />
               ))}
             </SortableContext>
           </DndContext>
@@ -247,17 +193,6 @@ const RecipientsList = ({
         cancelLabel="Go Back"
         onConfirm={handleConfirmClear}
         variant="destructive"
-      />
-      
-      <DividerModal
-        open={dividerModalOpen}
-        onOpenChange={setDividerModalOpen}
-        onConfirm={addOrUpdateDivider}
-        defaultText={
-          currentDividerId 
-            ? recipients.find(r => r.id === currentDividerId)?.dividerText || "" 
-            : ""
-        }
       />
     </Card>
   );

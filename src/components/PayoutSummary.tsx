@@ -1,4 +1,3 @@
-
 import React, { useRef, useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/format";
@@ -6,7 +5,6 @@ import { PieChart, Pie, Cell } from "recharts";
 import { X } from "lucide-react";
 import { RecipientType } from "@/components/RecipientRow";
 import { getRecipientColor } from "@/lib/colorUtils";
-import { Separator } from "@/components/ui/separator";
 
 interface Recipient {
   id: string;
@@ -16,8 +14,6 @@ interface Recipient {
   payout: number;
   type?: RecipientType;
   color?: string;
-  isDivider?: boolean;
-  dividerText?: string;
 }
 
 interface PayoutSummaryProps {
@@ -93,12 +89,9 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
     };
   }, [recipients.length, totalPayout]);
   
-  // Filter out dividers for calculation purposes
-  const nonDividerRecipients = recipients.filter(r => !r.isDivider);
-  
   const totalFixedAmount = totalPayout - remainingAmount;
   
-  const calculatedTotal = nonDividerRecipients.reduce((total, r) => total + r.payout, 0);
+  const calculatedTotal = recipients.reduce((total, r) => total + r.payout, 0);
   
   const difference = calculatedTotal - totalPayout;
   const hasSurplus = difference < -0.01;
@@ -107,7 +100,7 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
   const surplus = hasSurplus ? Math.abs(difference) : 0;
   const overdraw = hasOverdraw ? difference : 0;
   
-  const sortedRecipients = [...nonDividerRecipients].sort((a, b) => {
+  const sortedRecipients = [...recipients].sort((a, b) => {
     const typeOrder = {
       "$": 0,
       "%": 1,
@@ -304,24 +297,6 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
             <h3 className="font-semibold mb-3">Individual Payouts</h3>
             <div className="space-y-1">
               {recipients.map((recipient) => {
-                // For dividers, render a special divider row
-                if (recipient.isDivider) {
-                  return (
-                    <div 
-                      key={recipient.id} 
-                      className="flex items-center py-1 px-2"
-                      onMouseEnter={() => onRecipientHover?.(recipient.id)}
-                      onMouseLeave={() => onRecipientHover?.(null)}
-                    >
-                      <Separator className="mr-2 flex-grow" />
-                      <span className="text-xs font-medium text-gray-500 px-2 whitespace-nowrap">
-                        {recipient.dividerText}
-                      </span>
-                      <Separator className="ml-2 flex-grow" />
-                    </div>
-                  );
-                }
-                
                 const percentage = totalPayout > 0 
                   ? ((recipient.payout / totalPayout) * 100).toFixed(1) 
                   : "0";
