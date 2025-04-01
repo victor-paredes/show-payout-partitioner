@@ -1,3 +1,4 @@
+
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
 import { getRecipientColor, COLORS } from "./colorUtils";
@@ -78,7 +79,7 @@ export const exportToPdf = async (element: HTMLElement, defaultFileName: string)
  * @param defaultFileName The default name for the CSV file
  */
 export const exportToCsv = (
-  recipients: Array<{id: string; name: string; value: number; type?: string; payout: number}>,
+  recipients: Array<{id: string; name: string; value: number; type?: string; payout: number; color?: string}>,
   totalPayout: number,
   defaultFileName: string
 ) => {
@@ -98,7 +99,9 @@ export const exportToCsv = (
       const percentage = totalPayout > 0 
         ? ((recipient.payout / totalPayout) * 100).toFixed(2) 
         : '0';
-      const color = getRecipientColor(recipient.id);
+      
+      // Use the recipient's custom color if available, otherwise use the generated color
+      const color = recipient.color || getRecipientColor(recipient.id);
       
       // Format the row data and handle special characters
       const row = [
