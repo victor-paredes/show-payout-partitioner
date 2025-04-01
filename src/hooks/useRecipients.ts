@@ -4,6 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 import { DragEndEvent } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
 import { RecipientType } from "@/components/RecipientRow";
+import { COLORS } from "@/lib/colorUtils";  // Import the COLORS constant
 
 export interface Recipient {
   id: string;
@@ -127,7 +128,7 @@ export function useRecipients() {
       isFixedAmount: false,
       value: 1,
       payout: 0,
-      type: "shares" as RecipientType // Explicitly cast type to RecipientType
+      type: "shares" as RecipientType
     };
     
     setRecipients([firstRecipient]);
