@@ -11,71 +11,48 @@ interface TotalPayoutInputProps {
 }
 
 const TotalPayoutInput = ({ totalPayout, onChange }: TotalPayoutInputProps) => {
+  const [inputValue, setInputValue] = useState<string>("");
   const [displayValue, setDisplayValue] = useState<string>("");
   const inputRef = useRef<HTMLInputElement>(null);
-  const cursorPositionRef = useRef<number | null>(null);
-
-  // Format the display value when totalPayout changes
+  
+  // Initialize the input value based on totalPayout
   useEffect(() => {
     if (totalPayout === 0) {
+      setInputValue("");
       setDisplayValue("");
     } else {
-      const formattedValue = formatCurrency(totalPayout).replace('$', '').trim();
-      setDisplayValue(formattedValue);
+      // Convert to string with 2 decimal places but without other formatting
+      const formattedValue = totalPayout.toFixed(2);
+      setInputValue(formattedValue);
+      
+      // Format for display with commas
+      const displayWithCommas = formatCurrency(totalPayout).replace('$', '').trim();
+      setDisplayValue(displayWithCommas);
     }
   }, [totalPayout]);
 
-  // Restore cursor position after formatting
-  useEffect(() => {
-    if (cursorPositionRef.current !== null && inputRef.current) {
-      const newCursorPosition = Math.min(
-        cursorPositionRef.current,
-        displayValue.length
-      );
-      inputRef.current.setSelectionRange(newCursorPosition, newCursorPosition);
-      cursorPositionRef.current = null;
-    }
-  }, [displayValue]);
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Save current cursor position before value changes
-    if (inputRef.current) {
-      cursorPositionRef.current = inputRef.current.selectionStart;
-    }
-
     const input = e.target.value;
     
-    // Allow only one decimal point
-    let rawValue = input.replace(/[^0-9.]/g, '');
-    const decimalCount = (rawValue.match(/\./g) || []).length;
-    if (decimalCount > 1) {
-      const parts = rawValue.split('.');
-      rawValue = parts[0] + '.' + parts.slice(1).join('');
+    // Remove all non-numeric characters
+    const digitsOnly = input.replace(/\D/g, '');
+    
+    // Ensure we don't exceed a reasonable length
+    if (digitsOnly.length > 12) {
+      return;
     }
     
-    // Handle numeric processing
-    let numericValue = 0;
-    if (rawValue) {
-      // Check if it ends with a decimal point
-      if (rawValue.endsWith('.')) {
-        numericValue = parseFloat(rawValue + '0');
-      } else {
-        numericValue = parseFloat(rawValue);
-      }
-    }
+    // Convert to a decimal value (divide by 100 to make the last two digits cents)
+    const numericValue = digitsOnly ? parseFloat(digitsOnly) / 100 : 0;
     
-    // Count commas before cursor to adjust position
-    if (cursorPositionRef.current !== null) {
-      const beforeCursor = input.substring(0, cursorPositionRef.current);
-      const commasBeforeCursor = (beforeCursor.match(/,/g) || []).length;
-      cursorPositionRef.current -= commasBeforeCursor;
-    }
+    // Update the internal value
+    setInputValue(numericValue.toFixed(2));
     
-    // If it's not a number, use the last valid value
-    if (isNaN(numericValue)) {
-      numericValue = 0;
-    }
+    // Format for display with commas
+    const displayWithCommas = formatCurrency(numericValue).replace('$', '').trim();
+    setDisplayValue(displayWithCommas);
     
+    // Update the parent component
     onChange(numericValue);
   };
 
@@ -96,7 +73,7 @@ const TotalPayoutInput = ({ totalPayout, onChange }: TotalPayoutInputProps) => {
             placeholder="Enter total amount"
             value={displayValue}
             onChange={handleInputChange}
-            className="text-xl font-medium"
+            className="text-xl font-medium text-right"
           />
         </div>
       </CardContent>
