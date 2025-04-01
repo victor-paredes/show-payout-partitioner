@@ -23,6 +23,7 @@ import { exportToPdf, exportToCsv, importFromCsv } from "@/lib/exportUtils";
 import { Recipient } from "@/hooks/useRecipients";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import { RecipientType } from "@/components/RecipientRow";
 
 interface PayoutHeaderMenuProps {
   totalPayout: number;
@@ -74,7 +75,24 @@ const PayoutHeaderMenu: React.FC<PayoutHeaderMenuProps> = ({
         if (!csvContent) throw new Error("Failed to read file");
 
         const importedData = await importFromCsv(csvContent);
-        if (importedData.length === 0) {
+        
+        // Process the imported data to ensure it matches the Recipient interface
+        const processedData: Recipient[] = importedData.map(item => {
+          // Determine the type and isFixedAmount properties
+          const type = item.type as RecipientType || "shares";
+          const isFixedAmount = type === "$";
+          
+          return {
+            id: item.id,
+            name: item.name,
+            value: item.value,
+            payout: item.payout,
+            type: type,
+            isFixedAmount: isFixedAmount
+          };
+        });
+        
+        if (processedData.length === 0) {
           toast({
             title: "Import failed",
             description: "No valid data found in the CSV file",
@@ -83,7 +101,7 @@ const PayoutHeaderMenu: React.FC<PayoutHeaderMenuProps> = ({
           return;
         }
 
-        setPendingImportData(importedData);
+        setPendingImportData(processedData);
         setIsImportDialogOpen(true);
       } catch (error) {
         console.error('Error importing CSV:', error);
