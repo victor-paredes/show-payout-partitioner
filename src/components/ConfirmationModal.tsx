@@ -1,15 +1,7 @@
 
 import React from 'react';
-import { 
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle
-} from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface ConfirmationModalProps {
@@ -33,30 +25,45 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   onConfirm,
   variant = "default"
 }) => {
+  const handleConfirm = () => {
+    onConfirm();
+    onOpenChange(false);
+  };
+
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent 
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent 
         className={cn(
-          variant === "destructive" && "border-2 border-[#ff3850]" // Even more vibrant red
+          "sm:max-w-md",
+          variant === "destructive" && "border-2 border-[#ff3850]"
         )}
       >
-        <AlertDialogHeader>
-          <AlertDialogTitle>{title}</AlertDialogTitle>
-          <AlertDialogDescription>{description}</AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>{cancelLabel}</AlertDialogCancel>
-          <AlertDialogAction 
-            onClick={onConfirm}
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+        </DialogHeader>
+        
+        <div className="py-4">
+          <p className="text-sm text-muted-foreground">{description}</p>
+        </div>
+        
+        <DialogFooter className="flex justify-center sm:justify-center gap-2">
+          <Button 
+            variant="outline" 
+            onClick={() => onOpenChange(false)}
+          >
+            {cancelLabel}
+          </Button>
+          <Button 
+            onClick={handleConfirm}
             className={cn(
               variant === "destructive" && "bg-[#ff3850] hover:bg-[#ff3850]/90"
             )}
           >
             {confirmLabel}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 };
 
