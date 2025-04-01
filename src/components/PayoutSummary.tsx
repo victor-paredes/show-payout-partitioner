@@ -1,3 +1,4 @@
+
 import React, { useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/format";
@@ -306,7 +307,8 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
                 if (type === "$") {
                   valueDisplay = "($)";
                 } else if (type === "%") {
-                  valueDisplay = `(${recipient.value}%)`;
+                  // Remove the parentheses for percentage type, will show the blue percentage below
+                  valueDisplay = "";
                 } else {
                   valueDisplay = `(${recipient.value} ${recipient.value === 1 ? 'share' : 'shares'})`;
                 }
@@ -332,14 +334,14 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
                         }}
                       />
                       <span>{recipient.name}</span>
-                      <span className="text-xs text-gray-500 ml-2">
-                        {valueDisplay}
-                      </span>
-                      {type !== "%" && (
-                        <span className="text-xs text-blue-500 ml-1">
-                          {percentage}%
+                      {valueDisplay && (
+                        <span className="text-xs text-gray-500 ml-2">
+                          {valueDisplay}
                         </span>
                       )}
+                      <span className="text-xs text-blue-500 ml-1">
+                        {percentage}%
+                      </span>
                     </div>
                     <div className="font-medium">
                       {formatCurrency(recipient.payout)}
