@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { DragEndEvent } from "@dnd-kit/core";
@@ -231,9 +232,13 @@ export function useRecipients() {
       
       if (isTargetGroup) {
         console.log(`Moving recipient ${active.id} to group ${over.id}`);
+        
+        // Ensure active.id is treated as a string consistently
+        const activeId = active.id.toString();
+        
         safeSetRecipients(
           recipients.map(recipient => 
-            recipient.id === active.id 
+            recipient.id === activeId
               ? { ...recipient, groupId: over.id as string } 
               : recipient
           )
@@ -241,34 +246,42 @@ export function useRecipients() {
       } 
       else if (over.id === 'ungrouped') {
         console.log(`Moving recipient ${active.id} to ungrouped`);
+        
+        // Ensure active.id is treated as a string consistently
+        const activeId = active.id.toString();
+        
         safeSetRecipients(
           recipients.map(recipient => 
-            recipient.id === active.id 
+            recipient.id === activeId
               ? { ...recipient, groupId: undefined } 
               : recipient
           )
         );
       }
-      else if (typeof over.id === 'string' && typeof active.id === 'string') {
-        const overRecipient = recipients.find(r => r.id === over.id);
+      else if (typeof over.id === 'string' && typeof active.id !== 'undefined') {
+        // Convert active.id to string for consistent comparison
+        const activeId = active.id.toString();
+        const overId = over.id.toString();
+        
+        const overRecipient = recipients.find(r => r.id === overId);
         if (overRecipient) {
-          const activeRecipient = recipients.find(r => r.id === active.id);
+          const activeRecipient = recipients.find(r => r.id === activeId);
           
           if (activeRecipient && overRecipient) {
             if (activeRecipient.groupId === overRecipient.groupId) {
-              console.log(`Reordering recipient ${active.id} within same group`);
+              console.log(`Reordering recipient ${activeId} within same group`);
               setRecipients((items) => {
-                const oldIndex = items.findIndex(item => item.id === active.id);
-                const newIndex = items.findIndex(item => item.id === over.id);
+                const oldIndex = items.findIndex(item => item.id === activeId);
+                const newIndex = items.findIndex(item => item.id === overId);
                 
                 if (oldIndex === -1 || newIndex === -1) return items;
                 return arrayMove(items, oldIndex, newIndex);
               });
             } else {
-              console.log(`Moving recipient ${active.id} to ${overRecipient.groupId || 'ungrouped'}`);
+              console.log(`Moving recipient ${activeId} to ${overRecipient.groupId || 'ungrouped'}`);
               safeSetRecipients(
                 recipients.map(recipient => 
-                  recipient.id === active.id 
+                  recipient.id === activeId
                     ? { ...recipient, groupId: overRecipient.groupId } 
                     : recipient
                 )

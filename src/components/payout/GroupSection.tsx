@@ -103,6 +103,7 @@ const GroupSection: React.FC<GroupSectionProps> = ({
                 minHeight: calculateMinHeight(),
                 transition: "min-height 0.15s ease-in-out, background-color 0.15s ease-in-out"
               }}
+              data-droppable-id={group.id} // Add a data attribute for easier debugging
             >
               <SortableContext 
                 items={recipients.map(r => r.id)} 

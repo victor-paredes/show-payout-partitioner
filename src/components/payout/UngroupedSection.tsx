@@ -67,6 +67,7 @@ const UngroupedSection: React.FC<UngroupedSectionProps> = ({
                 minHeight: calculateMinHeight(),
                 transition: "min-height 0.15s ease-in-out, background-color 0.15s ease-in-out"
               }}
+              data-droppable-id="ungrouped" // Add a data attribute for easier debugging
             >
               <SortableContext 
                 items={recipients.map(r => r.id)} 
