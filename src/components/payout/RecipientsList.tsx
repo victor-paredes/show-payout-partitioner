@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, X, Trash2 } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import RecipientRow from "../RecipientRow";
 import { Recipient } from "@/hooks/useRecipients";
 import {
@@ -60,7 +59,6 @@ const RecipientsList = ({
   onRecipientHover,
   clearRecipients
 }: RecipientsListProps) => {
-  // Set up DnD sensors
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -93,6 +91,16 @@ const RecipientsList = ({
             )}
           </div>
           <div className="flex items-center space-x-2">
+            {recipients.length > 1 && (
+              <Button 
+                onClick={clearRecipients} 
+                variant="outline" 
+                size="sm" 
+                className="flex items-center mr-2"
+              >
+                <Trash2 className="mr-1 h-4 w-4" /> Clear
+              </Button>
+            )}
             <Select value={recipientCount} onValueChange={setRecipientCount}>
               <SelectTrigger className="w-16">
                 <SelectValue placeholder="1" />
@@ -108,16 +116,6 @@ const RecipientsList = ({
             <Button onClick={addRecipients} variant="outline" size="sm" className="flex items-center">
               <Plus className="mr-1 h-4 w-4" /> Add Recipient{parseInt(recipientCount) > 1 ? 's' : ''}
             </Button>
-            {recipients.length > 1 && (
-              <Button 
-                onClick={clearRecipients} 
-                variant="outline" 
-                size="sm" 
-                className="flex items-center"
-              >
-                <Trash2 className="mr-1 h-4 w-4" /> Clear
-              </Button>
-            )}
           </div>
         </CardTitle>
       </CardHeader>
