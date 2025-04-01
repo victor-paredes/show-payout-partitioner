@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { DragEndEvent } from "@dnd-kit/core";
@@ -119,12 +120,14 @@ export function useRecipients() {
       return;
     }
     
+    // Reset the first recipient to default values
     const firstRecipient = {
       ...recipients[0],
       name: "Recipient 1",
       isFixedAmount: false,
       value: 1,
-      payout: 0
+      payout: 0,
+      type: "shares" // Explicitly set type to "shares"
     };
     
     setRecipients([firstRecipient]);
