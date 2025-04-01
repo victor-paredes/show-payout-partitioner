@@ -1,14 +1,16 @@
+
 import React, { useState, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Trash2, GripVertical } from "lucide-react";
+import { Trash2, GripVertical, ChevronDown } from "lucide-react";
 import { formatCurrency } from "@/lib/format";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import {
   Select,
   SelectContent,
+  SelectContentNonPortal,
   SelectItem,
   SelectTrigger,
   SelectValue,
@@ -166,11 +168,12 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
           <SelectTrigger className="w-28">
             <SelectValue placeholder="Type" />
           </SelectTrigger>
-          <SelectContent>
+          {/* Use the non-portal version instead of SelectContent */}
+          <SelectContentNonPortal>
             <SelectItem value="shares">Shares</SelectItem>
             <SelectItem value="$">$</SelectItem>
             <SelectItem value="%">%</SelectItem>
-          </SelectContent>
+          </SelectContentNonPortal>
         </Select>
       </div>
 

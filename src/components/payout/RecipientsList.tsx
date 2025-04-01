@@ -22,6 +22,7 @@ import {
 import {
   Select,
   SelectContent,
+  SelectContentNonPortal,
   SelectItem,
   SelectTrigger,
   SelectValue,
@@ -109,13 +110,13 @@ const RecipientsList = ({
               <SelectTrigger className="w-16">
                 <SelectValue placeholder="1" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContentNonPortal>
                 {Array.from({ length: 10 }, (_, i) => (
                   <SelectItem key={i + 1} value={(i + 1).toString()}>
                     {i + 1}
                   </SelectItem>
                 ))}
-              </SelectContent>
+              </SelectContentNonPortal>
             </Select>
             <Button onClick={addRecipients} variant="outline" size="sm" className="flex items-center">
               <Plus className="mr-1 h-4 w-4" /> Add Recipient{parseInt(recipientCount) > 1 ? 's' : ''}
