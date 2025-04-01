@@ -64,7 +64,8 @@ const RecipientsList: React.FC<RecipientsListProps> = ({
   moveRecipientToGroup,
   handleDragStart,
   handleDragEnd,
-  groupedRecipients
+  groupedRecipients,
+  onRecipientHover
 }) => {
   const [confirmClearOpen, setConfirmClearOpen] = useState(false);
   const [columnWiseTabbing, setColumnWiseTabbing] = useState(false);
@@ -268,6 +269,7 @@ const RecipientsList: React.FC<RecipientsListProps> = ({
                   onDragOver={handleDragOver}
                   onDrop={handleDrop}
                   draggedRecipientId={draggedRecipientId}
+                  onHover={onRecipientHover}
                 />
               ))}
               
@@ -284,6 +286,7 @@ const RecipientsList: React.FC<RecipientsListProps> = ({
                 onDragOver={handleDragOver}
                 onDrop={handleDrop}
                 draggedRecipientId={draggedRecipientId}
+                onHover={onRecipientHover}
               />
             </>
           )}

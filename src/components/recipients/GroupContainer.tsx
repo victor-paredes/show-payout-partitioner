@@ -20,6 +20,7 @@ interface GroupContainerProps {
   onDragOver: (e: React.DragEvent) => void;
   onDrop: (e: React.DragEvent) => void;
   draggedRecipientId: string | null;
+  onHover?: (id: string | null) => void;
 }
 
 const GroupContainer: React.FC<GroupContainerProps> = ({
@@ -36,7 +37,8 @@ const GroupContainer: React.FC<GroupContainerProps> = ({
   onDragStart,
   onDragOver,
   onDrop,
-  draggedRecipientId
+  draggedRecipientId,
+  onHover
 }) => {
   const [isDragOver, setIsDragOver] = useState(false);
   
@@ -113,6 +115,7 @@ const GroupContainer: React.FC<GroupContainerProps> = ({
               isHighlighted={hoveredRecipientId === recipient.id}
               onDragStart={() => onDragStart(recipient.id, group.id)}
               isDragging={draggedRecipientId === recipient.id}
+              onHover={onHover}
             />
           ))
         ) : (
