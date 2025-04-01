@@ -3,10 +3,25 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calculator, Plus, Users } from "lucide-react";
+import { Calculator, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import RecipientRow from "./RecipientRow";
 import PayoutSummary from "./PayoutSummary";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy
+} from "@dnd-kit/sortable";
 
 interface Recipient {
   id: string;
@@ -14,20 +29,25 @@ interface Recipient {
   isFixedAmount: boolean;
   value: number;
   payout: number;
-  isGroup: boolean;
-  groupMembers?: string[];
-  groupMemberShares?: number[];
 }
 
 const PayoutCalculator = () => {
   const { toast } = useToast();
   const [totalPayout, setTotalPayout] = useState<number>(0);
   const [recipients, setRecipients] = useState<Recipient[]>([
-    { id: "1", name: "Recipient 1", isFixedAmount: false, value: 1, payout: 0, isGroup: false },
+    { id: "1", name: "Recipient 1", isFixedAmount: false, value: 1, payout: 0 },
   ]);
   const [remainingAmount, setRemainingAmount] = useState<number>(0);
   const [totalShares, setTotalShares] = useState<number>(0);
   const [valuePerShare, setValuePerShare] = useState<number>(0);
+
+  // Set up DnD sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   const addRecipient = () => {
     const currentRecipientCount = recipients.length;
@@ -43,30 +63,7 @@ const PayoutCalculator = () => {
         name: defaultName, 
         isFixedAmount: false, 
         value: 1, 
-        payout: 0,
-        isGroup: false
-      },
-    ]);
-  };
-
-  const addGroupRecipient = () => {
-    const currentRecipientCount = recipients.length;
-    const newId = (Math.max(0, ...recipients.map(r => parseInt(r.id))) + 1).toString();
-    
-    // Generate a more descriptive default name
-    const defaultName = `Group ${currentRecipientCount + 1}`;
-    
-    setRecipients([
-      ...recipients,
-      { 
-        id: newId, 
-        name: defaultName, 
-        isFixedAmount: false, 
-        value: 0, 
-        payout: 0,
-        isGroup: true,
-        groupMembers: ["Member 1"],
-        groupMemberShares: [1]
+        payout: 0
       },
     ]);
   };
@@ -91,96 +88,17 @@ const PayoutCalculator = () => {
     );
   };
 
-  const updateGroupMember = (recipientId: string, index: number, memberName: string) => {
-    setRecipients(
-      recipients.map(recipient => {
-        if (recipient.id === recipientId && recipient.isGroup && recipient.groupMembers) {
-          const updatedMembers = [...recipient.groupMembers];
-          updatedMembers[index] = memberName;
-          return { ...recipient, groupMembers: updatedMembers };
-        }
-        return recipient;
-      })
-    );
-  };
-
-  const updateGroupMemberShare = (recipientId: string, index: number, share: number) => {
-    setRecipients(
-      recipients.map(recipient => {
-        if (recipient.id === recipientId && recipient.isGroup && recipient.groupMemberShares) {
-          const updatedShares = [...(recipient.groupMemberShares || [])];
-          updatedShares[index] = share;
-          
-          // Calculate group total shares
-          const totalGroupShares = updatedShares.reduce((sum, share) => sum + share, 0);
-          
-          return { 
-            ...recipient, 
-            groupMemberShares: updatedShares,
-            value: totalGroupShares // Update the group's total value to be the sum of member shares
-          };
-        }
-        return recipient;
-      })
-    );
-  };
-
-  const addGroupMember = (recipientId: string) => {
-    setRecipients(
-      recipients.map(recipient => {
-        if (recipient.id === recipientId && recipient.isGroup && recipient.groupMembers) {
-          const memberCount = recipient.groupMembers.length;
-          const updatedMembers = [...recipient.groupMembers, `Member ${memberCount + 1}`];
-          const updatedShares = [...(recipient.groupMemberShares || []), 1];
-          
-          // Recalculate total group shares
-          const totalGroupShares = updatedShares.reduce((sum, share) => sum + share, 0);
-          
-          return { 
-            ...recipient, 
-            groupMembers: updatedMembers,
-            groupMemberShares: updatedShares,
-            value: totalGroupShares
-          };
-        }
-        return recipient;
-      })
-    );
-  };
-
-  const removeGroupMember = (recipientId: string, index: number) => {
-    setRecipients(
-      recipients.map(recipient => {
-        if (recipient.id === recipientId && recipient.isGroup && recipient.groupMembers) {
-          // Don't allow removing the last member
-          if (recipient.groupMembers.length <= 1) {
-            toast({
-              title: "Cannot remove",
-              description: "A group must have at least one member",
-              variant: "destructive",
-            });
-            return recipient;
-          }
-          
-          const updatedMembers = [...recipient.groupMembers];
-          updatedMembers.splice(index, 1);
-          
-          const updatedShares = [...(recipient.groupMemberShares || [])];
-          updatedShares.splice(index, 1);
-          
-          // Recalculate total group shares
-          const totalGroupShares = updatedShares.reduce((sum, share) => sum + share, 0);
-          
-          return { 
-            ...recipient, 
-            groupMembers: updatedMembers,
-            groupMemberShares: updatedShares,
-            value: totalGroupShares
-          };
-        }
-        return recipient;
-      })
-    );
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    
+    if (over && active.id !== over.id) {
+      setRecipients((items) => {
+        const oldIndex = items.findIndex(item => item.id === active.id);
+        const newIndex = items.findIndex(item => item.id === over.id);
+        
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
   };
 
   // Calculate distributions and payouts
@@ -259,9 +177,6 @@ const PayoutCalculator = () => {
           <CardTitle className="flex items-center justify-between">
             <span>Recipients</span>
             <div className="flex space-x-2">
-              <Button onClick={addGroupRecipient} variant="outline" size="sm" className="flex items-center">
-                <Users className="mr-1 h-4 w-4" /> Add Group
-              </Button>
               <Button onClick={addRecipient} variant="outline" size="sm" className="flex items-center">
                 <Plus className="mr-1 h-4 w-4" /> Add Recipient
               </Button>
@@ -270,19 +185,26 @@ const PayoutCalculator = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {recipients.map((recipient) => (
-              <RecipientRow
-                key={recipient.id}
-                recipient={recipient}
-                onUpdate={(updates) => updateRecipient(recipient.id, updates)}
-                onRemove={() => removeRecipient(recipient.id)}
-                valuePerShare={valuePerShare}
-                onAddGroupMember={() => addGroupMember(recipient.id)}
-                onRemoveGroupMember={(index) => removeGroupMember(recipient.id, index)}
-                onUpdateGroupMember={(index, name) => updateGroupMember(recipient.id, index, name)}
-                onUpdateGroupMemberShare={(index, share) => updateGroupMemberShare(recipient.id, index, share)}
-              />
-            ))}
+            <DndContext 
+              sensors={sensors} 
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext 
+                items={recipients.map(r => r.id)} 
+                strategy={verticalListSortingStrategy}
+              >
+                {recipients.map((recipient) => (
+                  <RecipientRow
+                    key={recipient.id}
+                    recipient={recipient}
+                    onUpdate={(updates) => updateRecipient(recipient.id, updates)}
+                    onRemove={() => removeRecipient(recipient.id)}
+                    valuePerShare={valuePerShare}
+                  />
+                ))}
+              </SortableContext>
+            </DndContext>
           </div>
         </CardContent>
       </Card>
