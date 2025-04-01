@@ -115,6 +115,7 @@ const RecipientsList = ({
   };
 
   const handleDragOver = (event: DragOverEvent) => {
+    // This function handles detecting when dragging over drop areas
     if (!event.over) {
       setActiveDroppableId(null);
       return;
@@ -158,6 +159,12 @@ const RecipientsList = ({
     
     if (event.over && event.over.id) {
       event.over.id = String(event.over.id);
+    }
+    
+    // Check if we have a valid drop target
+    if (event.over && activeDroppableId) {
+      // Set the over id to the droppable id to ensure items are moved correctly
+      event.over.id = activeDroppableId;
     }
     
     setActiveDragId(null);
