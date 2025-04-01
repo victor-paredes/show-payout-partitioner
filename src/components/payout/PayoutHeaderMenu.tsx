@@ -1,4 +1,3 @@
-
 import React, { useRef, useState } from "react";
 import { 
   HoverCard,
@@ -67,7 +66,6 @@ const PayoutHeaderMenu: React.FC<PayoutHeaderMenuProps> = ({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Add file size validation
     if (file.size > 2 * 1024 * 1024) { // 2MB limit
       toast({
         title: "File too large",
@@ -78,7 +76,6 @@ const PayoutHeaderMenu: React.FC<PayoutHeaderMenuProps> = ({
       return;
     }
 
-    // Add file type validation
     if (file.type && file.type !== 'text/csv' && !file.name.endsWith('.csv')) {
       toast({
         title: "Invalid file type",
@@ -109,7 +106,6 @@ const PayoutHeaderMenu: React.FC<PayoutHeaderMenuProps> = ({
           return;
         }
 
-        // Transform the imported data to ensure it matches the Recipient interface
         const processedData: Recipient[] = importedData.map(item => {
           const type = item.type as RecipientType || "shares";
           
@@ -176,13 +172,13 @@ const PayoutHeaderMenu: React.FC<PayoutHeaderMenuProps> = ({
       <div className="flex justify-end gap-2 mb-6">
         <HoverCard openDelay={0} closeDelay={100}>
           <HoverCardTrigger asChild>
-            <Button variant="outline" size="sm" className="font-medium flex items-center gap-2">
+            <Button variant="outline" size="sm" className="font-medium flex items-center gap-2 w-[128px]">
               <Save className="h-4 w-4" />
               Export
             </Button>
           </HoverCardTrigger>
           <HoverCardContent className="w-32 p-0" align="end">
-            <div className="flex flex-col items-center">
+            <div className="flex flex-col items-center w-[128px]">
               <Button 
                 variant="ghost" 
                 size="sm" 
@@ -208,7 +204,7 @@ const PayoutHeaderMenu: React.FC<PayoutHeaderMenuProps> = ({
             <Button 
               variant="outline" 
               size="sm" 
-              className="font-medium flex items-center gap-2"
+              className="font-medium flex items-center gap-2 w-[128px]"
               disabled={isImporting}
             >
               {isImporting ? (
@@ -222,7 +218,7 @@ const PayoutHeaderMenu: React.FC<PayoutHeaderMenuProps> = ({
             </Button>
           </HoverCardTrigger>
           <HoverCardContent className="w-32 p-0" align="end">
-            <div className="flex flex-col items-center">
+            <div className="flex flex-col items-center w-[128px]">
               <Button 
                 variant="ghost" 
                 size="sm" 
@@ -269,4 +265,3 @@ const PayoutHeaderMenu: React.FC<PayoutHeaderMenuProps> = ({
 };
 
 export default PayoutHeaderMenu;
-
