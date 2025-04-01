@@ -165,6 +165,9 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
 
   const selectedClass = isSelected ? "bg-blue-50 border-blue-300" : "";
 
+  // Disable inputs when dragging
+  const disabledClass = isDragging ? "pointer-events-none" : "";
+
   return (
     <>
       <div 
@@ -176,6 +179,8 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
             : "border-gray-200 hover:border-black"
         } ${
           isHighlighted ? "border-black" : ""
+        } ${
+          isDragging ? "cursor-grabbing" : ""
         }`}
         onClick={handleRowClick}
         onMouseEnter={handleMouseEnter}
@@ -184,7 +189,7 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
         <Button
           variant="ghost"
           size="icon"
-          className="cursor-grab text-gray-400 hover:text-gray-600"
+          className={`${isDragging ? "cursor-grabbing" : "cursor-grab"} text-gray-400 hover:text-gray-600`}
           {...attributes}
           {...listeners}
           onClick={(e) => e.stopPropagation()}
@@ -193,13 +198,14 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
         </Button>
         
         <div 
-          className="flex items-center space-x-2"
+          className={`flex items-center space-x-2 ${disabledClass}`}
           onClick={(e) => e.stopPropagation()}
         >
           <Button
             variant="ghost"
             size="icon"
             className="p-0 h-auto"
+            disabled={isDragging}
             onClick={(e) => {
               e.stopPropagation();
               setColorPickerOpen(true);
@@ -225,6 +231,7 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
               onChange={(e) => onUpdate({ name: e.target.value })}
               className={`w-full text-base font-medium`}
               placeholder="Enter Name"
+              disabled={isDragging}
               onClick={(e) => {
                 // Select all text in the input when clicked
                 const target = e.target as HTMLInputElement;
@@ -237,7 +244,7 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
         </div>
 
         <div 
-          className="flex items-center space-x-2" 
+          className={`flex items-center space-x-2 ${disabledClass}`} 
           onClick={(e) => e.stopPropagation()}
         >
           <Input
@@ -253,6 +260,7 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
               currentType === "$" ? "Amount" : 
               "Percent"
             }
+            disabled={isDragging}
             onClick={(e) => {
               // Select all text in the input when clicked
               const target = e.target as HTMLInputElement;
@@ -264,6 +272,7 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
           <Select 
             value={currentType} 
             onValueChange={handleTypeChange}
+            disabled={isDragging}
           >
             <SelectTrigger tabIndex={typeTabIndex} className="w-28">
               <SelectValue placeholder="Type" />
@@ -283,7 +292,8 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
             e.stopPropagation();
             onRemove();
           }}
-          className="text-gray-400 hover:text-red-500"
+          disabled={isDragging}
+          className={`text-gray-400 hover:text-red-500 ${disabledClass}`}
         >
           <Trash2 className="h-4 w-4" />
         </Button>

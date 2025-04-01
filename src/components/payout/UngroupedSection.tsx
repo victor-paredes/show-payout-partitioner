@@ -37,8 +37,10 @@ const UngroupedSection: React.FC<UngroupedSectionProps> = ({
     id: 'ungrouped'
   });
 
-  // Check if we should show tooltip - now it's simply when dragging from a group to ungrouped
-  const shouldShowTooltip = dragSourceId !== 'ungrouped' && dragSourceId !== null && activeDroppableId === 'ungrouped';
+  // Show tooltip when dragging from a group to ungrouped
+  const shouldShowTooltip = dragSourceId !== null && 
+                            dragSourceId !== 'ungrouped' && 
+                            activeDroppableId === 'ungrouped';
   
   // Calculate an appropriate min-height based on the number of recipients
   const calculateMinHeight = () => {
@@ -94,12 +96,11 @@ const UngroupedSection: React.FC<UngroupedSectionProps> = ({
               side="top" 
               className="bg-amber-50 border-amber-200 text-amber-600"
               sideOffset={5}
-              // Add this to make the tooltip follow cursor position
               avoidCollisions={false}
               sticky="always"
               hideWhenDetached={false}
             >
-              <span className="text-sm font-medium">- Remove from Group</span>
+              <span className="text-sm font-medium">Remove from Group</span>
             </TooltipContent>
           )}
         </Tooltip>
