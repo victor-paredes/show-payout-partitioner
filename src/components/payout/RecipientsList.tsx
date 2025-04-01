@@ -1,10 +1,12 @@
+
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Trash2, X, ArrowRight, ArrowDown } from "lucide-react";
+import { Plus, Trash2, X, ArrowRight, ArrowDown, FolderPlus, Layers } from "lucide-react";
 import RecipientRow from "../RecipientRow";
-import { Recipient } from "@/hooks/useRecipients";
+import { Recipient, Group } from "@/hooks/useRecipients";
 import ConfirmationModal from "@/components/ConfirmationModal";
+import GroupsManager from "./GroupsManager";
 import {
   DndContext,
   closestCenter,
@@ -30,9 +32,10 @@ import {
 
 interface RecipientsListProps {
   recipients: Recipient[];
+  groups: Group[];
   recipientCount: string;
   setRecipientCount: (count: string) => void;
-  addRecipients: () => void;
+  addRecipients: (groupId?: string) => void;
   updateRecipient: (id: string, updates: Partial<Recipient>) => void;
   removeRecipient: (id: string) => void;
   selectedRecipients: Set<string>;
@@ -43,10 +46,22 @@ interface RecipientsListProps {
   hoveredRecipientId?: string;
   onRecipientHover?: (id: string | null) => void;
   clearRecipients?: () => void;
+  addGroup: () => void;
+  removeGroup: (id: string) => void;
+  updateGroup: (id: string, updates: Partial<Group>) => void;
+  toggleGroupExpanded: (id: string) => void;
+  groupedRecipients: {
+    ungroupedRecipients: Recipient[];
+    recipientsByGroup: {
+      group: Group;
+      recipients: Recipient[];
+    }[];
+  };
 }
 
 const RecipientsList = ({
   recipients,
+  groups,
   recipientCount,
   setRecipientCount,
   addRecipients,
@@ -59,10 +74,16 @@ const RecipientsList = ({
   valuePerShare,
   hoveredRecipientId,
   onRecipientHover,
-  clearRecipients
+  clearRecipients,
+  addGroup,
+  removeGroup,
+  updateGroup,
+  toggleGroupExpanded,
+  groupedRecipients
 }: RecipientsListProps) => {
   const [confirmClearOpen, setConfirmClearOpen] = useState(false);
   const [columnWiseTabbing, setColumnWiseTabbing] = useState(false);
+  const [showGroups, setShowGroups] = useState(true);
   
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -116,6 +137,17 @@ const RecipientsList = ({
           <div className="flex items-center space-x-2">
             {recipients.length > 0 && (
               <Button
+                onClick={() => setShowGroups(!showGroups)}
+                variant="outline"
+                size="sm"
+                className="flex items-center"
+                title={showGroups ? "Hide groups" : "Show groups"}
+              >
+                <Layers className="h-4 w-4" />
+              </Button>
+            )}
+            {recipients.length > 0 && (
+              <Button
                 onClick={toggleTabbingDirection}
                 variant="outline"
                 size="sm"
@@ -136,6 +168,7 @@ const RecipientsList = ({
                 <Trash2 className="mr-1 h-4 w-4" /> Clear
               </Button>
             )}
+            
             <Select value={recipientCount} onValueChange={setRecipientCount}>
               <SelectTrigger className="w-16">
                 <SelectValue placeholder="1" />
@@ -148,48 +181,117 @@ const RecipientsList = ({
                 ))}
               </SelectContentNonPortal>
             </Select>
-            <Button onClick={addRecipients} variant="outline" size="sm" className="flex items-center">
+            
+            <Button 
+              onClick={() => addRecipients()} 
+              variant="outline" 
+              size="sm" 
+              className="flex items-center"
+            >
               <Plus className="mr-1 h-4 w-4" /> Add Recipient{parseInt(recipientCount) > 1 ? 's' : ''}
             </Button>
           </div>
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-0">
-          {recipients.length === 0 ? (
-            <div className="text-center py-6 text-gray-500 italic">
-              No recipients added. Click "Add Recipient" to get started.
+        <DndContext 
+          sensors={sensors} 
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {showGroups && (
+              <div className="md:col-span-1">
+                <GroupsManager 
+                  groups={groups}
+                  onAddGroup={addGroup}
+                  onRemoveGroup={removeGroup}
+                  onUpdateGroup={updateGroup}
+                  onToggleExpanded={toggleGroupExpanded}
+                  onAddRecipients={(groupId) => addRecipients(groupId)}
+                />
+              </div>
+            )}
+            
+            <div className={`${showGroups ? 'md:col-span-3' : 'md:col-span-4'} space-y-2`}>
+              {recipients.length === 0 ? (
+                <div className="text-center py-6 text-gray-500 italic">
+                  No recipients added. Click "Add Recipient" to get started.
+                </div>
+              ) : (
+                <>
+                  {/* Ungrouped recipients */}
+                  <div className="mb-6">
+                    <h3 className="text-sm font-medium mb-2 text-gray-600">Ungrouped</h3>
+                    <div className="space-y-2">
+                      <SortableContext 
+                        items={groupedRecipients.ungroupedRecipients.map(r => r.id)} 
+                        strategy={verticalListSortingStrategy}
+                      >
+                        {groupedRecipients.ungroupedRecipients.map((recipient, rowIndex) => (
+                          <RecipientRow
+                            key={recipient.id}
+                            recipient={recipient}
+                            onUpdate={(updates) => updateRecipient(recipient.id, updates)}
+                            onRemove={() => removeRecipient(recipient.id)}
+                            valuePerShare={valuePerShare}
+                            isSelected={selectedRecipients.has(recipient.id)}
+                            onToggleSelect={() => toggleSelectRecipient(recipient.id)}
+                            isHighlighted={hoveredRecipientId === recipient.id}
+                            onRecipientHover={onRecipientHover}
+                            columnWiseTabbing={columnWiseTabbing}
+                            rowIndex={rowIndex}
+                            totalRows={groupedRecipients.ungroupedRecipients.length}
+                          />
+                        ))}
+                      </SortableContext>
+                    </div>
+                  </div>
+                  
+                  {/* Grouped recipients */}
+                  {groupedRecipients.recipientsByGroup.map(({ group, recipients }) => (
+                    <div key={group.id} className="mb-6">
+                      <h3 className="text-sm font-medium mb-2 text-gray-600 flex items-center">
+                        <div 
+                          className="w-3 h-3 rounded-sm mr-2" 
+                          style={{ backgroundColor: group.color }}
+                        />
+                        {group.name}
+                        <span className="text-xs ml-2 text-gray-500">
+                          ({recipients.length} recipient{recipients.length !== 1 ? 's' : ''})
+                        </span>
+                      </h3>
+                      
+                      <div className="space-y-2">
+                        <SortableContext 
+                          items={recipients.map(r => r.id)} 
+                          strategy={verticalListSortingStrategy}
+                        >
+                          {recipients.map((recipient, rowIndex) => (
+                            <RecipientRow
+                              key={recipient.id}
+                              recipient={recipient}
+                              onUpdate={(updates) => updateRecipient(recipient.id, updates)}
+                              onRemove={() => removeRecipient(recipient.id)}
+                              valuePerShare={valuePerShare}
+                              isSelected={selectedRecipients.has(recipient.id)}
+                              onToggleSelect={() => toggleSelectRecipient(recipient.id)}
+                              isHighlighted={hoveredRecipientId === recipient.id}
+                              onRecipientHover={onRecipientHover}
+                              columnWiseTabbing={columnWiseTabbing}
+                              rowIndex={rowIndex}
+                              totalRows={recipients.length}
+                            />
+                          ))}
+                        </SortableContext>
+                      </div>
+                    </div>
+                  ))}
+                </>
+              )}
             </div>
-          ) : (
-            <DndContext 
-              sensors={sensors} 
-              collisionDetection={closestCenter}
-              onDragEnd={handleDragEnd}
-            >
-              <SortableContext 
-                items={recipients.map(r => r.id)} 
-                strategy={verticalListSortingStrategy}
-              >
-                {recipients.map((recipient, rowIndex) => (
-                  <RecipientRow
-                    key={recipient.id}
-                    recipient={recipient}
-                    onUpdate={(updates) => updateRecipient(recipient.id, updates)}
-                    onRemove={() => removeRecipient(recipient.id)}
-                    valuePerShare={valuePerShare}
-                    isSelected={selectedRecipients.has(recipient.id)}
-                    onToggleSelect={() => toggleSelectRecipient(recipient.id)}
-                    isHighlighted={hoveredRecipientId === recipient.id}
-                    onRecipientHover={onRecipientHover}
-                    columnWiseTabbing={columnWiseTabbing}
-                    rowIndex={rowIndex}
-                    totalRows={recipients.length}
-                  />
-                ))}
-              </SortableContext>
-            </DndContext>
-          )}
-        </div>
+          </div>
+        </DndContext>
       </CardContent>
       
       <ConfirmationModal

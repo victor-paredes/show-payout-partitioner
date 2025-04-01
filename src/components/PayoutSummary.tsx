@@ -3,9 +3,10 @@ import React, { useRef, useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/format";
 import { PieChart, Pie, Cell } from "recharts";
-import { ChartPie, X } from "lucide-react";
+import { ChartPie, X, ChevronRight, ChevronDown } from "lucide-react";
 import { RecipientType } from "@/components/RecipientRow";
 import { getRecipientColor, SURPLUS_COLOR, OVERDRAW_COLOR } from "@/lib/colorUtils";
+import { Group } from "@/hooks/useRecipients";
 
 interface Recipient {
   id: string;
@@ -15,6 +16,19 @@ interface Recipient {
   payout: number;
   type?: RecipientType;
   color?: string;
+  groupId?: string;
+}
+
+interface GroupTotal {
+  group: Group;
+  dollarTotal: number;
+  percentTotal: number;
+  sharesTotal: number;
+  totalPayout: number;
+  dollarCount: number;
+  percentCount: number;
+  sharesCount: number;
+  recipientCount: number;
 }
 
 interface PayoutSummaryProps {
@@ -23,6 +37,7 @@ interface PayoutSummaryProps {
   remainingAmount: number;
   hoveredRecipientId?: string;
   onRecipientHover?: (id: string | null) => void;
+  groupTotals: GroupTotal[];
 }
 
 const PayoutSummary: React.FC<PayoutSummaryProps> = ({
@@ -30,10 +45,12 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
   recipients,
   remainingAmount,
   hoveredRecipientId,
-  onRecipientHover
+  onRecipientHover,
+  groupTotals
 }) => {
   const summaryRef = useRef<HTMLDivElement>(null);
   const [isCalculationStable, setIsCalculationStable] = useState<boolean>(false);
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   
   useEffect(() => {
     setIsCalculationStable(false);
@@ -56,6 +73,16 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
   
   const surplus = hasSurplus ? (recipients.length === 0 ? totalPayout : Math.abs(difference)) : 0;
   const overdraw = hasOverdraw ? difference : 0;
+
+  const toggleGroupExpanded = (groupId: string) => {
+    const newExpandedGroups = new Set(expandedGroups);
+    if (newExpandedGroups.has(groupId)) {
+      newExpandedGroups.delete(groupId);
+    } else {
+      newExpandedGroups.add(groupId);
+    }
+    setExpandedGroups(newExpandedGroups);
+  };
   
   const sortedRecipients = [...recipients].sort((a, b) => {
     const typeOrder = {
@@ -156,6 +183,16 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
 
   const emptyPieData = [{ name: "empty", value: 1 }];
 
+  // Group recipient ids by their groupId
+  const recipientsByGroup = recipients.reduce((groups, recipient) => {
+    const groupId = recipient.groupId || 'ungrouped';
+    if (!groups[groupId]) {
+      groups[groupId] = [];
+    }
+    groups[groupId].push(recipient.id);
+    return groups;
+  }, {} as Record<string, string[]>);
+
   return (
     <Card>
       <CardHeader className="pb-2">
@@ -255,6 +292,72 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
                 ({((overdraw / totalPayout) * 100).toFixed(1)}%)
               </span>
               <span className="ml-auto">{formatCurrency(overdraw)}</span>
+            </div>
+          )}
+          
+          {/* Group totals section */}
+          {groupTotals.length > 0 && (
+            <div className="border-t pt-4 mt-4">
+              <h3 className="font-semibold mb-3">Group Totals</h3>
+              <div className="space-y-1">
+                {groupTotals.map((groupTotal) => {
+                  const isExpanded = expandedGroups.has(groupTotal.group.id);
+                  const percentage = totalPayout > 0 
+                    ? ((groupTotal.totalPayout / totalPayout) * 100).toFixed(1) 
+                    : "0";
+                    
+                  return (
+                    <div key={groupTotal.group.id} className="space-y-1">
+                      <div 
+                        className="flex justify-between p-1 rounded cursor-pointer hover:bg-gray-50"
+                        onClick={() => toggleGroupExpanded(groupTotal.group.id)}
+                      >
+                        <div className="flex items-center">
+                          {isExpanded ? (
+                            <ChevronDown className="h-3 w-3 mr-1 text-gray-500" />
+                          ) : (
+                            <ChevronRight className="h-3 w-3 mr-1 text-gray-500" />
+                          )}
+                          <div 
+                            className="w-3 h-3 rounded-sm mr-2"
+                            style={{ backgroundColor: groupTotal.group.color }}
+                          />
+                          <span>{groupTotal.group.name}</span>
+                          <span className="text-xs text-blue-500 ml-2">
+                            {percentage}%
+                          </span>
+                        </div>
+                        <div className="font-medium">
+                          {formatCurrency(groupTotal.totalPayout)}
+                        </div>
+                      </div>
+                      
+                      {isExpanded && (
+                        <div className="pl-6 text-xs space-y-1">
+                          {groupTotal.dollarCount > 0 && (
+                            <div className="flex justify-between text-gray-600">
+                              <span>Fixed amounts ({groupTotal.dollarCount})</span>
+                              <span>{formatCurrency(groupTotal.dollarTotal)}</span>
+                            </div>
+                          )}
+                          {groupTotal.percentCount > 0 && (
+                            <div className="flex justify-between text-gray-600">
+                              <span>Percentage based ({groupTotal.percentCount})</span>
+                              <span>{formatCurrency(groupTotal.percentTotal)}</span>
+                            </div>
+                          )}
+                          {groupTotal.sharesCount > 0 && (
+                            <div className="flex justify-between text-gray-600">
+                              <span>Shares based ({groupTotal.sharesCount})</span>
+                              <span>{formatCurrency(groupTotal.sharesTotal)}</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
           

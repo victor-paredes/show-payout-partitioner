@@ -13,6 +13,14 @@ export interface Recipient {
   payout: number;
   type?: RecipientType;
   color?: string;
+  groupId?: string;
+}
+
+export interface Group {
+  id: string;
+  name: string;
+  color: string;
+  expanded: boolean;
 }
 
 const validateRecipient = (recipient: any): boolean => {
@@ -34,9 +42,11 @@ const validateRecipient = (recipient: any): boolean => {
 export function useRecipients() {
   const { toast } = useToast();
   const [recipients, setRecipients] = useState<Recipient[]>([]);
+  const [groups, setGroups] = useState<Group[]>([]);
   const [selectedRecipients, setSelectedRecipients] = useState<Set<string>>(new Set());
   const [recipientCount, setRecipientCount] = useState<string>("1");
   const [lastUsedId, setLastUsedId] = useState<number>(0);
+  const [lastUsedGroupId, setLastUsedGroupId] = useState<number>(0);
 
   const safeSetRecipients = (newRecipients: Recipient[]) => {
     const validRecipients = newRecipients.filter(recipient => {
@@ -61,7 +71,7 @@ export function useRecipients() {
     }
   };
 
-  const addRecipients = () => {
+  const addRecipients = (groupId?: string) => {
     const currentRecipientCount = recipients.length;
     const count = parseInt(recipientCount);
     
@@ -95,7 +105,8 @@ export function useRecipients() {
         isFixedAmount: false, 
         value: 1, 
         payout: 0,
-        type: "shares" as RecipientType
+        type: "shares" as RecipientType,
+        groupId
       };
     });
     
@@ -106,6 +117,54 @@ export function useRecipients() {
     
     setLastUsedId(nextId + safeCount - 1);
     setRecipientCount("1");
+  };
+
+  const addGroup = () => {
+    const nextGroupId = (lastUsedGroupId + 1).toString();
+    
+    const randomColor = COLORS[Math.floor(Math.random() * COLORS.length)];
+    
+    const newGroup = {
+      id: nextGroupId,
+      name: `Group ${groups.length + 1}`,
+      color: randomColor,
+      expanded: true
+    };
+    
+    setGroups([...groups, newGroup]);
+    setLastUsedGroupId(lastUsedGroupId + 1);
+    
+    return newGroup;
+  };
+
+  const removeGroup = (groupId: string) => {
+    if (!groupId) return;
+    
+    setGroups(groups.filter(group => group.id !== groupId));
+    
+    safeSetRecipients(
+      recipients.filter(recipient => recipient.groupId !== groupId)
+    );
+  };
+  
+  const updateGroup = (groupId: string, updates: Partial<Group>) => {
+    if (!groupId) return;
+    
+    setGroups(
+      groups.map(group => 
+        group.id === groupId ? { ...group, ...updates } : group
+      )
+    );
+  };
+
+  const toggleGroupExpanded = (groupId: string) => {
+    if (!groupId) return;
+    
+    setGroups(
+      groups.map(group => 
+        group.id === groupId ? { ...group, expanded: !group.expanded } : group
+      )
+    );
   };
 
   const removeRecipient = (id: string) => {
@@ -159,27 +218,108 @@ export function useRecipients() {
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     
-    if (over && active.id !== over.id) {
-      setRecipients((items) => {
-        const oldIndex = items.findIndex(item => item.id === active.id);
-        const newIndex = items.findIndex(item => item.id === over.id);
+    if (!over) return;
+    
+    if (active.id !== over.id) {
+      if (typeof over.id === 'string' && over.id.startsWith('group-')) {
+        const groupId = over.id.replace('group-', '');
         
-        if (oldIndex === -1 || newIndex === -1) return items;
-        return arrayMove(items, oldIndex, newIndex);
-      });
+        safeSetRecipients(
+          recipients.map(recipient => 
+            recipient.id === active.id 
+              ? { ...recipient, groupId: groupId } 
+              : recipient
+          )
+        );
+      } 
+      else if (over.id === 'ungrouped') {
+        safeSetRecipients(
+          recipients.map(recipient => 
+            recipient.id === active.id 
+              ? { ...recipient, groupId: undefined } 
+              : recipient
+          )
+        );
+      }
+      else {
+        setRecipients((items) => {
+          const oldIndex = items.findIndex(item => item.id === active.id);
+          const newIndex = items.findIndex(item => item.id === over.id);
+          
+          if (oldIndex === -1 || newIndex === -1) return items;
+          return arrayMove(items, oldIndex, newIndex);
+        });
+      }
     }
   };
 
   const clearRecipients = () => {
     setRecipients([]);
+    setGroups([]);
     setSelectedRecipients(new Set());
     setRecipientCount("1");
     setLastUsedId(0);
+    setLastUsedGroupId(0);
+  };
+
+  const getGroupedRecipients = () => {
+    const ungroupedRecipients = recipients.filter(r => !r.groupId);
+    
+    const recipientsByGroup = groups.map(group => {
+      const groupRecipients = recipients.filter(r => r.groupId === group.id);
+      return {
+        group,
+        recipients: groupRecipients
+      };
+    });
+    
+    return {
+      ungroupedRecipients,
+      recipientsByGroup
+    };
+  };
+
+  const getGroupTotals = () => {
+    return groups.map(group => {
+      const groupRecipients = recipients.filter(r => r.groupId === group.id);
+      
+      const dollarTotal = groupRecipients
+        .filter(r => r.type === "$")
+        .reduce((sum, r) => sum + r.payout, 0);
+        
+      const percentTotal = groupRecipients
+        .filter(r => r.type === "%")
+        .reduce((sum, r) => sum + r.payout, 0);
+        
+      const sharesTotal = groupRecipients
+        .filter(r => r.type === "shares")
+        .reduce((sum, r) => sum + r.payout, 0);
+        
+      const totalPayout = dollarTotal + percentTotal + sharesTotal;
+      
+      const dollarCount = groupRecipients.filter(r => r.type === "$").length;
+      const percentCount = groupRecipients.filter(r => r.type === "%").length;
+      const sharesCount = groupRecipients.filter(r => r.type === "shares").length;
+      
+      return {
+        group,
+        dollarTotal,
+        percentTotal,
+        sharesTotal,
+        totalPayout,
+        dollarCount,
+        percentCount,
+        sharesCount,
+        recipientCount: groupRecipients.length
+      };
+    });
   };
 
   return {
     recipients,
     setRecipients: safeSetRecipients,
+    groups,
+    setGroups,
     selectedRecipients,
     setSelectedRecipients,
     recipientCount,
@@ -191,5 +331,11 @@ export function useRecipients() {
     handleDragEnd,
     clearRecipients,
     setLastUsedId,
+    addGroup,
+    removeGroup,
+    updateGroup,
+    toggleGroupExpanded,
+    getGroupedRecipients,
+    getGroupTotals
   };
 }

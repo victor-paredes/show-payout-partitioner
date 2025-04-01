@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from "react";
 import TotalPayoutInput from "./payout/TotalPayoutInput";
 import RecipientsList from "./payout/RecipientsList";
@@ -13,6 +14,8 @@ const PayoutCalculator = () => {
   const {
     recipients,
     setRecipients,
+    groups,
+    setGroups,
     selectedRecipients,
     setSelectedRecipients,
     recipientCount,
@@ -23,7 +26,13 @@ const PayoutCalculator = () => {
     updateRecipient,
     handleDragEnd,
     clearRecipients,
-    setLastUsedId
+    setLastUsedId,
+    addGroup,
+    removeGroup,
+    updateGroup,
+    toggleGroupExpanded,
+    getGroupedRecipients,
+    getGroupTotals
   } = useRecipients();
 
   const {
@@ -33,6 +42,9 @@ const PayoutCalculator = () => {
     totalShares,
     valuePerShare
   } = usePayoutCalculation(recipients);
+  
+  const groupedRecipients = getGroupedRecipients();
+  const groupTotals = getGroupTotals();
 
   useEffect(() => {
     const importedTotalPayout = parseFloat(
@@ -164,6 +176,7 @@ const PayoutCalculator = () => {
 
           <RecipientsList
             recipients={recipients}
+            groups={groups}
             recipientCount={recipientCount}
             setRecipientCount={setRecipientCount}
             addRecipients={addRecipients}
@@ -177,6 +190,11 @@ const PayoutCalculator = () => {
             hoveredRecipientId={hoveredRecipientId || undefined}
             onRecipientHover={handleRecipientHover}
             clearRecipients={clearRecipients}
+            addGroup={addGroup}
+            removeGroup={removeGroup}
+            updateGroup={updateGroup}
+            toggleGroupExpanded={toggleGroupExpanded}
+            groupedRecipients={groupedRecipients}
           />
         </div>
 
@@ -187,6 +205,7 @@ const PayoutCalculator = () => {
             remainingAmount={remainingAmount}
             hoveredRecipientId={hoveredRecipientId || undefined}
             onRecipientHover={handleRecipientHover}
+            groupTotals={groupTotals}
           />
         </div>
       </div>
