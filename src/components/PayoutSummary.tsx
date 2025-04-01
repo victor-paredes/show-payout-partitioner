@@ -2,8 +2,7 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/format";
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
-import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
+import { PieChart, Pie, Cell, Legend, Tooltip } from "recharts";
 
 interface Recipient {
   id: string;
@@ -55,7 +54,6 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
     .map((recipient, index) => ({
       name: recipient.name || `Recipient ${index + 1}`,
       value: recipient.payout,
-      displayName: recipient.name || `Recipient ${index + 1}`,
     }));
 
   if (totalPayout <= 0) {
@@ -92,53 +90,33 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
           </div>
 
           {chartData.length > 0 && (
-            <div className="relative h-56 w-full">
-              <ChartContainer 
-                className="relative z-0"
-                config={{
-                  payout: { 
-                    label: "Payout Distribution" 
-                  }
-                }}
-              >
-                <PieChart>
+            <div className="flex justify-center py-4">
+              <div style={{ width: '100%', height: 250 }}>
+                <PieChart width={400} height={250} style={{ margin: '0 auto' }}>
                   <Pie
                     data={chartData}
-                    dataKey="value"
-                    nameKey="displayName"
                     cx="50%"
                     cy="50%"
-                    outerRadius={70}
+                    labelLine={false}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
                     label={({ name, percent }) => 
                       `${name}: ${(percent * 100).toFixed(0)}%`
                     }
-                    labelLine={false}
                   >
                     {chartData.map((entry, index) => (
-                      <Cell 
-                        key={`cell-${index}`} 
-                        fill={COLORS[index % COLORS.length]} 
-                      />
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip
-                    content={({ active, payload }) => 
-                      active && payload && payload.length ? (
-                        <ChartTooltipContent
-                          active={active}
-                          payload={payload}
-                          formatter={(value) => formatCurrency(Number(value))}
-                        />
-                      ) : null
-                    }
-                  />
+                  <Tooltip formatter={(value) => formatCurrency(Number(value))} />
                   <Legend />
                 </PieChart>
-              </ChartContainer>
+              </div>
             </div>
           )}
 
-          <div className="relative border-t pt-4 mt-4 z-10">
+          <div className="border-t pt-4 mt-4">
             <h3 className="font-semibold mb-3">Individual Payouts</h3>
             <div className="space-y-2">
               {sortedRecipients.map((recipient) => (
