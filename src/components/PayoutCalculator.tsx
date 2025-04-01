@@ -1,4 +1,3 @@
-
 import { useEffect, useRef } from "react";
 import TotalPayoutInput from "./payout/TotalPayoutInput";
 import RecipientsList from "./payout/RecipientsList";
@@ -90,6 +89,7 @@ const PayoutCalculator = () => {
         removeRecipient={removeRecipient}
         selectedRecipients={selectedRecipients}
         toggleSelectRecipient={toggleSelectRecipient}
+        setSelectedRecipients={setSelectedRecipients}
         handleDragEnd={handleDragEnd}
         valuePerShare={valuePerShare}
       />

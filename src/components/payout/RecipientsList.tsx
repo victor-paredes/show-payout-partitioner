@@ -1,7 +1,6 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus } from "lucide-react";
+import { Plus, X } from "lucide-react";
 import RecipientRow from "../RecipientRow";
 import { Recipient } from "@/hooks/useRecipients";
 import {
@@ -36,6 +35,7 @@ interface RecipientsListProps {
   removeRecipient: (id: string) => void;
   selectedRecipients: Set<string>;
   toggleSelectRecipient: (id: string) => void;
+  setSelectedRecipients: (selections: Set<string>) => void;
   handleDragEnd: (event: DragEndEvent) => void;
   valuePerShare: number;
 }
@@ -49,6 +49,7 @@ const RecipientsList = ({
   removeRecipient,
   selectedRecipients,
   toggleSelectRecipient,
+  setSelectedRecipients,
   handleDragEnd,
   valuePerShare
 }: RecipientsListProps) => {
@@ -60,6 +61,10 @@ const RecipientsList = ({
     })
   );
 
+  const clearAllSelections = () => {
+    setSelectedRecipients(new Set());
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -67,8 +72,16 @@ const RecipientsList = ({
           <div className="flex items-center gap-2">
             <span>Recipients</span>
             {selectedRecipients.size > 1 && (
-              <div className="text-xs bg-blue-100 text-blue-700 py-1 px-2 rounded-md">
-                Editing Multiple
+              <div className="text-xs bg-blue-100 text-blue-700 py-1 px-2 rounded-md flex items-center gap-1">
+                <span>Editing Multiple</span>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-4 w-4 p-0 hover:bg-blue-200" 
+                  onClick={clearAllSelections}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
               </div>
             )}
           </div>
