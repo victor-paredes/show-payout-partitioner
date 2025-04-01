@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from "react";
 import TotalPayoutInput from "./payout/TotalPayoutInput";
 import RecipientsList from "./payout/RecipientsList";
@@ -56,9 +57,19 @@ const PayoutCalculator = () => {
       }
     };
 
+    // Add Escape key handler
+    const handleEscapeKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && selectedRecipients.size > 0) {
+        setSelectedRecipients(new Set());
+      }
+    };
+
     document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleEscapeKey);
+    
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscapeKey);
     };
   }, [selectedRecipients, setSelectedRecipients]);
 
