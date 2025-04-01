@@ -27,10 +27,21 @@ const PayoutCalculator = () => {
   const [valuePerShare, setValuePerShare] = useState<number>(0);
 
   const addRecipient = () => {
+    const currentRecipientCount = recipients.length;
     const newId = (Math.max(0, ...recipients.map(r => parseInt(r.id))) + 1).toString();
+    
+    // Generate a more descriptive default name
+    const defaultName = `Recipient ${currentRecipientCount + 1}`;
+    
     setRecipients([
       ...recipients,
-      { id: newId, name: `Recipient ${newId}`, isFixedAmount: false, value: 1, payout: 0 },
+      { 
+        id: newId, 
+        name: defaultName, 
+        isFixedAmount: false, 
+        value: 1, 
+        payout: 0 
+      },
     ]);
   };
 
