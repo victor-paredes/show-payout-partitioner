@@ -1,161 +1,262 @@
-import React, { useRef, useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatCurrency } from "@/lib/format";
-import { PieChart, Pie, Cell } from "recharts";
-import { X } from "lucide-react";
-import { RecipientType } from "@/components/RecipientRow";
-import { getRecipientColor, SURPLUS_COLOR, OVERDRAW_COLOR } from "@/lib/colorUtils";
 
-interface Recipient {
-  id: string;
-  name: string;
-  isFixedAmount: boolean;
-  value: number;
-  payout: number;
-  type?: RecipientType;
-  color?: string;
-}
+import React, { useRef, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
+import { formatCurrency, formatPercentage } from "@/lib/format";
+import { Recipient, RecipientGroup } from "@/hooks/useRecipients";
+import { getRecipientColor } from "@/lib/colorUtils";
 
 interface PayoutSummaryProps {
   totalPayout: number;
   recipients: Recipient[];
+  groups?: RecipientGroup[];
   remainingAmount: number;
   hoveredRecipientId?: string;
   onRecipientHover?: (id: string | null) => void;
 }
 
+interface ChartData {
+  id: string;
+  name: string;
+  value: number;
+  color: string;
+  isGroup?: boolean;
+  groupName?: string;
+}
+
 const PayoutSummary: React.FC<PayoutSummaryProps> = ({
   totalPayout,
   recipients,
+  groups = [],
   remainingAmount,
   hoveredRecipientId,
-  onRecipientHover
+  onRecipientHover,
 }) => {
   const summaryRef = useRef<HTMLDivElement>(null);
-  const [isCalculationStable, setIsCalculationStable] = useState<boolean>(false);
-  
-  useEffect(() => {
-    setIsCalculationStable(false);
-    const timer = setTimeout(() => {
-      setIsCalculationStable(true);
-    }, 100);
-    
-    return () => {
-      clearTimeout(timer);
-    };
-  }, [recipients.length, totalPayout]);
-  
-  const totalFixedAmount = totalPayout - remainingAmount;
-  
-  const calculatedTotal = recipients.reduce((total, r) => total + r.payout, 0);
-  
-  const difference = calculatedTotal - totalPayout;
-  const hasSurplus = difference < -0.01 || recipients.length === 0;
-  const hasOverdraw = difference > 0.01;
-  
-  const surplus = hasSurplus ? (recipients.length === 0 ? totalPayout : Math.abs(difference)) : 0;
-  const overdraw = hasOverdraw ? difference : 0;
-  
-  const sortedRecipients = [...recipients].sort((a, b) => {
-    const typeOrder = {
-      "$": 0,
-      "%": 1,
-      "shares": 2
-    };
-    
-    const aType = a.type || (a.isFixedAmount ? "$" : "shares");
-    const bType = b.type || (b.isFixedAmount ? "$" : "shares");
-    
-    if (aType !== bType) {
-      return typeOrder[aType] - typeOrder[bType];
-    }
-    
-    return b.payout - a.payout;
-  });
 
-  const getRecipientDisplayColor = (recipient: Recipient) => {
-    return recipient.color || getRecipientColor(recipient.id);
-  };
-
-  const chartData = sortedRecipients
-    .filter(recipient => recipient.payout > 0)
-    .map((recipient) => {
-      const percentage = totalPayout > 0 
-        ? ((recipient.payout / totalPayout) * 100).toFixed(1) 
-        : "0";
+  // Create chart data by combining group data and individual recipient data
+  const chartData: ChartData[] = [];
+  
+  // First, handle grouped recipients
+  groups.forEach(group => {
+    // Filter recipients in this group
+    const groupRecipients = recipients.filter(r => r.groupId === group.id);
+    
+    if (groupRecipients.length > 0) {
+      // Calculate total payout for this group
+      const groupTotalPayout = groupRecipients.reduce((total, r) => total + r.payout, 0);
+      
+      // Only add if there's a payout
+      if (groupTotalPayout > 0) {
+        // Use first recipient's color as the group color or generate one
+        const firstRecipient = groupRecipients[0];
+        const groupColor = firstRecipient?.color || getRecipientColor(group.id);
         
-      return {
-        name: recipient.name || "Unnamed",
-        value: recipient.payout,
-        percentage: percentage,
-        id: recipient.id,
-        color: getRecipientDisplayColor(recipient)
-      };
-    });
-    
-  if (hasSurplus && isCalculationStable) {
-    const surplusPercentage = totalPayout > 0 
-      ? ((surplus / totalPayout) * 100).toFixed(1) 
-      : "0";
-      
-    chartData.push({
-      name: "Surplus",
-      value: surplus,
-      percentage: surplusPercentage,
-      id: "surplus",
-      color: SURPLUS_COLOR
-    });
-  }
-  
-  if (hasOverdraw && isCalculationStable) {
-    const overdrawPercentage = totalPayout > 0 
-      ? ((overdraw / totalPayout) * 100).toFixed(1) 
-      : "0";
-      
-    chartData.push({
-      name: "Overdraw",
-      value: overdraw,
-      percentage: overdrawPercentage,
-      id: "overdraw",
-      color: OVERDRAW_COLOR
-    });
-  }
-
-  const hoveredChartIndex = hoveredRecipientId
-    ? chartData.findIndex(item => item.id === hoveredRecipientId)
-    : -1;
-
-  const handleChartHover = (index: number | null) => {
-    if (onRecipientHover) {
-      if (index !== null && index >= 0 && index < chartData.length) {
-        onRecipientHover(chartData[index].id);
-      } else {
-        onRecipientHover(null);
+        chartData.push({
+          id: group.id,
+          name: group.name || "Unnamed Group",
+          value: groupTotalPayout,
+          color: groupColor,
+          isGroup: true,
+          groupName: group.name
+        });
+        
+        // Add individual recipients within the group
+        groupRecipients.forEach(recipient => {
+          if (recipient.payout > 0) {
+            chartData.push({
+              id: recipient.id,
+              name: recipient.name || "Unnamed",
+              value: recipient.payout,
+              color: recipient.color || getRecipientColor(recipient.id),
+              groupName: group.name
+            });
+          }
+        });
       }
     }
-  };
-
-  if (totalPayout <= 0) {
-    return (
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle>Payout Summary</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-center text-gray-500 italic">
-            Enter a total payout amount to see the distribution
-          </p>
-        </CardContent>
-      </Card>
-    );
+  });
+  
+  // Then add ungrouped recipients
+  recipients
+    .filter(r => !r.groupId && r.payout > 0)
+    .forEach(recipient => {
+      chartData.push({
+        id: recipient.id,
+        name: recipient.name || "Unnamed",
+        value: recipient.payout,
+        color: recipient.color || getRecipientColor(recipient.id)
+      });
+    });
+  
+  // Add remaining amount if it's > 0
+  if (remainingAmount > 0) {
+    chartData.push({
+      id: "remaining",
+      name: "Unallocated",
+      value: remainingAmount,
+      color: "#e2e8f0" // light gray color
+    });
   }
 
-  const emptyPieData = [{ name: "empty", value: 1 }];
+  // Sort by value (descending)
+  chartData.sort((a, b) => b.value - a.value);
+
+  // Custom tooltip component
+  const CustomTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      return (
+        <div className="bg-white p-3 shadow-md rounded-md border text-sm">
+          {data.groupName && !data.isGroup && (
+            <p className="text-xs text-gray-500 mb-1">Group: {data.groupName}</p>
+          )}
+          <p className="font-medium">{data.name}</p>
+          <p>{formatCurrency(data.value)}</p>
+          <p>{formatPercentage(data.value / totalPayout)}</p>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  // Handle mouse events on the chart
+  const handleMouseEnter = (data: any) => {
+    if (onRecipientHover && data.id !== "remaining" && !data.isGroup) {
+      onRecipientHover(data.id);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (onRecipientHover) {
+      onRecipientHover(null);
+    }
+  };
+
+  // Format the list of recipients
+  const recipientsList = chartData
+    .filter(item => item.id !== "remaining" && !item.isGroup)
+    .map(recipient => {
+      const isHovered = hoveredRecipientId === recipient.id;
+      
+      return (
+        <div 
+          key={recipient.id}
+          className={`flex justify-between items-center p-2 rounded-md transition-colors ${
+            isHovered ? "bg-blue-50" : ""
+          } ${recipient.groupName ? "ml-4" : ""}`}
+          onMouseEnter={() => onRecipientHover && onRecipientHover(recipient.id)}
+          onMouseLeave={() => onRecipientHover && onRecipientHover(null)}
+        >
+          <div className="flex items-center gap-2">
+            <div 
+              className="w-3 h-3 rounded-sm" 
+              style={{ backgroundColor: recipient.color }}
+            />
+            <span className="font-medium truncate max-w-[120px]" title={recipient.name}>
+              {recipient.name}
+            </span>
+          </div>
+          <div className="flex flex-col items-end">
+            <span>{formatCurrency(recipient.value)}</span>
+            <span className="text-xs text-gray-500">
+              {formatPercentage(recipient.value / totalPayout)}
+            </span>
+          </div>
+        </div>
+      );
+    });
+
+  // Format the groups for the list
+  const groupsList = groups
+    .filter(group => {
+      // Check if the group has any recipients with payout
+      const groupRecipients = recipients.filter(r => r.groupId === group.id);
+      const groupTotal = groupRecipients.reduce((sum, r) => sum + r.payout, 0);
+      return groupTotal > 0;
+    })
+    .map(group => {
+      // Get all recipients in this group
+      const groupRecipients = recipients.filter(r => r.groupId === group.id);
+      
+      // Calculate total payout for the group
+      const groupTotal = groupRecipients.reduce((sum, r) => sum + r.payout, 0);
+      
+      // Only show groups with positive payout
+      if (groupTotal <= 0) return null;
+      
+      // Get chart data item for this group
+      const groupData = chartData.find(item => item.id === group.id && item.isGroup);
+      if (!groupData) return null;
+      
+      return (
+        <div key={group.id} className="mb-2">
+          <div className="flex justify-between items-center p-2 bg-gray-50 rounded-t-md">
+            <div className="flex items-center gap-2">
+              <div 
+                className="w-3 h-3 rounded-sm" 
+                style={{ backgroundColor: groupData.color }}
+              />
+              <span className="font-medium text-sm text-gray-600">
+                {group.name}
+              </span>
+            </div>
+            <div className="flex flex-col items-end">
+              <span>{formatCurrency(groupTotal)}</span>
+              <span className="text-xs text-gray-500">
+                {formatPercentage(groupTotal / totalPayout)}
+              </span>
+            </div>
+          </div>
+          
+          {/* Recipients in this group */}
+          <div className="border border-gray-100 rounded-b-md mb-2">
+            {groupRecipients
+              .filter(r => r.payout > 0)
+              .map(recipient => {
+                const isHovered = hoveredRecipientId === recipient.id;
+                
+                return (
+                  <div 
+                    key={recipient.id}
+                    className={`flex justify-between items-center p-2 transition-colors ${
+                      isHovered ? "bg-blue-50" : ""
+                    }`}
+                    onMouseEnter={() => onRecipientHover && onRecipientHover(recipient.id)}
+                    onMouseLeave={() => onRecipientHover && onRecipientHover(null)}
+                  >
+                    <div className="flex items-center gap-2 ml-4">
+                      <div 
+                        className="w-2 h-2 rounded-sm" 
+                        style={{ backgroundColor: recipient.color || getRecipientColor(recipient.id) }}
+                      />
+                      <span className="truncate max-w-[100px]" title={recipient.name}>
+                        {recipient.name}
+                      </span>
+                    </div>
+                    <div className="flex flex-col items-end">
+                      <span>{formatCurrency(recipient.payout)}</span>
+                      <span className="text-xs text-gray-500">
+                        {formatPercentage(recipient.payout / totalPayout)}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+          </div>
+        </div>
+      );
+    });
+
+  // Display ungrouped recipients after groups
+  const ungroupedRecipients = recipientsList.filter(
+    (_, index) => !chartData[index].groupName
+  );
 
   return (
     <Card>
-      <CardHeader className="pb-2">
-        <CardTitle>Payout Summary</CardTitle>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-xl">Payout Summary</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-4" ref={summaryRef} id="payout-summary">
@@ -169,154 +270,61 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
           </div>
 
           {chartData.length > 0 && (
-            <div className="flex justify-center py-1">
-              <div className="w-full" style={{ height: 200 }}>
-                {hasOverdraw && isCalculationStable ? (
-                  <div className="relative" style={{ height: 200 }}>
-                    <PieChart 
-                      width={400} 
-                      height={200}
-                      style={{ margin: '0 auto', width: 'auto' }}
-                    >
-                      <Pie
-                        data={emptyPieData}
-                        cx="50%"
-                        cy="50%"
-                        outerRadius={80}
-                        fill="#FFFFFF"
-                        stroke={OVERDRAW_COLOR}
-                        strokeWidth={3}
-                        isAnimationActive={false}
-                        dataKey="value"
-                      >
-                        <Cell fill="#FFFFFF" />
-                      </Pie>
-                    </PieChart>
-                    <div 
-                      className="absolute inset-0 flex items-center justify-center"
-                      style={{ pointerEvents: 'none' }}
-                    >
-                      <X size={60} color={OVERDRAW_COLOR} strokeWidth={3} />
-                    </div>
-                  </div>
-                ) : (
-                  <PieChart 
-                    width={400} 
-                    height={200}
-                    style={{ margin: '0 auto', width: 'auto' }}
+            <div className="h-[200px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={chartData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    paddingAngle={1}
+                    dataKey="value"
+                    onMouseEnter={handleMouseEnter}
+                    onMouseLeave={handleMouseLeave}
                   >
-                    <Pie
-                      data={chartData}
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="value"
-                      label={false}
-                      isAnimationActive={false}
-                      onMouseEnter={(_, index) => handleChartHover(index)}
-                      onMouseLeave={() => handleChartHover(null)}
-                    >
-                      {chartData.map((entry, index) => (
-                        <Cell 
-                          key={`cell-${index}`} 
-                          fill={entry.color}
-                          fillOpacity={hoveredChartIndex !== -1 && hoveredChartIndex !== index ? 0.4 : 1} 
-                        />
-                      ))}
-                    </Pie>
-                  </PieChart>
-                )}
-              </div>
-            </div>
-          )}
-          
-          {hasSurplus && isCalculationStable && (
-            <div className="text-xs bg-green-100 text-green-700 py-1 px-2 rounded-md flex items-center gap-1 mb-2">
-              <span>Surplus</span>
-              <span className="text-xs text-green-500 ml-2">
-                ({((surplus / totalPayout) * 100).toFixed(1)}%)
-              </span>
-              <span className="ml-auto">{formatCurrency(surplus)}</span>
-            </div>
-          )}
-          
-          {hasOverdraw && isCalculationStable && (
-            <div className="text-xs bg-red-100 text-red-700 py-1 px-2 rounded-md flex items-center gap-1 mb-2">
-              <span>Overdraw</span>
-              <span className="text-xs text-red-500 ml-2">
-                ({((overdraw / totalPayout) * 100).toFixed(1)}%)
-              </span>
-              <span className="ml-auto">{formatCurrency(overdraw)}</span>
-            </div>
-          )}
-          
-          {recipients.length > 0 && (
-            <div className="border-t pt-4 mt-4">
-              <h3 className="font-semibold mb-3">Individual Payouts</h3>
-              <div className="space-y-1">
-                {recipients.map((recipient) => {
-                  const percentage = totalPayout > 0 
-                    ? ((recipient.payout / totalPayout) * 100).toFixed(1) 
-                    : "0";
-                  
-                  const recipientColor = getRecipientDisplayColor(recipient);
-                  const type = recipient.type || (recipient.isFixedAmount ? "$" : "shares");
-                  
-                  let valueDisplay = "";
-                  if (type === "$") {
-                    valueDisplay = "($)";
-                  } else if (type === "%") {
-                    valueDisplay = "";
-                  } else {
-                    valueDisplay = `(${recipient.value} ${recipient.value === 1 ? 'share' : 'shares'})`;
-                  }
-                  
-                  return (
-                    <div 
-                      key={recipient.id} 
-                      className={`flex justify-between p-1 rounded ${
-                        hoveredRecipientId === recipient.id 
-                          ? 'bg-gray-100' 
-                          : ''
-                      }`}
-                      onMouseEnter={() => onRecipientHover?.(recipient.id)}
-                      onMouseLeave={() => onRecipientHover?.(null)}
-                    >
-                      <div className="flex items-center">
-                        <div 
-                          className={`w-3 h-3 rounded-sm mr-2 ${
-                            hoveredRecipientId === recipient.id 
-                              ? 'ring-1 ring-black' 
-                              : ''
-                          }`}
-                          style={{ backgroundColor: recipientColor }}
-                        />
-                        <span>{recipient.name}</span>
-                        {valueDisplay && (
-                          <span className="text-xs text-gray-500 ml-2">
-                            {valueDisplay}
-                          </span>
-                        )}
-                        <span className={`text-xs text-blue-500 ${type === '%' ? 'ml-2' : 'ml-1'}`}>
-                          {percentage}%
-                        </span>
-                      </div>
-                      <div className="font-medium">
-                        {formatCurrency(recipient.payout)}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    {chartData.map((entry, index) => (
+                      <Cell 
+                        key={`cell-${index}`} 
+                        fill={entry.color} 
+                        strokeWidth={hoveredRecipientId === entry.id ? 2 : 1}
+                        stroke={hoveredRecipientId === entry.id ? "#000" : "#fff"}
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip content={<CustomTooltip />} />
+                </PieChart>
+              </ResponsiveContainer>
             </div>
           )}
 
-          {!hasSurplus && !hasOverdraw && Math.abs(difference) > 0.01 && (
-            <div className="text-xs text-amber-600 italic mt-4">
-              Note: There is a small rounding difference of {formatCurrency(Math.abs(difference))}
-            </div>
-          )}
+          <div className="space-y-1">
+            <h3 className="font-semibold text-sm text-gray-700 mb-2">Allocation</h3>
+            
+            {/* Display groups first */}
+            {groupsList}
+            
+            {/* Then display ungrouped recipients */}
+            {ungroupedRecipients}
+
+            {/* Display remaining amount */}
+            {remainingAmount > 0 && (
+              <div className="flex justify-between items-center p-2 bg-gray-50 rounded-md mt-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-sm bg-gray-200" />
+                  <span className="font-medium">Unallocated</span>
+                </div>
+                <div className="flex flex-col items-end">
+                  <span>{formatCurrency(remainingAmount)}</span>
+                  <span className="text-xs text-gray-500">
+                    {formatPercentage(remainingAmount / totalPayout)}
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </CardContent>
     </Card>
