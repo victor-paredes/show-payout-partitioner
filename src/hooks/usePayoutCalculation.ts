@@ -16,6 +16,14 @@ export function usePayoutCalculation(recipients: Recipient[]) {
       return;
     }
 
+    // If there are no recipients, all amount is surplus
+    if (recipients.length === 0) {
+      setRemainingAmount(totalPayout);
+      setTotalShares(0);
+      setValuePerShare(0);
+      return;
+    }
+
     // Calculate fixed amounts total
     const fixedRecipients = recipients.filter(r => r.type === "$");
     

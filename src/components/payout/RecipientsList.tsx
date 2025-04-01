@@ -92,7 +92,8 @@ const RecipientsList = ({
   };
 
   // Create the title with the correct singular/plural form
-  const recipientsTitle = `${recipients.length} ${recipients.length === 1 ? 'Recipient' : 'Recipients'}`;
+  const actualRecipientCount = recipients.length;
+  const recipientsTitle = `${actualRecipientCount} ${actualRecipientCount === 1 ? 'Recipient' : 'Recipients'}`;
 
   return (
     <Card>
@@ -124,7 +125,7 @@ const RecipientsList = ({
             >
               {columnWiseTabbing ? <ArrowDown className="h-4 w-4" /> : <ArrowRight className="h-4 w-4" />}
             </Button>
-            {recipients.length > 1 && (
+            {recipients.length > 0 && (
               <Button 
                 onClick={handleClearClick} 
                 variant="outline" 

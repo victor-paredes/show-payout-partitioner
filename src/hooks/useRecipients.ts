@@ -18,19 +18,10 @@ export interface Recipient {
 
 export function useRecipients() {
   const { toast } = useToast();
-  const [recipients, setRecipients] = useState<Recipient[]>([
-    { 
-      id: "1", 
-      name: "Recipient 1", 
-      isFixedAmount: false, 
-      value: 1, 
-      payout: 0, 
-      type: "shares" 
-    },
-  ]);
+  const [recipients, setRecipients] = useState<Recipient[]>([]);
   const [selectedRecipients, setSelectedRecipients] = useState<Set<string>>(new Set());
   const [recipientCount, setRecipientCount] = useState<string>("1");
-  const [lastUsedId, setLastUsedId] = useState<number>(1);
+  const [lastUsedId, setLastUsedId] = useState<number>(0);
 
   const addRecipients = () => {
     const currentRecipientCount = recipients.length;
@@ -73,15 +64,6 @@ export function useRecipients() {
   };
 
   const removeRecipient = (id: string) => {
-    if (recipients.length === 1) {
-      toast({
-        title: "Cannot remove",
-        description: "You need at least one recipient",
-        variant: "destructive",
-      });
-      return;
-    }
-    
     if (selectedRecipients.has(id)) {
       const newSelectedRecipients = new Set(selectedRecipients);
       newSelectedRecipients.delete(id);
@@ -133,24 +115,10 @@ export function useRecipients() {
   };
 
   const clearRecipients = () => {
-    if (recipients.length === 1) {
-      return;
-    }
-    
-    // Reset the first recipient to default values
-    const firstRecipient = {
-      ...recipients[0],
-      name: "Recipient 1",
-      isFixedAmount: false,
-      value: 1,
-      payout: 0,
-      type: "shares" as RecipientType
-    };
-    
-    setRecipients([firstRecipient]);
+    setRecipients([]);
     setSelectedRecipients(new Set());
     setRecipientCount("1");
-    setLastUsedId(1); // Reset the last used ID counter
+    setLastUsedId(0);
   };
 
   return {
