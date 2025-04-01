@@ -127,7 +127,7 @@ export function useRecipients() {
       isFixedAmount: false,
       value: 1,
       payout: 0,
-      type: "shares" // Explicitly set type to "shares"
+      type: "shares" as RecipientType // Explicitly cast type to RecipientType
     };
     
     setRecipients([firstRecipient]);
