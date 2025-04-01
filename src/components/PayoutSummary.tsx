@@ -79,7 +79,7 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
             <div 
               key={`legend-${index}`} 
               className={`flex items-center cursor-pointer transition-colors
-                ${isHighlighted ? 'font-semibold text-black' : ''}`}
+                ${isHighlighted ? 'outline outline-1 outline-black bg-gray-100 p-0.5 rounded' : ''}`}
               onMouseEnter={() => {
                 setHoveredIndex(index);
                 onRecipientHover(recipientId);
@@ -93,7 +93,7 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
                 className={`h-3 w-3 mr-2 rounded-sm ${isHighlighted ? 'ring-2 ring-black' : ''}`} 
                 style={{ backgroundColor: entry.color }}
               />
-              <span>{entry.value} ({chartData[index].percentage}%)</span>
+              <span className="font-medium">{entry.value} ({chartData[index].percentage}%)</span>
             </div>
           );
         })}
@@ -183,13 +183,13 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
                   <div 
                     key={recipient.id} 
                     className={`flex justify-between p-1 rounded transition-colors ${
-                      isHighlighted ? 'bg-gray-100 font-medium' : ''
+                      isHighlighted ? 'bg-gray-100 outline outline-1 outline-black' : ''
                     }`}
                     onMouseEnter={() => onRecipientHover(recipient.id)}
                     onMouseLeave={() => onRecipientHover(null)}
                   >
                     <div className="flex items-center">
-                      <span>{recipient.name}</span>
+                      <span className="font-medium">{recipient.name}</span>
                       <span className="text-xs text-gray-500 ml-2">
                         {recipient.isFixedAmount 
                           ? `(Fixed: ${formatCurrency(recipient.value)})` 

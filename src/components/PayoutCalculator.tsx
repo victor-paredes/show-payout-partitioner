@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from "react";
 import TotalPayoutInput from "./payout/TotalPayoutInput";
 import RecipientsList from "./payout/RecipientsList";

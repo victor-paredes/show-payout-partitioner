@@ -76,7 +76,7 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
       className={`flex items-center bg-white rounded-md shadow-sm border p-4 gap-4 cursor-pointer transition-colors ${
         isSelected ? "bg-blue-50 border-blue-300" : ""
       } ${
-        isHighlighted ? "border-black border-2" : ""
+        isHighlighted ? "border-black border-2 bg-gray-50" : ""
       } ${
         !isInputHover 
           ? isSelected 
