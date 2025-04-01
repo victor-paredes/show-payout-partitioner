@@ -1,8 +1,19 @@
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/format";
 import { PieChart, Pie, Cell, Legend, Tooltip } from "recharts";
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { FileDown } from "lucide-react";
+import { exportToPdf } from "@/lib/exportUtils";
 
 interface Recipient {
   id: string;
@@ -43,6 +54,7 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
 }) => {
   // Track which segment is currently being hovered within this component
   const [internalHoveredIndex, setInternalHoveredIndex] = useState<number | null>(null);
+  const summaryRef = useRef<HTMLDivElement>(null);
   
   const totalFixedAmount = totalPayout - remainingAmount;
   
@@ -93,6 +105,13 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
     }
   };
 
+  // Export the payout summary as PDF
+  const handleExportPdf = () => {
+    if (summaryRef.current) {
+      exportToPdf(summaryRef.current, 'payout-summary.pdf');
+    }
+  };
+
   // Custom renderer for the legend with percentages and hover effect
   const renderCustomizedLegend = (props: any) => {
     const { payload } = props;
@@ -122,8 +141,22 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
   if (totalPayout <= 0) {
     return (
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle>Payout Summary</CardTitle>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                <FileDown className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Export</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem disabled>
+                PDF
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </CardHeader>
         <CardContent>
           <p className="text-center text-gray-500 italic">
@@ -136,11 +169,25 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle>Payout Summary</CardTitle>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+              <FileDown className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Export</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleExportPdf}>
+              PDF
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
+        <div className="space-y-4" ref={summaryRef}>
           <div className="grid grid-cols-2 gap-2 text-sm">
             <div className="font-medium">Total Payout:</div>
             <div className="text-right">{formatCurrency(totalPayout)}</div>
