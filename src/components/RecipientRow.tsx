@@ -50,6 +50,8 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
   const [isInputHover, setIsInputHover] = useState(false);
   const [nameWidth, setNameWidth] = useState(150); // Default width
   const nameRef = useRef<HTMLSpanElement>(null);
+  // Add state to track if dropdown is open
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   
   const {
     attributes,
@@ -105,21 +107,14 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
 
   // Handle dropdown opening to prevent row deselection
   const handleDropdownOpenChange = (open: boolean) => {
-    if (open) {
-      // Use a properly typed event handler
-      const originalOnClick = document.body.onclick;
-      
-      // This timeout ensures our handler is set after the default Select behavior
-      setTimeout(() => {
-        document.body.onclick = (e: MouseEvent) => {
-          e.stopPropagation();
-          
-          // Execute any original handler that was there
-          if (originalOnClick) {
-            originalOnClick.call(document.body, e);
-          }
-        };
-      }, 0);
+    setIsDropdownOpen(open);
+  };
+
+  // Handle row click with special handling for dropdown
+  const handleRowClick = (e: React.MouseEvent) => {
+    // Only toggle selection if dropdown is not open
+    if (!isDropdownOpen) {
+      onToggleSelect();
     }
   };
 
@@ -136,7 +131,7 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
       } ${
         isHighlighted ? "border-black" : "border"
       }`}
-      onClick={onToggleSelect}
+      onClick={handleRowClick}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
