@@ -52,6 +52,8 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
   const nameRef = useRef<HTMLSpanElement>(null);
   // Add state to track if dropdown is open
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  // Add a ref to track last dropdown interaction time
+  const lastDropdownInteractionRef = useRef<number>(0);
   
   const {
     attributes,
@@ -94,6 +96,7 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
   // Handle type selection
   const handleTypeChange = (value: string) => {
     const type = value as RecipientType;
+    lastDropdownInteractionRef.current = Date.now(); // Record interaction time
     
     onUpdate({ 
       isFixedAmount: type === "$",
@@ -108,14 +111,25 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
   // Handle dropdown opening to prevent row deselection
   const handleDropdownOpenChange = (open: boolean) => {
     setIsDropdownOpen(open);
+    lastDropdownInteractionRef.current = Date.now(); // Record interaction time
   };
 
   // Handle row click with special handling for dropdown
   const handleRowClick = (e: React.MouseEvent) => {
-    // Only toggle selection if dropdown is not open
-    if (!isDropdownOpen) {
+    // Check if the click is coming after a recent dropdown interaction
+    const timeSinceLastDropdownInteraction = Date.now() - lastDropdownInteractionRef.current;
+    
+    // Only toggle selection if dropdown is not open and 
+    // no recent dropdown interaction (within 100ms)
+    if (!isDropdownOpen && timeSinceLastDropdownInteraction > 100) {
       onToggleSelect();
     }
+  };
+
+  // Handle click propagation stopping for dropdown items
+  const handleSelectItemClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    lastDropdownInteractionRef.current = Date.now();
   };
 
   return (
@@ -183,10 +197,28 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
           <SelectTrigger className="w-28" onClick={(e) => e.stopPropagation()}>
             <SelectValue placeholder="Type" />
           </SelectTrigger>
-          <SelectContent onClick={(e) => e.stopPropagation()}>
-            <SelectItem value="shares" onClick={(e) => e.stopPropagation()}>Shares</SelectItem>
-            <SelectItem value="$" onClick={(e) => e.stopPropagation()}>$</SelectItem>
-            <SelectItem value="%" onClick={(e) => e.stopPropagation()}>%</SelectItem>
+          <SelectContent 
+            onClick={(e) => e.stopPropagation()}
+            className="z-50" // Ensure high z-index
+          >
+            <SelectItem 
+              value="shares" 
+              onClick={handleSelectItemClick}
+            >
+              Shares
+            </SelectItem>
+            <SelectItem 
+              value="$" 
+              onClick={handleSelectItemClick}
+            >
+              $
+            </SelectItem>
+            <SelectItem 
+              value="%" 
+              onClick={handleSelectItemClick}
+            >
+              %
+            </SelectItem>
           </SelectContent>
         </Select>
       </div>
