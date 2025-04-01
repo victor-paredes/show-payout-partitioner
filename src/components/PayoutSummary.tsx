@@ -2,7 +2,7 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/format";
-import { PieChart, Pie, Cell, Legend } from "recharts";
+import { PieChart, Pie, Cell, Legend, Tooltip } from "recharts";
 
 interface Recipient {
   id: string;
@@ -18,17 +18,18 @@ interface PayoutSummaryProps {
   remainingAmount: number;
 }
 
+// More distinct colors for better visual separation
 const COLORS = [
-  "#9b87f5", // Primary Purple
-  "#7E69AB", // Secondary Purple
-  "#6E59A5", // Tertiary Purple
-  "#D6BCFA", // Light Purple
-  "#E5DEFF", // Soft Purple
   "#8B5CF6", // Vivid Purple
   "#D946EF", // Magenta Pink
   "#F97316", // Bright Orange
   "#0EA5E9", // Ocean Blue
-  "#33C3F0", // Sky Blue
+  "#10B981", // Emerald Green
+  "#EF4444", // Red
+  "#FACC15", // Yellow
+  "#6366F1", // Indigo
+  "#EC4899", // Pink
+  "#14B8A6", // Teal
 ];
 
 const PayoutSummary: React.FC<PayoutSummaryProps> = ({
@@ -51,10 +52,36 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
 
   const chartData = sortedRecipients
     .filter(recipient => recipient.payout > 0)
-    .map((recipient, index) => ({
-      name: recipient.name || `Recipient ${index + 1}`,
-      value: recipient.payout,
-    }));
+    .map((recipient, index) => {
+      const percentage = totalPayout > 0 
+        ? ((recipient.payout / totalPayout) * 100).toFixed(1) 
+        : "0";
+        
+      return {
+        name: recipient.name || `Recipient ${index + 1}`,
+        value: recipient.payout,
+        percentage: percentage,
+      };
+    });
+
+  // Custom renderer for the legend with percentages
+  const renderCustomizedLegend = (props: any) => {
+    const { payload } = props;
+    
+    return (
+      <div className="flex flex-wrap justify-center gap-4 text-sm mt-2">
+        {payload.map((entry: any, index: number) => (
+          <div key={`legend-${index}`} className="flex items-center">
+            <div 
+              className="h-3 w-3 mr-2 rounded-sm" 
+              style={{ backgroundColor: entry.color }}
+            />
+            <span>{entry.value} ({chartData[index].percentage}%)</span>
+          </div>
+        ))}
+      </div>
+    );
+  };
 
   if (totalPayout <= 0) {
     return (
@@ -107,7 +134,7 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
-                  <Legend />
+                  <Legend content={renderCustomizedLegend} />
                 </PieChart>
               </div>
             </div>
