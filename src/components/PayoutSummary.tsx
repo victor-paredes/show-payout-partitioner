@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/format";
@@ -91,8 +92,9 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
           </div>
 
           {chartData.length > 0 && (
-            <div className="mt-2 h-56">
+            <div className="relative h-56 w-full">
               <ChartContainer 
+                className="relative z-0"
                 config={{
                   payout: { 
                     label: "Payout Distribution" 
@@ -136,7 +138,7 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
             </div>
           )}
 
-          <div className="border-t pt-4 mt-4">
+          <div className="relative border-t pt-4 mt-4 z-10">
             <h3 className="font-semibold mb-3">Individual Payouts</h3>
             <div className="space-y-2">
               {sortedRecipients.map((recipient) => (
