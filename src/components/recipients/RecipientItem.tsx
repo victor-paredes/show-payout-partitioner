@@ -1,9 +1,7 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Trash2, GripVertical, Palette } from "lucide-react";
-import { formatCurrency } from "@/lib/format";
+import { Trash2, GripVertical } from "lucide-react";
 import { getRecipientColor } from "@/lib/colorUtils";
 import ColorPickerModal from "../ColorPickerModal";
 import {
@@ -87,11 +85,10 @@ const RecipientItem: React.FC<RecipientItemProps> = ({
 
   const recipientColor = recipient.color || getRecipientColor(recipient.id);
 
-  // Updated border class logic to include hover state
-  const borderClass = isHighlighted || onHover 
+  const borderClass = onHover 
     ? "border-black" 
     : isSelected 
-      ? "border-blue-300 hover:border-blue-500" 
+      ? "border-blue-800" 
       : "border-gray-200 hover:border-black";
 
   return (
@@ -220,4 +217,3 @@ const RecipientItem: React.FC<RecipientItemProps> = ({
 };
 
 export default RecipientItem;
-
