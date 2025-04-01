@@ -70,10 +70,6 @@ const GroupContainer: React.FC<GroupContainerProps> = ({
     <div className="mb-6">
       <h3 className="text-sm font-medium mb-2 text-gray-600 flex items-center justify-between">
         <div className="flex items-center">
-          <div 
-            className="h-2 w-2 rounded-full mr-2"
-            style={{ backgroundColor: group.color }}
-          ></div>
           {group.name}
           <span className="text-xs ml-2 text-gray-500">
             ({recipients.length} recipient{recipients.length !== 1 ? 's' : ''})
@@ -92,8 +88,8 @@ const GroupContainer: React.FC<GroupContainerProps> = ({
       <div 
         className="space-y-2 p-2 rounded-md border-2 border-dashed transition-all"
         style={{ 
-          borderColor: isDragOver ? group.color : group.color + '40',
-          background: isDragOver ? group.color + '20' : 'transparent',
+          borderColor: isDragOver ? '#3b82f6' : '#e5e7eb',
+          background: isDragOver ? '#eff6ff' : 'transparent',
           minHeight: calculateMinHeight(),
           transition: "all 0.15s ease-in-out"
         }}

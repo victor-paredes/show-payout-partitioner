@@ -19,7 +19,6 @@ export interface Recipient {
 export interface Group {
   id: string;
   name: string;
-  color: string;
   expanded: boolean;
 }
 
@@ -85,12 +84,10 @@ export function useRecipientsManager() {
   // Add a new group
   const addGroup = () => {
     const nextGroupId = (lastUsedGroupId + 1).toString();
-    const randomColor = COLORS[Math.floor(Math.random() * COLORS.length)];
     
     const newGroup = {
       id: nextGroupId,
       name: `Group ${groups.length + 1}`,
-      color: randomColor,
       expanded: true
     };
     

@@ -78,10 +78,6 @@ const GroupSection: React.FC<GroupSectionProps> = ({
     >
       <div className="p-3 flex items-center justify-between bg-gray-50 rounded-t-lg border-b">
         <div className="flex items-center">
-          <div
-            className="w-4 h-4 rounded-sm mr-2"
-            style={{ backgroundColor: group.color }}
-          />
           <h3 className="font-medium">{group.name}</h3>
           <div className="text-xs text-gray-500 ml-2">
             {recipients.length} {recipients.length === 1 ? 'recipient' : 'recipients'}
