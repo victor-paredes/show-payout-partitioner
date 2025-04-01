@@ -163,11 +163,11 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
           </div>
 
           {chartData.length > 0 && (
-            <div className="flex justify-center py-2">  {/* Reduced vertical padding from py-4 to py-2 */}
-              <div className="w-full" style={{ height: 250 }}>
+            <div className="flex justify-center py-1">  {/* Reduced to py-1 */}
+              <div className="w-full" style={{ height: 200 }}>  {/* Reduced height from 250 to 200 */}
                 <PieChart 
                   width={400} 
-                  height={250} 
+                  height={200}  {/* Reduced height to match div */}
                   style={{ margin: '0 auto', width: 'auto' }}
                 >
                   <Pie
