@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -91,7 +92,6 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
   const [isInputHover, setIsInputHover] = useState(false);
   const [nameWidth, setNameWidth] = useState(150);
   const nameRef = useRef<HTMLSpanElement>(null);
-  const [isDraggingInput, setIsDraggingInput] = useState(false);
   
   const {
     attributes,
@@ -144,11 +144,19 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
     (recipient.isFixedAmount ? "$" : "shares");
     
   const handleRowClick = (e: React.MouseEvent) => {
-    if (!isDraggingInput) {
+    // Don't check isDraggingInput anymore - this prevents double-click issues
+    // Just check if the click happened on an interactive element
+    const target = e.target as HTMLElement;
+    const isInteractiveElement = 
+      target.tagName === 'INPUT' || 
+      target.tagName === 'BUTTON' ||
+      target.closest('button') !== null ||
+      target.closest('[role="button"]') !== null ||
+      target.closest('[role="combobox"]') !== null;
+    
+    if (!isInteractiveElement) {
       onToggleSelect();
     }
-    
-    setIsDraggingInput(false);
   };
 
   const getRecipientColor = (recipientId: string) => {
@@ -190,8 +198,7 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
       
       <div 
         className="flex items-center space-x-2"
-        onMouseEnter={() => setIsInputHover(true)}
-        onMouseLeave={() => setIsInputHover(false)}
+        onClick={(e) => e.stopPropagation()}
       >
         <div 
           className={`w-4 h-4 rounded-sm transition-all ${
@@ -212,8 +219,6 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
             className={`border-none p-0 h-auto text-base font-medium focus-visible:ring-0 ${inputHoverClass}`}
             placeholder="Enter Name"
             onClick={(e) => e.stopPropagation()}
-            onMouseDown={() => setIsDraggingInput(false)}
-            onMouseMove={() => setIsDraggingInput(true)}
             style={{ width: `${nameWidth}px` }}
           />
         </div>
@@ -222,8 +227,6 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
       <div 
         className="flex items-center space-x-2" 
         onClick={(e) => e.stopPropagation()}
-        onMouseEnter={() => setIsInputHover(true)}
-        onMouseLeave={() => setIsInputHover(false)}
       >
         <Select 
           value={currentType} 
@@ -243,8 +246,6 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
       <div 
         className="flex items-center" 
         onClick={(e) => e.stopPropagation()}
-        onMouseEnter={() => setIsInputHover(true)}
-        onMouseLeave={() => setIsInputHover(false)}
       >
         <Input
           type="number"
@@ -258,8 +259,6 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
             currentType === "$" ? "Amount" : 
             "Percent"
           }
-          onMouseDown={() => setIsDraggingInput(false)}
-          onMouseMove={() => setIsDraggingInput(true)}
         />
       </div>
 
@@ -279,8 +278,6 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
           onRemove();
         }}
         className="text-gray-400 hover:text-red-500"
-        onMouseEnter={() => setIsInputHover(true)}
-        onMouseLeave={() => setIsInputHover(false)}
       >
         <Trash2 className="h-4 w-4" />
       </Button>
