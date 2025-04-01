@@ -40,6 +40,8 @@ export function useRecipients() {
       ...recipients,
       ...newRecipients,
     ]);
+
+    setRecipientCount("1");
   };
 
   const removeRecipient = (id: string) => {
