@@ -1,4 +1,3 @@
-
 import React, { useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/format";
@@ -31,7 +30,6 @@ interface PayoutSummaryProps {
   onRecipientHover?: (id: string | null) => void;
 }
 
-// More distinct colors for better visual separation
 const COLORS = [
   "#8B5CF6", // Vivid Purple
   "#D946EF", // Magenta Pink
@@ -52,7 +50,6 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
   hoveredRecipientId,
   onRecipientHover,
 }) => {
-  // Use ref for the component we want to export as PDF
   const summaryRef = useRef<HTMLDivElement>(null);
   
   const totalFixedAmount = totalPayout - remainingAmount;
@@ -83,12 +80,10 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
       };
     });
 
-  // Find the index of the hovered recipient in our chart data
   const hoveredChartIndex = hoveredRecipientId
     ? chartData.findIndex(item => item.id === hoveredRecipientId)
     : -1;
 
-  // Handle hovering on a chart element
   const handleChartHover = (index: number | null) => {
     if (onRecipientHover) {
       if (index !== null && index >= 0 && index < chartData.length) {
@@ -99,7 +94,6 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
     }
   };
 
-  // Export the payout summary as PDF
   const handleExportPdf = () => {
     if (summaryRef.current) {
       exportToPdf(summaryRef.current, 'payout-summary');
@@ -170,7 +164,11 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
           {chartData.length > 0 && (
             <div className="flex justify-center py-4">
               <div className="w-full" style={{ height: 250 }}>
-                <PieChart width={400} height={250} style={{ margin: '0 auto' }}>
+                <PieChart 
+                  width={400} 
+                  height={250} 
+                  style={{ margin: '0 auto', width: 'auto' }}
+                >
                   <Pie
                     data={chartData}
                     cx="50%"
@@ -199,7 +197,6 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
             <h3 className="font-semibold mb-3">Individual Payouts</h3>
             <div className="space-y-2">
               {recipients.map((recipient, index) => {
-                // Find the chart data for this recipient to get the percentage
                 const recipientChartData = chartData.find(item => item.id === recipient.id);
                 const percentage = recipientChartData ? recipientChartData.percentage : "0";
                 const isHighlighted = hoveredRecipientId === recipient.id;
