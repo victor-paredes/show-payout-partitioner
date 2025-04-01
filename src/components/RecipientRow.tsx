@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -35,6 +35,8 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
   onToggleSelect,
 }) => {
   const [isInputHover, setIsInputHover] = useState(false);
+  const [nameWidth, setNameWidth] = useState(150); // Default width
+  const nameRef = useRef<HTMLSpanElement>(null);
   
   const {
     attributes,
@@ -51,6 +53,17 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
     opacity: isDragging ? 0.5 : 1,
     zIndex: isDragging ? 1 : 0,
   };
+  
+  // Update name width based on content
+  useEffect(() => {
+    if (nameRef.current) {
+      // Get the content width plus some padding
+      const newWidth = Math.max(150, nameRef.current.scrollWidth + 20);
+      setNameWidth(newWidth);
+    }
+  }, [recipient.name]);
+
+  const inputHoverClass = "hover:outline hover:outline-2 hover:outline-black";
 
   return (
     <div 
@@ -82,17 +95,26 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
         </Button>
         
         <div 
-          className="w-3/4 mx-auto"
+          className="mx-auto"
           onMouseEnter={() => setIsInputHover(true)}
           onMouseLeave={() => setIsInputHover(false)}
         >
-          <Input
-            value={recipient.name}
-            onChange={(e) => onUpdate({ name: e.target.value })}
-            className="border-none p-0 h-auto text-base font-medium focus-visible:ring-0 w-full text-center"
-            placeholder="Enter Name"
-            onClick={(e) => e.stopPropagation()} // Prevent selection toggle when editing
-          />
+          <div className="relative inline-block">
+            <span 
+              ref={nameRef} 
+              className="invisible absolute whitespace-nowrap"
+            >
+              {recipient.name || "Enter Name"}
+            </span>
+            <Input
+              value={recipient.name}
+              onChange={(e) => onUpdate({ name: e.target.value })}
+              className={`border-none p-0 h-auto text-base font-medium focus-visible:ring-0 text-center ${inputHoverClass}`}
+              placeholder="Enter Name"
+              onClick={(e) => e.stopPropagation()} // Prevent selection toggle when editing
+              style={{ width: `${nameWidth}px` }}
+            />
+          </div>
         </div>
       </div>
 
@@ -127,7 +149,7 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
             step={recipient.isFixedAmount ? "10" : "0.1"}
             value={recipient.value || ""}
             onChange={(e) => onUpdate({ value: parseFloat(e.target.value) || 0 })}
-            className="w-24 text-right"
+            className={`w-24 text-right ${inputHoverClass}`}
             placeholder={recipient.isFixedAmount ? "Amount" : "Shares"}
           />
         </div>
