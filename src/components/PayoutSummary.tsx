@@ -1,3 +1,4 @@
+
 import React, { useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/format";
@@ -162,7 +163,7 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
           </div>
 
           {chartData.length > 0 && (
-            <div className="flex justify-center py-4">
+            <div className="flex justify-center py-2">  {/* Reduced vertical padding from py-4 to py-2 */}
               <div className="w-full" style={{ height: 250 }}>
                 <PieChart 
                   width={400} 
