@@ -1,4 +1,3 @@
-
 import React, { useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/format";
@@ -337,9 +336,11 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
                       <span className="text-xs text-gray-500 ml-2">
                         {valueDisplay}
                       </span>
-                      <span className="text-xs text-blue-500 ml-1">
-                        {percentage}%
-                      </span>
+                      {type !== "%" && (
+                        <span className="text-xs text-blue-500 ml-1">
+                          {percentage}%
+                        </span>
+                      )}
                     </div>
                     <div className="font-medium">
                       {type === "$" ? formatCurrency(recipient.payout) : 
