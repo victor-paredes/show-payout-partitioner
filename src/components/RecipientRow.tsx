@@ -1,5 +1,5 @@
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, CSSProperties } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Trash2, GripVertical, ChevronDown, Square, Palette } from "lucide-react";
@@ -79,15 +79,19 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
   // Create a consistent height style
   const rowHeight = 72; // Match this height with the calculation in Group/UngroupedSection
 
-  const style = {
+  // Fix the TypeScript error by specifying the position as a proper Position type
+  const style: CSSProperties = {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
     zIndex: isDragging ? 10 : 0, // Higher z-index when dragging
     height: `${rowHeight}px`, // Fixed height for consistency
-    // Add a placeholder height when dragging to maintain the container size
-    ...(isDragging ? { position: 'relative' } : {}),
   };
+  
+  // Add position property only when dragging
+  if (isDragging) {
+    style.position = 'relative'; // This is now typed correctly
+  }
   
   useEffect(() => {
     if (nameRef.current) {
@@ -137,20 +141,6 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
     if (!isInteractiveElement) {
       onToggleSelect();
     }
-  };
-
-  const handleNameInputClick = (e: React.MouseEvent<HTMLInputElement>) => {
-    // Select all text in the input when clicked
-    const target = e.target as HTMLInputElement;
-    target.select();
-    e.stopPropagation(); // Prevent row selection
-  };
-
-  const handleValueInputClick = (e: React.MouseEvent<HTMLInputElement>) => {
-    // Select all text in the input when clicked
-    const target = e.target as HTMLInputElement;
-    target.select();
-    e.stopPropagation(); // Prevent row selection
   };
 
   // Use custom color if available, otherwise use the generated color
