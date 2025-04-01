@@ -1,3 +1,4 @@
+
 import React, { useRef, useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/format";
@@ -196,6 +197,20 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
 
   const emptyPieData = [{ name: "empty", value: 1 }];
 
+  // Function to apply desaturation filter to non-hovered items
+  const getSliceStyle = (index: number) => {
+    if (hoveredChartIndex !== -1 && hoveredChartIndex !== index) {
+      return {
+        filter: "saturate(0.4) opacity(0.4)", // Combines desaturation with opacity
+        transition: "filter 0.3s ease"
+      };
+    }
+    return {
+      filter: "saturate(1) opacity(1)",
+      transition: "filter 0.3s ease"
+    };
+  };
+
   return (
     <Card>
       <CardHeader className="pb-2">
@@ -263,7 +278,7 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
                         <Cell 
                           key={`cell-${index}`} 
                           fill={entry.color}
-                          fillOpacity={hoveredChartIndex !== -1 && hoveredChartIndex !== index ? 0.4 : 1} 
+                          style={getSliceStyle(index)}
                         />
                       ))}
                     </Pie>
@@ -331,7 +346,12 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
                             ? 'ring-1 ring-black' 
                             : ''
                         }`}
-                        style={{ backgroundColor: recipientColor }}
+                        style={{ 
+                          backgroundColor: recipientColor,
+                          ...(hoveredRecipientId !== null && hoveredRecipientId !== recipient.id 
+                            ? { filter: 'saturate(0.4)' } 
+                            : {})
+                        }}
                       />
                       <span>{recipient.name}</span>
                       {valueDisplay && (
