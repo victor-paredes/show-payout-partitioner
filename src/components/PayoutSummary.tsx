@@ -263,7 +263,7 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
                         <Cell 
                           key={`cell-${index}`} 
                           fill={entry.color}
-                          fillOpacity={hoveredChartIndex !== -1 && hoveredChartIndex !== index ? 0.1 : 1} 
+                          fillOpacity={hoveredChartIndex !== -1 && hoveredChartIndex !== index ? 0.4 : 1} 
                         />
                       ))}
                     </Pie>
