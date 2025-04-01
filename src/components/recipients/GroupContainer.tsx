@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Recipient, Group } from "@/hooks/useRecipientsManager"; // Update import
 import RecipientItem from "./RecipientItem";
@@ -66,12 +65,8 @@ const GroupContainer: React.FC<GroupContainerProps> = ({
   };
   
   const handleEditSave = () => {
-    // Parent component should handle the actual update
     setIsEditing(false);
     if (editedName.trim() !== group.name) {
-      // This should update the group in the parent state
-      // You'll need to implement this function
-      // For now, we'll just log it
       console.log(`Group name changed from ${group.name} to ${editedName}`);
     }
   };
@@ -185,7 +180,7 @@ const GroupContainer: React.FC<GroupContainerProps> = ({
               valuePerShare={valuePerShare}
               onDragStart={(id) => onDragStart(id, group.id)}
               isDragging={draggedRecipientId === recipient.id}
-              onHover={onHover}
+              onHover={onHover ? (id) => onHover(id) : undefined}
             />
           ))
         )}

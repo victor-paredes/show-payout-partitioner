@@ -82,7 +82,7 @@ const UngroupedContainer: React.FC<UngroupedContainerProps> = ({
             valuePerShare={valuePerShare}
             onDragStart={(id) => onDragStart(id, "ungrouped")}
             isDragging={draggedRecipientId === recipient.id}
-            onHover={onHover}
+            onHover={onHover ? (id) => onHover(id) : undefined}
           />
         ))
       )}
