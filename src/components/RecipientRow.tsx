@@ -1,7 +1,7 @@
+
 import React, { useState, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { Trash2, GripVertical, ChevronDown, Square } from "lucide-react";
 import { formatCurrency } from "@/lib/format";
 import { useSortable } from "@dnd-kit/sortable";
@@ -165,6 +165,13 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
     e.stopPropagation(); // Prevent row selection
   };
 
+  const handleValueInputClick = (e: React.MouseEvent<HTMLInputElement>) => {
+    // Select all text in the input when clicked
+    const target = e.target as HTMLInputElement;
+    target.select();
+    e.stopPropagation(); // Prevent row selection
+  };
+
   const getRecipientColor = (recipientId: string) => {
     const hashCode = Array.from(recipientId).reduce(
       (acc, char) => acc + char.charCodeAt(0), 0
@@ -265,6 +272,7 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
             currentType === "$" ? "Amount" : 
             "Percent"
           }
+          onClick={handleValueInputClick}
         />
       </div>
 
