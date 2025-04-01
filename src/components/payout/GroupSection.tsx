@@ -6,6 +6,7 @@ import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
 import { useDroppable } from "@dnd-kit/core";
 import RecipientRow from "../RecipientRow";
 import { Recipient, Group } from "@/hooks/useRecipients";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface GroupSectionProps {
   group: Group;
@@ -44,28 +45,25 @@ const GroupSection: React.FC<GroupSectionProps> = ({
     id: group.id
   });
 
-  const getDropIndicator = () => {
+  const getTooltipContent = () => {
     if (!dragSourceId || !activeDroppableId) return null;
     
     // Add to Group: Show when dragging from ungrouped to this group
     if (dragSourceId === 'ungrouped' && activeDroppableId === group.id) {
       return (
-        <div className="flex items-center justify-center py-2 text-green-600 bg-green-50 rounded-md border border-green-200 mt-2">
+        <TooltipContent side="top" className="bg-green-50 border-green-200 text-green-600">
           <span className="text-sm font-medium">+ Add to Group</span>
-        </div>
+        </TooltipContent>
       );
     } 
     // Moving between groups: Show when dragging from a different group to this group
     else if (dragSourceId !== group.id && activeDroppableId === group.id && dragSourceId !== 'ungrouped') {
       return (
-        <div className="flex items-center justify-center py-2 text-blue-600 bg-blue-50 rounded-md border border-blue-200 mt-2">
+        <TooltipContent side="top" className="bg-blue-50 border-blue-200 text-blue-600">
           <span className="text-sm font-medium">+ Move to Group</span>
-        </div>
+        </TooltipContent>
       );
     }
-    
-    // Removed the case where we show "Remove from Group" when dragSourceId === group.id
-    // This will now only be shown in the UngroupedSection component
     
     return null;
   };
@@ -80,6 +78,9 @@ const GroupSection: React.FC<GroupSectionProps> = ({
     const minHeight = Math.max(recipients.length, minRows) * baseRowHeight;
     return `${minHeight}px`;
   };
+
+  const tooltipContent = getTooltipContent();
+  const showTooltip = !!tooltipContent;
 
   return (
     <div className="mb-6">
@@ -104,50 +105,55 @@ const GroupSection: React.FC<GroupSectionProps> = ({
         </Button>
       </h3>
       
-      <div 
-        ref={setNodeRef}
-        className="space-y-2 p-2 rounded-md border-2 border-dashed border-gray-200 transition-all hover:border-gray-300"
-        style={{ 
-          borderColor: group.color + '40', // Add 40 for transparency
-          background: activeDroppableId === group.id ? group.color + '10' : 'transparent',
-          minHeight: calculateMinHeight(),
-          transition: "min-height 0.15s ease-in-out, background-color 0.15s ease-in-out"
-        }}
-      >
-        <SortableContext 
-          items={recipients.map(r => r.id)} 
-          strategy={verticalListSortingStrategy}
-        >
-          {recipients.map((recipient, rowIndex) => (
-            <RecipientRow
-              key={recipient.id}
-              recipient={recipient}
-              onUpdate={(updates) => updateRecipient(recipient.id, updates)}
-              onRemove={() => removeRecipient(recipient.id)}
-              valuePerShare={valuePerShare}
-              isSelected={selectedRecipients.has(recipient.id)}
-              onToggleSelect={() => toggleSelectRecipient(recipient.id)}
-              isHighlighted={hoveredRecipientId === recipient.id}
-              onRecipientHover={onRecipientHover}
-              columnWiseTabbing={columnWiseTabbing}
-              rowIndex={rowIndex}
-              totalRows={recipients.length}
-            />
-          ))}
-        </SortableContext>
-        
-        {getDropIndicator()}
-        
-        <Button
-          variant="ghost"
-          size="sm"
-          className="w-full text-xs h-6 justify-start"
-          onClick={() => addRecipients(group.id)}
-        >
-          <Plus className="h-3 w-3 mr-1" />
-          Add Recipients
-        </Button>
-      </div>
+      <TooltipProvider>
+        <Tooltip open={showTooltip}>
+          <TooltipTrigger asChild>
+            <div 
+              ref={setNodeRef}
+              className="space-y-2 p-2 rounded-md border-2 border-dashed border-gray-200 transition-all hover:border-gray-300"
+              style={{ 
+                borderColor: group.color + '40', // Add 40 for transparency
+                background: activeDroppableId === group.id ? group.color + '10' : 'transparent',
+                minHeight: calculateMinHeight(),
+                transition: "min-height 0.15s ease-in-out, background-color 0.15s ease-in-out"
+              }}
+            >
+              <SortableContext 
+                items={recipients.map(r => r.id)} 
+                strategy={verticalListSortingStrategy}
+              >
+                {recipients.map((recipient, rowIndex) => (
+                  <RecipientRow
+                    key={recipient.id}
+                    recipient={recipient}
+                    onUpdate={(updates) => updateRecipient(recipient.id, updates)}
+                    onRemove={() => removeRecipient(recipient.id)}
+                    valuePerShare={valuePerShare}
+                    isSelected={selectedRecipients.has(recipient.id)}
+                    onToggleSelect={() => toggleSelectRecipient(recipient.id)}
+                    isHighlighted={hoveredRecipientId === recipient.id}
+                    onRecipientHover={onRecipientHover}
+                    columnWiseTabbing={columnWiseTabbing}
+                    rowIndex={rowIndex}
+                    totalRows={recipients.length}
+                  />
+                ))}
+              </SortableContext>
+              
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full text-xs h-6 justify-start"
+                onClick={() => addRecipients(group.id)}
+              >
+                <Plus className="h-3 w-3 mr-1" />
+                Add Recipients
+              </Button>
+            </div>
+          </TooltipTrigger>
+          {tooltipContent}
+        </Tooltip>
+      </TooltipProvider>
     </div>
   );
 };
