@@ -267,7 +267,7 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
             )}
 
             <h3 className="font-semibold mb-3">Individual Payouts</h3>
-            <div className="space-y-2">
+            <div className="space-y-1">
               {recipients.map((recipient) => {
                 const recipientChartData = chartData.find(item => item.id === recipient.id);
                 const percentage = recipientChartData ? recipientChartData.percentage : "0";
@@ -288,7 +288,7 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
                     key={recipient.id} 
                     className={`flex justify-between p-1 rounded ${
                       hoveredRecipientId === recipient.id 
-                        ? 'bg-blue-100' 
+                        ? 'bg-gray-100' 
                         : ''
                     }`}
                     onMouseEnter={() => onRecipientHover?.(recipient.id)}
