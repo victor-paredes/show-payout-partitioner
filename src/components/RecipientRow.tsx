@@ -39,6 +39,8 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
   onHover
 }) => {
   const [isInputHover, setIsInputHover] = useState(false);
+  // New state to track if the row itself is being hovered
+  const [isRowHovered, setIsRowHovered] = useState(false);
   const [nameWidth, setNameWidth] = useState(150); // Default width
   const nameRef = useRef<HTMLSpanElement>(null);
   
@@ -67,6 +69,10 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
     }
   }, [recipient.name]);
 
+  // Only show highlighting if the row itself is being hovered,
+  // not when the highlight comes from elsewhere in the UI
+  const shouldShowHighlight = isRowHovered;
+
   const inputHoverClass = "hover:outline hover:outline-2 hover:outline-black";
 
   return (
@@ -74,9 +80,9 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
       ref={setNodeRef} 
       style={{
         ...style,
-        borderWidth: isHighlighted ? '2px' : '1px',
-        borderColor: isHighlighted ? 'black' : isSelected ? '#90cdf4' : '#e2e8f0', 
-        backgroundColor: isHighlighted ? 'rgb(249 250 251)' : isSelected ? 'rgb(239 246 255)' : 'white',
+        borderWidth: shouldShowHighlight ? '2px' : '1px',
+        borderColor: shouldShowHighlight ? 'black' : isSelected ? '#90cdf4' : '#e2e8f0', 
+        backgroundColor: shouldShowHighlight ? 'rgb(249 250 251)' : isSelected ? 'rgb(239 246 255)' : 'white',
         boxSizing: 'border-box'
       }}
       className={`flex items-center rounded-md shadow-sm p-4 gap-4 cursor-pointer transition-colors ${
@@ -89,10 +95,12 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
       onClick={onToggleSelect}
       onMouseEnter={() => {
         setIsInputHover(false);
+        setIsRowHovered(true);
         onHover(true);
       }}
       onMouseLeave={() => {
         setIsInputHover(false);
+        setIsRowHovered(false);
         onHover(false);
       }}
     >
@@ -125,7 +133,7 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
             value={recipient.name}
             onChange={(e) => onUpdate({ name: e.target.value })}
             className={`border-none p-0 h-auto text-base font-medium focus-visible:ring-0 ${inputHoverClass} ${
-              isHighlighted ? 'bg-gray-50' : ''
+              shouldShowHighlight ? 'bg-gray-50' : ''
             }`}
             placeholder="Enter Name"
             onClick={(e) => e.stopPropagation()} // Prevent selection toggle when editing
@@ -166,7 +174,7 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
           value={recipient.value || ""}
           onChange={(e) => onUpdate({ value: parseFloat(e.target.value) || 0 })}
           className={`w-24 text-right ${inputHoverClass} ${
-            isHighlighted ? 'bg-gray-50' : ''
+            shouldShowHighlight ? 'bg-gray-50' : ''
           }`}
           placeholder={recipient.isFixedAmount ? "Amount" : "Shares"}
         />
