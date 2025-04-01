@@ -159,11 +159,13 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
       </CardHeader>
       <CardContent>
         <div className="space-y-4" ref={summaryRef} id="payout-summary">
-          <div className="text-center mb-4">
-            <h2 className="text-3xl font-bold text-blue-900">
-              {formatCurrency(totalPayout)}
-            </h2>
-            <p className="text-sm text-gray-600">Total Payout</p>
+          <div className="flex justify-center mb-4">
+            <div className="border border-gray-200 rounded-md px-6 py-4 inline-block text-center">
+              <h2 className="text-3xl font-bold text-blue-900">
+                {formatCurrency(totalPayout)}
+              </h2>
+              <p className="text-sm text-gray-600">Total Payout</p>
+            </div>
           </div>
 
           {chartData.length > 0 && (
