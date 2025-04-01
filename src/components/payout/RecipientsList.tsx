@@ -13,7 +13,9 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-  DragEndEvent
+  DragEndEvent,
+  DragOverlay,
+  DragStartEvent
 } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -28,6 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useDroppable } from "@dnd-kit/core";
 
 interface RecipientsListProps {
   recipients: Recipient[];
@@ -82,6 +85,7 @@ const RecipientsList = ({
 }: RecipientsListProps) => {
   const [confirmClearOpen, setConfirmClearOpen] = useState(false);
   const [columnWiseTabbing, setColumnWiseTabbing] = useState(false);
+  const [activeDragId, setActiveDragId] = useState<string | null>(null);
   
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -89,6 +93,20 @@ const RecipientsList = ({
       coordinateGetter: sortableKeyboardCoordinates,
     })
   );
+
+  const { setNodeRef: setUngroupedRef } = useDroppable({
+    id: 'ungrouped'
+  });
+
+  const handleDragStart = (event: DragStartEvent) => {
+    const { active } = event;
+    setActiveDragId(active.id as string);
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    setActiveDragId(null);
+    handleDragEnd(event);
+  };
 
   const clearAllSelections = () => {
     setSelectedRecipients(new Set());
@@ -194,6 +212,7 @@ const RecipientsList = ({
         <DndContext 
           sensors={sensors} 
           collisionDetection={closestCenter}
+          onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
         >
           <div className="space-y-2">
@@ -208,6 +227,10 @@ const RecipientsList = ({
                   <div key={group.id} className="mb-6">
                     <h3 className="text-sm font-medium mb-2 text-gray-600 flex items-center justify-between">
                       <div className="flex items-center">
+                        <div 
+                          className="h-2 w-2 rounded-full mr-2"
+                          style={{ backgroundColor: group.color }}
+                        ></div>
                         {group.name}
                         <span className="text-xs ml-2 text-gray-500">
                           ({recipients.length} recipient{recipients.length !== 1 ? 's' : ''})
@@ -223,7 +246,10 @@ const RecipientsList = ({
                       </Button>
                     </h3>
                     
-                    <div className="space-y-2">
+                    <div 
+                      className="space-y-2 p-2 rounded-md border-2 border-dashed border-gray-200 transition-all hover:border-gray-300"
+                      style={{ borderColor: group.color + '40' }} // Add 40 for transparency
+                    >
                       <SortableContext 
                         items={recipients.map(r => r.id)} 
                         strategy={verticalListSortingStrategy}
@@ -261,7 +287,10 @@ const RecipientsList = ({
                 {/* Ungrouped recipients - displayed last */}
                 <div className="mb-6">
                   <h3 className="text-sm font-medium mb-2 text-gray-600">Ungrouped</h3>
-                  <div className="space-y-2">
+                  <div 
+                    ref={setUngroupedRef}
+                    className="space-y-2 p-2 rounded-md border-2 border-dashed border-gray-200 transition-all hover:border-gray-300"
+                  >
                     <SortableContext 
                       items={groupedRecipients.ungroupedRecipients.map(r => r.id)} 
                       strategy={verticalListSortingStrategy}

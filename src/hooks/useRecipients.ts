@@ -143,7 +143,11 @@ export function useRecipients() {
     setGroups(groups.filter(group => group.id !== groupId));
     
     safeSetRecipients(
-      recipients.filter(recipient => recipient.groupId !== groupId)
+      recipients.map(recipient => 
+        recipient.groupId === groupId 
+          ? { ...recipient, groupId: undefined } 
+          : recipient
+      )
     );
   };
   
@@ -241,14 +245,30 @@ export function useRecipients() {
           )
         );
       }
-      else {
-        setRecipients((items) => {
-          const oldIndex = items.findIndex(item => item.id === active.id);
-          const newIndex = items.findIndex(item => item.id === over.id);
+      else if (typeof over.id === 'string' && typeof active.id === 'string') {
+        const activeRecipient = recipients.find(r => r.id === active.id);
+        const overRecipient = recipients.find(r => r.id === over.id);
+        
+        if (activeRecipient && overRecipient && 
+            activeRecipient.groupId === overRecipient.groupId) {
           
-          if (oldIndex === -1 || newIndex === -1) return items;
-          return arrayMove(items, oldIndex, newIndex);
-        });
+          setRecipients((items) => {
+            const oldIndex = items.findIndex(item => item.id === active.id);
+            const newIndex = items.findIndex(item => item.id === over.id);
+            
+            if (oldIndex === -1 || newIndex === -1) return items;
+            return arrayMove(items, oldIndex, newIndex);
+          });
+        } 
+        else if (activeRecipient && overRecipient) {
+          safeSetRecipients(
+            recipients.map(recipient => 
+              recipient.id === active.id 
+                ? { ...recipient, groupId: overRecipient.groupId } 
+                : recipient
+            )
+          );
+        }
       }
     }
   };

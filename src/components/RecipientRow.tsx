@@ -26,6 +26,7 @@ interface Recipient {
   payout: number;
   type?: RecipientType;
   color?: string;
+  groupId?: string;
 }
 
 interface RecipientRowProps {
@@ -67,7 +68,12 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
     transform,
     transition,
     isDragging
-  } = useSortable({ id: recipient.id });
+  } = useSortable({ 
+    id: recipient.id,
+    data: {
+      recipient: recipient
+    } 
+  });
 
   const style = {
     transform: CSS.Transform.toString(transform),
