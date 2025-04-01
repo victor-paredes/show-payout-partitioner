@@ -32,29 +32,33 @@ const ColorPickerModal: React.FC<ColorPickerModalProps> = ({
         </DialogHeader>
         
         <div className="py-4">
-          <div className="mb-4">
-            <div className="h-12 rounded-md border" style={{ backgroundColor: selectedColor }}></div>
-          </div>
-          
-          <div className="flex flex-col items-center">
-            <HexColorPicker 
-              color={selectedColor} 
-              onChange={setSelectedColor} 
-              className="w-full max-w-[240px]"
-            />
-            <div className="mt-4 flex items-center gap-3">
-              <div className="text-sm font-medium">Hex:</div>
-              <input
-                type="text"
-                value={selectedColor}
-                onChange={(e) => setSelectedColor(e.target.value)}
-                className="px-2 py-1 border rounded w-28 text-sm font-mono"
+          <div className="flex flex-col md:flex-row gap-4 w-full items-center">
+            <div className="flex-1">
+              <HexColorPicker 
+                color={selectedColor} 
+                onChange={setSelectedColor} 
+                className="w-full"
               />
             </div>
+            
+            <div 
+              className="w-full md:w-[240px] h-[240px] rounded-md border" 
+              style={{ backgroundColor: selectedColor }}
+            />
+          </div>
+          
+          <div className="mt-4 flex items-center justify-center gap-3">
+            <div className="text-sm font-medium">Hex:</div>
+            <input
+              type="text"
+              value={selectedColor}
+              onChange={(e) => setSelectedColor(e.target.value)}
+              className="px-2 py-1 border rounded w-28 text-sm font-mono"
+            />
           </div>
         </div>
         
-        <DialogFooter>
+        <DialogFooter className="flex justify-center sm:justify-center gap-2">
           <Button 
             variant="outline" 
             onClick={() => onOpenChange(false)}
