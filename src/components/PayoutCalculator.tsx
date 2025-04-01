@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,6 +47,7 @@ const PayoutCalculator = () => {
   const [totalShares, setTotalShares] = useState<number>(0);
   const [valuePerShare, setValuePerShare] = useState<number>(0);
   const [recipientCount, setRecipientCount] = useState<string>("1");
+  const [selectedRecipients, setSelectedRecipients] = useState<Set<string>>(new Set());
 
   // Set up DnD sensors
   const sensors = useSensors(
@@ -89,15 +89,45 @@ const PayoutCalculator = () => {
       });
       return;
     }
+    
+    // Remove from selections if selected
+    if (selectedRecipients.has(id)) {
+      const newSelectedRecipients = new Set(selectedRecipients);
+      newSelectedRecipients.delete(id);
+      setSelectedRecipients(newSelectedRecipients);
+    }
+    
     setRecipients(recipients.filter(recipient => recipient.id !== id));
   };
 
+  const toggleSelectRecipient = (id: string) => {
+    const newSelectedRecipients = new Set(selectedRecipients);
+    if (newSelectedRecipients.has(id)) {
+      newSelectedRecipients.delete(id);
+    } else {
+      newSelectedRecipients.add(id);
+    }
+    setSelectedRecipients(newSelectedRecipients);
+  };
+
   const updateRecipient = (id: string, updates: Partial<Recipient>) => {
-    setRecipients(
-      recipients.map(recipient => 
-        recipient.id === id ? { ...recipient, ...updates } : recipient
-      )
-    );
+    // If the recipient is selected, apply the same update to all selected recipients
+    if (selectedRecipients.has(id) && selectedRecipients.size > 1) {
+      const updatedRecipients = recipients.map(recipient => {
+        if (selectedRecipients.has(recipient.id)) {
+          return { ...recipient, ...updates };
+        }
+        return recipient;
+      });
+      setRecipients(updatedRecipients);
+    } else {
+      // Otherwise, just update this one recipient
+      setRecipients(
+        recipients.map(recipient => 
+          recipient.id === id ? { ...recipient, ...updates } : recipient
+        )
+      );
+    }
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -225,6 +255,8 @@ const PayoutCalculator = () => {
                     onUpdate={(updates) => updateRecipient(recipient.id, updates)}
                     onRemove={() => removeRecipient(recipient.id)}
                     valuePerShare={valuePerShare}
+                    isSelected={selectedRecipients.has(recipient.id)}
+                    onToggleSelect={() => toggleSelectRecipient(recipient.id)}
                   />
                 ))}
               </SortableContext>

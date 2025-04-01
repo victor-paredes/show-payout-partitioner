@@ -22,6 +22,8 @@ interface RecipientRowProps {
   onUpdate: (updates: Partial<Recipient>) => void;
   onRemove: () => void;
   valuePerShare: number;
+  isSelected: boolean;
+  onToggleSelect: () => void;
 }
 
 const RecipientRow: React.FC<RecipientRowProps> = ({
@@ -29,6 +31,8 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
   onUpdate,
   onRemove,
   valuePerShare,
+  isSelected,
+  onToggleSelect,
 }) => {
   const {
     attributes,
@@ -50,7 +54,10 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
     <div 
       ref={setNodeRef} 
       style={style}
-      className="flex flex-col bg-white rounded-md shadow-sm border p-4 space-y-2"
+      className={`flex flex-col bg-white rounded-md shadow-sm border p-4 space-y-2 cursor-pointer ${
+        isSelected ? "bg-blue-50 border-blue-300" : ""
+      }`}
+      onClick={onToggleSelect}
     >
       <div className="flex flex-col md:flex-row items-start md:items-center gap-3">
         <Button
@@ -59,6 +66,7 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
           className="cursor-grab text-gray-400 hover:text-gray-600"
           {...attributes}
           {...listeners}
+          onClick={(e) => e.stopPropagation()} // Prevent selection toggle when dragging
         >
           <GripVertical className="h-4 w-4" />
         </Button>
@@ -69,11 +77,12 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
             onChange={(e) => onUpdate({ name: e.target.value })}
             className="border-none p-0 h-auto text-base font-medium focus-visible:ring-0"
             placeholder="Recipient name"
+            onClick={(e) => e.stopPropagation()} // Prevent selection toggle when editing
           />
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2" onClick={(e) => e.stopPropagation()}>
             <Switch
               id={`fixed-switch-${recipient.id}`}
               checked={recipient.isFixedAmount}
@@ -84,7 +93,7 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
             </Label>
           </div>
 
-          <div className="flex items-center">
+          <div className="flex items-center" onClick={(e) => e.stopPropagation()}>
             {recipient.isFixedAmount && <span className="mr-1">$</span>}
             <Input
               type="number"
@@ -106,7 +115,10 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
           <Button
             variant="ghost"
             size="icon"
-            onClick={onRemove}
+            onClick={(e) => {
+              e.stopPropagation();
+              onRemove();
+            }}
             className="text-gray-400 hover:text-red-500"
           >
             <Trash2 className="h-4 w-4" />
