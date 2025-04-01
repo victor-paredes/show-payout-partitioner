@@ -69,7 +69,7 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
     <div 
       ref={setNodeRef} 
       style={style}
-      className={`flex flex-col bg-white rounded-md shadow-sm border p-4 space-y-4 cursor-pointer transition-colors ${
+      className={`flex items-center bg-white rounded-md shadow-sm border p-4 gap-4 cursor-pointer transition-colors ${
         isSelected ? "bg-blue-50 border-blue-300" : ""
       } ${
         !isInputHover 
@@ -81,99 +81,99 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
       onClick={onToggleSelect}
       onMouseEnter={() => setIsInputHover(false)}
     >
-      {/* First row - Name + Drag Handle */}
-      <div className="flex items-center justify-center relative">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="cursor-grab text-gray-400 hover:text-gray-600 absolute left-0"
-          {...attributes}
-          {...listeners}
-          onClick={(e) => e.stopPropagation()} // Prevent selection toggle when dragging
-        >
-          <GripVertical className="h-4 w-4" />
-        </Button>
-        
-        <div 
-          className="mx-auto"
-          onMouseEnter={() => setIsInputHover(true)}
-          onMouseLeave={() => setIsInputHover(false)}
-        >
-          <div className="relative inline-block">
-            <span 
-              ref={nameRef} 
-              className="invisible absolute whitespace-nowrap"
-            >
-              {recipient.name || "Enter Name"}
-            </span>
-            <Input
-              value={recipient.name}
-              onChange={(e) => onUpdate({ name: e.target.value })}
-              className={`border-none p-0 h-auto text-base font-medium focus-visible:ring-0 text-center ${inputHoverClass}`}
-              placeholder="Enter Name"
-              onClick={(e) => e.stopPropagation()} // Prevent selection toggle when editing
-              style={{ width: `${nameWidth}px` }}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Second row - Controls */}
-      <div className="flex items-center gap-3 justify-between">
-        <div 
-          className="flex items-center space-x-2" 
-          onClick={(e) => e.stopPropagation()}
-          onMouseEnter={() => setIsInputHover(true)}
-          onMouseLeave={() => setIsInputHover(false)}
-        >
-          <Switch
-            id={`fixed-switch-${recipient.id}`}
-            checked={recipient.isFixedAmount}
-            onCheckedChange={(checked) => onUpdate({ isFixedAmount: checked })}
-          />
-          <Label htmlFor={`fixed-switch-${recipient.id}`} className="text-sm text-gray-500">
-            {recipient.isFixedAmount ? "Fixed $" : "Shares"}
-          </Label>
-        </div>
-
-        <div 
-          className="flex items-center" 
-          onClick={(e) => e.stopPropagation()}
-          onMouseEnter={() => setIsInputHover(true)}
-          onMouseLeave={() => setIsInputHover(false)}
-        >
-          {recipient.isFixedAmount && <span className="mr-1">$</span>}
-          <Input
-            type="number"
-            min="0"
-            step={recipient.isFixedAmount ? "10" : "0.1"}
-            value={recipient.value || ""}
-            onChange={(e) => onUpdate({ value: parseFloat(e.target.value) || 0 })}
-            className={`w-24 text-right ${inputHoverClass}`}
-            placeholder={recipient.isFixedAmount ? "Amount" : "Shares"}
-          />
-        </div>
-
-        <div className="w-28 text-right">
-          <span className="font-medium">
-            {formatCurrency(recipient.payout)}
+      {/* Drag Handle */}
+      <Button
+        variant="ghost"
+        size="icon"
+        className="cursor-grab text-gray-400 hover:text-gray-600"
+        {...attributes}
+        {...listeners}
+        onClick={(e) => e.stopPropagation()} // Prevent selection toggle when dragging
+      >
+        <GripVertical className="h-4 w-4" />
+      </Button>
+      
+      {/* Name Input */}
+      <div 
+        className="flex-1"
+        onMouseEnter={() => setIsInputHover(true)}
+        onMouseLeave={() => setIsInputHover(false)}
+      >
+        <div className="relative inline-block">
+          <span 
+            ref={nameRef} 
+            className="invisible absolute whitespace-nowrap"
+          >
+            {recipient.name || "Enter Name"}
           </span>
+          <Input
+            value={recipient.name}
+            onChange={(e) => onUpdate({ name: e.target.value })}
+            className={`border-none p-0 h-auto text-base font-medium focus-visible:ring-0 ${inputHoverClass}`}
+            placeholder="Enter Name"
+            onClick={(e) => e.stopPropagation()} // Prevent selection toggle when editing
+            style={{ width: `${nameWidth}px` }}
+          />
         </div>
-
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={(e) => {
-            e.stopPropagation();
-            onRemove();
-          }}
-          className="text-gray-400 hover:text-red-500"
-          onMouseEnter={() => setIsInputHover(true)}
-          onMouseLeave={() => setIsInputHover(false)}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
       </div>
+
+      {/* Fixed/Shares Switch */}
+      <div 
+        className="flex items-center space-x-2" 
+        onClick={(e) => e.stopPropagation()}
+        onMouseEnter={() => setIsInputHover(true)}
+        onMouseLeave={() => setIsInputHover(false)}
+      >
+        <Switch
+          id={`fixed-switch-${recipient.id}`}
+          checked={recipient.isFixedAmount}
+          onCheckedChange={(checked) => onUpdate({ isFixedAmount: checked })}
+        />
+        <Label htmlFor={`fixed-switch-${recipient.id}`} className="text-sm text-gray-500 whitespace-nowrap">
+          {recipient.isFixedAmount ? "Fixed $" : "Shares"}
+        </Label>
+      </div>
+
+      {/* Value Input */}
+      <div 
+        className="flex items-center" 
+        onClick={(e) => e.stopPropagation()}
+        onMouseEnter={() => setIsInputHover(true)}
+        onMouseLeave={() => setIsInputHover(false)}
+      >
+        {recipient.isFixedAmount && <span className="mr-1">$</span>}
+        <Input
+          type="number"
+          min="0"
+          step={recipient.isFixedAmount ? "10" : "0.1"}
+          value={recipient.value || ""}
+          onChange={(e) => onUpdate({ value: parseFloat(e.target.value) || 0 })}
+          className={`w-24 text-right ${inputHoverClass}`}
+          placeholder={recipient.isFixedAmount ? "Amount" : "Shares"}
+        />
+      </div>
+
+      {/* Payout Display */}
+      <div className="w-28 text-right">
+        <span className="font-medium">
+          {formatCurrency(recipient.payout)}
+        </span>
+      </div>
+
+      {/* Delete Button */}
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={(e) => {
+          e.stopPropagation();
+          onRemove();
+        }}
+        className="text-gray-400 hover:text-red-500"
+        onMouseEnter={() => setIsInputHover(true)}
+        onMouseLeave={() => setIsInputHover(false)}
+      >
+        <Trash2 className="h-4 w-4" />
+      </Button>
     </div>
   );
 };
