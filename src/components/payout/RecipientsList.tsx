@@ -88,9 +88,11 @@ const RecipientsList = ({
   
   const sensors = useSensors(
     useSensor(PointerSensor, {
-      // Adding activation constraints to make it easier to drop on empty areas
+      // Reduce the activation constraints to make it easier to drop on empty areas
       activationConstraint: {
-        distance: 5, // Minimum drag distance in pixels before activation
+        distance: 3, // Lower distance to make dragging start more easily
+        tolerance: 5, // Add tolerance for better sensitivity
+        delay: 0,  // No delay
       }
     }),
     useSensor(KeyboardSensor, {

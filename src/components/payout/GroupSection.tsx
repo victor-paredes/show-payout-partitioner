@@ -126,7 +126,8 @@ const GroupSection: React.FC<GroupSectionProps> = ({
                     />
                   ))
                 ) : (
-                  <div className="flex items-center justify-center h-[72px] rounded-md border border-dashed border-gray-300 bg-gray-50 text-gray-400 text-sm">
+                  // Make sure this placeholder div doesn't block the droppable area
+                  <div className="flex items-center justify-center h-[72px] rounded-md border border-dashed border-gray-300 bg-gray-50 text-gray-400 text-sm pointer-events-none">
                     Drop a recipient here
                   </div>
                 )}
