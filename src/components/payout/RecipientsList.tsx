@@ -2,8 +2,7 @@
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Trash2, X, ArrowRight, ArrowDown, Users, FolderPlus, FolderMinus } from "lucide-react";
-import RecipientRow from "../RecipientRow";
+import { Plus, Trash2, X, ArrowRight, ArrowDown, Users } from "lucide-react";
 import { Recipient, Group } from "@/hooks/useRecipients";
 import ConfirmationModal from "@/components/ConfirmationModal";
 import {
@@ -14,24 +13,21 @@ import {
   useSensor,
   useSensors,
   DragEndEvent,
-  DragOverlay,
   DragStartEvent,
   DragOverEvent
 } from "@dnd-kit/core";
 import {
-  SortableContext,
-  sortableKeyboardCoordinates,
-  verticalListSortingStrategy
+  sortableKeyboardCoordinates
 } from "@dnd-kit/sortable";
 import {
   Select,
-  SelectContent,
   SelectContentNonPortal,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useDroppable } from "@dnd-kit/core";
+import GroupSection from './GroupSection';
+import UngroupedSection from './UngroupedSection';
 
 interface RecipientsListProps {
   recipients: Recipient[];
@@ -97,10 +93,6 @@ const RecipientsList = ({
     })
   );
 
-  const { setNodeRef: setUngroupedRef } = useDroppable({
-    id: 'ungrouped'
-  });
-
   const handleDragStart = (event: DragStartEvent) => {
     const { active } = event;
     setActiveDragId(active.id as string);
@@ -146,112 +138,8 @@ const RecipientsList = ({
     setColumnWiseTabbing(!columnWiseTabbing);
   };
 
-  const getDropIndicator = (groupId: string) => {
-    if (!activeDragId || !activeDroppableId) return null;
-    
-    if (dragSourceId === 'ungrouped' && activeDroppableId === groupId) {
-      return (
-        <div className="flex items-center justify-center py-2 text-green-600 bg-green-50 rounded-md border border-green-200 mt-2">
-          <FolderPlus className="w-4 h-4 mr-2" />
-          <span className="text-sm font-medium">Add to Group</span>
-        </div>
-      );
-    } else if (dragSourceId === groupId && activeDroppableId === 'ungrouped') {
-      return (
-        <div className="flex items-center justify-center py-2 text-amber-600 bg-amber-50 rounded-md border border-amber-200 mt-2">
-          <FolderMinus className="w-4 h-4 mr-2" />
-          <span className="text-sm font-medium">Remove from Group</span>
-        </div>
-      );
-    } else if (dragSourceId !== groupId && activeDroppableId === groupId && dragSourceId !== 'ungrouped') {
-      return (
-        <div className="flex items-center justify-center py-2 text-blue-600 bg-blue-50 rounded-md border border-blue-200 mt-2">
-          <FolderPlus className="w-4 h-4 mr-2" />
-          <span className="text-sm font-medium">Move to this Group</span>
-        </div>
-      );
-    }
-    
-    return null;
-  };
-
   const actualRecipientCount = recipients.length;
   const recipientsTitle = `${actualRecipientCount} ${actualRecipientCount === 1 ? 'Recipient' : 'Recipients'}`;
-
-  // Function to render a group section
-  const renderGroup = ({ group, recipients }: { group: Group; recipients: Recipient[] }) => {
-    const { setNodeRef } = useDroppable({
-      id: group.id
-    });
-    
-    return (
-      <div key={group.id} className="mb-6">
-        <h3 className="text-sm font-medium mb-2 text-gray-600 flex items-center justify-between">
-          <div className="flex items-center">
-            <div 
-              className="h-2 w-2 rounded-full mr-2"
-              style={{ backgroundColor: group.color }}
-            ></div>
-            {group.name}
-            <span className="text-xs ml-2 text-gray-500">
-              ({recipients.length} recipient{recipients.length !== 1 ? 's' : ''})
-            </span>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-6 w-6 p-0 hover:text-red-500"
-            onClick={() => removeGroup(group.id)}
-          >
-            <Trash2 className="h-3 w-3" />
-          </Button>
-        </h3>
-        
-        <div 
-          ref={setNodeRef}
-          className="space-y-2 p-2 rounded-md border-2 border-dashed border-gray-200 transition-all hover:border-gray-300"
-          style={{ 
-            borderColor: group.color + '40', // Add 40 for transparency
-            background: activeDroppableId === group.id ? group.color + '10' : 'transparent'
-          }}
-        >
-          <SortableContext 
-            items={recipients.map(r => r.id)} 
-            strategy={verticalListSortingStrategy}
-          >
-            {recipients.map((recipient, rowIndex) => (
-              <RecipientRow
-                key={recipient.id}
-                recipient={recipient}
-                onUpdate={(updates) => updateRecipient(recipient.id, updates)}
-                onRemove={() => removeRecipient(recipient.id)}
-                valuePerShare={valuePerShare}
-                isSelected={selectedRecipients.has(recipient.id)}
-                onToggleSelect={() => toggleSelectRecipient(recipient.id)}
-                isHighlighted={hoveredRecipientId === recipient.id}
-                onRecipientHover={onRecipientHover}
-                columnWiseTabbing={columnWiseTabbing}
-                rowIndex={rowIndex}
-                totalRows={recipients.length}
-              />
-            ))}
-          </SortableContext>
-          
-          {getDropIndicator(group.id)}
-          
-          <Button
-            variant="ghost"
-            size="sm"
-            className="w-full text-xs h-6 justify-start"
-            onClick={() => addRecipients(group.id)}
-          >
-            <Plus className="h-3 w-3 mr-1" />
-            Add Recipients
-          </Button>
-        </div>
-      </div>
-    );
-  };
 
   return (
     <Card>
@@ -346,51 +234,41 @@ const RecipientsList = ({
               </div>
             ) : (
               <>
-                {/* Grouped recipients - displayed first */}
-                {groupedRecipients.recipientsByGroup.map(({ group, recipients }) => 
-                  renderGroup({ group, recipients })
-                )}
+                {/* Always show groups, even when empty */}
+                {groupedRecipients.recipientsByGroup.map(({ group, recipients }) => (
+                  <GroupSection
+                    key={group.id}
+                    group={group}
+                    recipients={recipients}
+                    removeGroup={removeGroup}
+                    addRecipients={addRecipients}
+                    updateRecipient={updateRecipient}
+                    removeRecipient={removeRecipient}
+                    selectedRecipients={selectedRecipients}
+                    toggleSelectRecipient={toggleSelectRecipient}
+                    valuePerShare={valuePerShare}
+                    hoveredRecipientId={hoveredRecipientId}
+                    onRecipientHover={onRecipientHover}
+                    columnWiseTabbing={columnWiseTabbing}
+                    activeDroppableId={activeDroppableId}
+                    dragSourceId={dragSourceId}
+                  />
+                ))}
                 
-                {/* Ungrouped recipients - displayed last */}
-                <div className="mb-6">
-                  <h3 className="text-sm font-medium mb-2 text-gray-600">Ungrouped</h3>
-                  <div 
-                    ref={setUngroupedRef}
-                    className="space-y-2 p-2 rounded-md border-2 border-dashed border-gray-200 transition-all hover:border-gray-300"
-                    style={{ 
-                      background: activeDroppableId === 'ungrouped' ? 'rgba(0, 0, 0, 0.03)' : 'transparent'
-                    }}
-                  >
-                    <SortableContext 
-                      items={groupedRecipients.ungroupedRecipients.map(r => r.id)} 
-                      strategy={verticalListSortingStrategy}
-                    >
-                      {groupedRecipients.ungroupedRecipients.map((recipient, rowIndex) => (
-                        <RecipientRow
-                          key={recipient.id}
-                          recipient={recipient}
-                          onUpdate={(updates) => updateRecipient(recipient.id, updates)}
-                          onRemove={() => removeRecipient(recipient.id)}
-                          valuePerShare={valuePerShare}
-                          isSelected={selectedRecipients.has(recipient.id)}
-                          onToggleSelect={() => toggleSelectRecipient(recipient.id)}
-                          isHighlighted={hoveredRecipientId === recipient.id}
-                          onRecipientHover={onRecipientHover}
-                          columnWiseTabbing={columnWiseTabbing}
-                          rowIndex={rowIndex}
-                          totalRows={groupedRecipients.ungroupedRecipients.length}
-                        />
-                      ))}
-                    </SortableContext>
-                    
-                    {dragSourceId && dragSourceId !== 'ungrouped' && activeDroppableId === 'ungrouped' && (
-                      <div className="flex items-center justify-center py-2 text-amber-600 bg-amber-50 rounded-md border border-amber-200 mt-2">
-                        <FolderMinus className="w-4 h-4 mr-2" />
-                        <span className="text-sm font-medium">Remove from Group</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
+                {/* Show the ungrouped section */}
+                <UngroupedSection
+                  recipients={groupedRecipients.ungroupedRecipients}
+                  updateRecipient={updateRecipient}
+                  removeRecipient={removeRecipient}
+                  selectedRecipients={selectedRecipients}
+                  toggleSelectRecipient={toggleSelectRecipient}
+                  valuePerShare={valuePerShare}
+                  hoveredRecipientId={hoveredRecipientId}
+                  onRecipientHover={onRecipientHover}
+                  columnWiseTabbing={columnWiseTabbing}
+                  activeDroppableId={activeDroppableId}
+                  dragSourceId={dragSourceId}
+                />
               </>
             )}
           </div>
