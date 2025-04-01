@@ -1,4 +1,3 @@
-
 import React, { useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/format";
@@ -231,10 +230,9 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
           )}
 
           <div className="border-t pt-4 mt-4">
-            {/* Move Surplus here, before Individual Payouts title */}
             {hasSurplus && (
               <div 
-                className={`flex justify-between p-1 rounded mb-3 ${
+                className={`flex justify-between p-1 rounded mb-3 border border-gray-200 ${
                   hoveredRecipientId === "surplus" 
                     ? 'bg-blue-100' 
                     : ''
@@ -262,7 +260,6 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
 
             <h3 className="font-semibold mb-3">Individual Payouts</h3>
             <div className="space-y-2">
-              {/* Remove the previous Surplus section here */}
               {recipients.map((recipient) => {
                 const recipientChartData = chartData.find(item => item.id === recipient.id);
                 const percentage = recipientChartData ? recipientChartData.percentage : "0";
