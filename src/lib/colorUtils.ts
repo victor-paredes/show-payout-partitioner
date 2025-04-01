@@ -10,7 +10,6 @@ export const COLORS = [
   "#0284C7", // Ocean Blue
   "#1E40AF", // Navy Blue
   "#1D4ED8", // Cobalt Blue
-  "#4338CA", // Deep Blue
   "#1E3A8A", // Dark Navy
   
   // Greens
@@ -18,7 +17,6 @@ export const COLORS = [
   "#059669", // Vivid Green
   "#16A34A", // Bright Green
   "#15803D", // Forest Green
-  "#166534", // Jungle Green
   "#22C55E", // Lime Green
   "#65A30D", // Avocado
   
@@ -29,17 +27,12 @@ export const COLORS = [
   "#BE123C", // Ruby
   "#DB2777", // Fuchsia
   "#EC4899", // Hot Pink
-  "#9D174D", // Deep Crimson
   
-  // Purples
+  // Purples (reduced)
   "#8B5CF6", // Vivid Purple
   "#7C3AED", // Electric Purple
   "#9333EA", // Rich Purple
-  "#7E22CE", // Royal Purple
   "#D946EF", // Magenta Pink
-  "#C026D3", // Bright Purple
-  "#701A75", // Plum
-  "#A21CAF", // Dark Magenta
   
   // Oranges/Yellows
   "#F97316", // Vivid Orange
@@ -69,7 +62,6 @@ export const COLORS = [
   "#0F172A", // Navy Black
   "#4B5563", // Slate
   "#4F46E5", // Indigo
-  "#A855F7", // Orchid
   "#FB7185", // Coral
 ];
 
