@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -197,7 +196,7 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
             <Input
               value={recipient.name}
               onChange={(e) => onUpdate({ name: e.target.value })}
-              className={`border-none p-0 h-auto text-base font-medium focus-visible:ring-0 ${inputHoverClass}`}
+              className={`w-full text-base font-medium`}
               placeholder="Enter Name"
               onClick={handleNameInputClick}
               style={{ width: `${nameWidth}px` }}
