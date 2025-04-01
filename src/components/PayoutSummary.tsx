@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/format";
@@ -76,7 +75,7 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
         {payload.map((entry: any, index: number) => (
           <div 
             key={`legend-${index}`} 
-            className="flex items-center cursor-pointer"
+            className="flex items-center cursor-pointer px-1"
             onMouseEnter={() => setHoveredIndex(index)}
             onMouseLeave={() => setHoveredIndex(null)}
           >
