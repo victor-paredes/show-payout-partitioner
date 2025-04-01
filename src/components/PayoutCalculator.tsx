@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from "react";
 import TotalPayoutInput from "./payout/TotalPayoutInput";
 import RecipientsList from "./payout/RecipientsList";
@@ -110,6 +111,7 @@ const PayoutCalculator = () => {
 
   const handleImport = (newRecipients: Recipient[], replace: boolean) => {
     if (replace) {
+      // Make sure to preserve color property from imported recipients
       setRecipients(newRecipients);
       
       let highestId = 0;

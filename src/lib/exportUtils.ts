@@ -1,4 +1,3 @@
-
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
 import { getRecipientColor, COLORS } from "./colorUtils";
@@ -210,31 +209,37 @@ export const importFromCsv = async (
         let value = valueIndex !== -1 && rowData[valueIndex] ? parseFloat(rowData[valueIndex]) : 1;
         
         // Get color if available
-        const color = colorIndex !== -1 && rowData[colorIndex] ? rowData[colorIndex] : undefined;
+        let color = undefined;
+        if (colorIndex !== -1 && rowData[colorIndex]) {
+          // Make sure the color string is properly formatted (remove quotes, trim, etc.)
+          color = rowData[colorIndex].replace(/^["']|["']$/g, '').trim();
+          
+          // Validate it's a proper color format (hex code)
+          if (!/^#[0-9A-F]{6}$/i.test(color) && !COLORS.includes(color)) {
+            console.warn(`Invalid color format: ${color}, using generated color instead`);
+            color = undefined;
+          }
+        }
         
         // Validate value
         if (isNaN(value)) value = 1;
         
-        let id;
-        if (color) {
-          // Generate a unique ID that will produce the desired color
-          // Add a unique prefix based on current timestamp to ensure uniqueness even for same colors
-          id = generateIdForColor(color, idPrefix + '-' + i);
-        } else {
-          // Generate a completely unique ID
-          id = idPrefix + '-' + i.toString();
-        }
-        
-        // Create the recipient
-        recipients.push({
-          id,
+        // Create recipient with direct color property
+        const recipient = {
+          id: `${idPrefix}-${i}`,
           name,
           value,
           type: type as ("shares" | "$" | "%"),
           payout: 0, // Payout will be calculated later
           isFixedAmount: type === "$",
-          color
-        });
+        };
+        
+        // Only add color if it's valid
+        if (color) {
+          recipient.color = color;
+        }
+        
+        recipients.push(recipient);
       }
     }
     
@@ -244,40 +249,6 @@ export const importFromCsv = async (
     throw error;
   }
 };
-
-/**
- * Generates an ID that, when used with getRecipientColor, will produce the desired color
- * @param targetColor The color we want to generate
- * @param seed A seed to make the generation more deterministic
- * @returns An ID string that will produce the target color
- */
-function generateIdForColor(targetColor: string, seed: string): string {
-  // Find the index of the target color in the COLORS array
-  const colorIndex = COLORS.indexOf(targetColor);
-  
-  if (colorIndex === -1) {
-    // If the color isn't in our standard palette, just return a random ID
-    return seed + Math.random().toString(36).substr(2, 6);
-  }
-  
-  // Create a deterministic ID that will hash to the desired color index
-  // Include the seed in the ID to ensure uniqueness across different import operations
-  let id = seed;
-  
-  // Calculate the current hash
-  let currentHash = Array.from(id).reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  let currentIndex = currentHash % COLORS.length;
-  
-  // Calculate how many to add to get to our target
-  let toAdd = (colorIndex - currentIndex + COLORS.length) % COLORS.length;
-  
-  // Add a character with the right charCode to get us to the target index
-  if (toAdd > 0) {
-    id += String.fromCharCode(toAdd);
-  }
-  
-  return id;
-}
 
 /**
  * Parse a CSV row handling quoted values

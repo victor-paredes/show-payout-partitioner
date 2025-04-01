@@ -1,10 +1,11 @@
+
 import React, { useRef, useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/format";
 import { PieChart, Pie, Cell } from "recharts";
 import { X } from "lucide-react";
 import { RecipientType } from "@/components/RecipientRow";
-import { getRecipientColor } from "@/lib/colorUtils";
+import { getRecipientColor, SURPLUS_COLOR, OVERDRAW_COLOR } from "@/lib/colorUtils";
 
 interface Recipient {
   id: string;
