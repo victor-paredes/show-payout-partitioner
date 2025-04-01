@@ -18,7 +18,8 @@ const PayoutCalculator = () => {
     removeRecipient,
     toggleSelectRecipient,
     updateRecipient,
-    handleDragEnd
+    handleDragEnd,
+    clearRecipients
   } = useRecipients();
 
   const {
@@ -105,6 +106,7 @@ const PayoutCalculator = () => {
           valuePerShare={valuePerShare}
           hoveredRecipientId={hoveredRecipientId || undefined}
           onRecipientHover={handleRecipientHover}
+          clearRecipients={clearRecipients}
         />
       </div>
 

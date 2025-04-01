@@ -104,6 +104,32 @@ export function useRecipients() {
     }
   };
 
+  const clearRecipients = () => {
+    if (recipients.length === 1) {
+      toast({
+        title: "No changes needed",
+        description: "There's already only one recipient",
+      });
+      return;
+    }
+    
+    const firstRecipient = {
+      ...recipients[0],
+      name: "Recipient 1",
+      isFixedAmount: false,
+      value: 1,
+      payout: 0
+    };
+    
+    setRecipients([firstRecipient]);
+    setSelectedRecipients(new Set());
+    
+    toast({
+      title: "Recipients cleared",
+      description: "All recipients have been removed except one",
+    });
+  };
+
   return {
     recipients,
     setRecipients,
@@ -116,5 +142,6 @@ export function useRecipients() {
     toggleSelectRecipient,
     updateRecipient,
     handleDragEnd,
+    clearRecipients,
   };
 }

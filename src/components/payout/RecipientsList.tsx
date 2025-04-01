@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, X } from "lucide-react";
+import { Plus, X, Trash2 } from "lucide-react";
 import RecipientRow from "../RecipientRow";
 import { Recipient } from "@/hooks/useRecipients";
 import {
@@ -41,6 +41,7 @@ interface RecipientsListProps {
   valuePerShare: number;
   hoveredRecipientId?: string;
   onRecipientHover?: (id: string | null) => void;
+  clearRecipients?: () => void;
 }
 
 const RecipientsList = ({
@@ -56,7 +57,8 @@ const RecipientsList = ({
   handleDragEnd,
   valuePerShare,
   hoveredRecipientId,
-  onRecipientHover
+  onRecipientHover,
+  clearRecipients
 }: RecipientsListProps) => {
   // Set up DnD sensors
   const sensors = useSensors(
@@ -103,6 +105,14 @@ const RecipientsList = ({
                 ))}
               </SelectContent>
             </Select>
+            <Button 
+              onClick={clearRecipients} 
+              variant="outline" 
+              size="sm" 
+              className="flex items-center"
+            >
+              <Trash2 className="mr-1 h-4 w-4" /> Clear
+            </Button>
             <Button onClick={addRecipients} variant="outline" size="sm" className="flex items-center">
               <Plus className="mr-1 h-4 w-4" /> Add Recipient{parseInt(recipientCount) > 1 ? 's' : ''}
             </Button>
