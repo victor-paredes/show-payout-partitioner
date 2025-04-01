@@ -172,9 +172,10 @@ const RecipientsList = ({
         onOpenChange={setConfirmClearOpen}
         title="Clear Recipients"
         description="Are you sure you want to clear all recipients? This action cannot be undone."
-        confirmLabel="Yes, clear all"
-        cancelLabel="Cancel"
+        confirmLabel="Clear All"
+        cancelLabel="Go Back"
         onConfirm={handleConfirmClear}
+        variant="destructive"
       />
     </Card>
   );

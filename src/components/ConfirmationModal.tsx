@@ -10,6 +10,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle
 } from "@/components/ui/alert-dialog";
+import { cn } from "@/lib/utils";
 
 interface ConfirmationModalProps {
   open: boolean;
@@ -19,6 +20,7 @@ interface ConfirmationModalProps {
   confirmLabel?: string;
   cancelLabel?: string;
   onConfirm: () => void;
+  variant?: "default" | "destructive";
 }
 
 const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
@@ -27,19 +29,29 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   title,
   description,
   confirmLabel = "Continue",
-  cancelLabel = "Cancel",
-  onConfirm
+  cancelLabel = "Go Back",
+  onConfirm,
+  variant = "default"
 }) => {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
+      <AlertDialogContent className={cn(
+        variant === "destructive" && "border-2 border-destructive"
+      )}>
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>
           <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>{cancelLabel}</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirm}>{confirmLabel}</AlertDialogAction>
+          <AlertDialogAction 
+            onClick={onConfirm}
+            className={cn(
+              variant === "destructive" && "bg-destructive hover:bg-destructive/90"
+            )}
+          >
+            {confirmLabel}
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
