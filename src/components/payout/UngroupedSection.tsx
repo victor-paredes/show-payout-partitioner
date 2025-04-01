@@ -3,7 +3,7 @@ import React from "react";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { useDroppable } from "@dnd-kit/core";
 import RecipientRow from "../RecipientRow";
-import { Recipient } from "@/hooks/useRecipients";
+import { Recipient } from "@/types/recipient";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface UngroupedSectionProps {

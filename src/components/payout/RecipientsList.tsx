@@ -1,9 +1,8 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, Trash2, X, ArrowRight, ArrowDown, Users } from "lucide-react";
-import { Recipient, Group } from "@/hooks/useRecipients";
+import { Recipient, Group } from "@/types/recipient";
 import ConfirmationModal from "@/components/ConfirmationModal";
 import {
   DndContext,
@@ -89,11 +88,10 @@ const RecipientsList = ({
   
   const sensors = useSensors(
     useSensor(PointerSensor, {
-      // Enhanced activation constraints to improve first item drag experience
       activationConstraint: {
-        distance: 2, // Even lower distance to make dragging start more easily
-        tolerance: 10, // Increased tolerance for better sensitivity
-        delay: 0,  // No delay
+        distance: 2,
+        tolerance: 10,
+        delay: 0,
       }
     }),
     useSensor(KeyboardSensor, {
@@ -105,7 +103,6 @@ const RecipientsList = ({
     const { active } = event;
     setActiveDragId(active.id as string);
     
-    // Determine the source group
     const draggedRecipient = recipients.find(r => r.id === active.id);
     setDragSourceId(draggedRecipient?.groupId || 'ungrouped');
   };
@@ -119,7 +116,6 @@ const RecipientsList = ({
     }
   };
 
-  // Renamed to onDragEnd to avoid name conflict with the prop
   const onDragEnd = (event: DragEndEvent) => {
     setActiveDragId(null);
     setActiveDroppableId(null);
@@ -247,7 +243,6 @@ const RecipientsList = ({
               </div>
             ) : (
               <>
-                {/* Always show groups, even when empty */}
                 {groupedRecipients.recipientsByGroup.map(({ group, recipients }) => (
                   <GroupSection
                     key={group.id}
@@ -268,7 +263,6 @@ const RecipientsList = ({
                   />
                 ))}
                 
-                {/* Show the ungrouped section */}
                 <UngroupedSection
                   recipients={groupedRecipients.ungroupedRecipients}
                   updateRecipient={updateRecipient}

@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, ChevronDown, ChevronRight, Edit2, Trash2 } from "lucide-react";
-import { Group } from "@/hooks/useRecipients";
+import { Group } from "@/types/recipient";
 import { useDroppable } from "@dnd-kit/core";
 
 interface GroupsManagerProps {
