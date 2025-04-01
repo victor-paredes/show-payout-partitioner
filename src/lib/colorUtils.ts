@@ -4,65 +4,65 @@
  * Used by both RecipientRow and PayoutSummary components
  */
 export const COLORS = [
-  // Blues
-  "#2563EB", // Royal Blue
-  "#0EA5E9", // Vivid Sky Blue
-  "#0284C7", // Ocean Blue
-  "#1E40AF", // Navy Blue
-  "#1D4ED8", // Cobalt Blue
-  "#1E3A8A", // Dark Navy
-  
-  // Greens
-  "#10B981", // Emerald
-  "#059669", // Vivid Green
-  "#16A34A", // Bright Green
-  "#15803D", // Forest Green
-  "#22C55E", // Lime Green
-  "#65A30D", // Avocado
-  
-  // Reds/Pinks
-  "#EF4444", // Bright Red
+  // Reds
   "#E11D48", // Crimson
   "#DC2626", // Fire Red
-  "#BE123C", // Ruby
-  "#DB2777", // Fuchsia
-  "#EC4899", // Hot Pink
+  "#EF4444", // Bright Red
+  "#FB7185", // Coral
   
-  // Purples (reduced)
-  "#8B5CF6", // Vivid Purple
-  "#7C3AED", // Electric Purple
-  "#9333EA", // Rich Purple
-  "#D946EF", // Magenta Pink
-  
-  // Oranges/Yellows
+  // Oranges
   "#F97316", // Vivid Orange
-  "#F59E0B", // Amber
   "#EA580C", // Dark Orange
-  "#D97706", // Bronze
-  "#CA8A04", // Mustard
+  "#F59E0B", // Amber
   "#FACC15", // Sunny Yellow
+  
+  // Yellows
   "#EAB308", // Golden Yellow
-  "#C2410C", // Burnt Orange
+  "#CA8A04", // Mustard
+  "#A16207", // Gold
+  "#65A30D", // Avocado
+  
+  // Greens
+  "#22C55E", // Lime Green
+  "#16A34A", // Bright Green
+  "#059669", // Vivid Green
+  "#10B981", // Emerald
   
   // Teals/Cyans
+  "#06B6D4", // Bright Cyan
+  "#0891B2", // Cyan
   "#0D9488", // Dark Teal
   "#0F766E", // Deep Teal
-  "#0891B2", // Cyan
-  "#06B6D4", // Bright Cyan
-  "#0E7490", // Blue Lagoon
   
-  // Browns/Earthy
-  "#B45309", // Cinnamon
-  "#92400E", // Coffee
-  "#A16207", // Gold
+  // Blues
+  "#0EA5E9", // Vivid Sky Blue
+  "#0284C7", // Ocean Blue
+  "#2563EB", // Royal Blue
+  "#1D4ED8", // Cobalt Blue
+  
+  // Indigos/Purples
+  "#4F46E5", // Indigo
+  "#7C3AED", // Electric Purple
+  "#8B5CF6", // Vivid Purple
+  "#9333EA", // Rich Purple
+  
+  // Magentas/Pinks
+  "#D946EF", // Magenta Pink
+  "#DB2777", // Fuchsia
+  "#EC4899", // Hot Pink
+  "#BE123C", // Ruby
+  
+  // Browns/Earthy (for variety)
   "#78350F", // Chocolate
+  "#92400E", // Coffee
+  "#B45309", // Cinnamon
   "#713F12", // Deep Brown
   
-  // Miscellaneous 
+  // Slate/Navy (for variety)
+  "#1E3A8A", // Dark Navy
+  "#1E40AF", // Navy Blue
   "#0F172A", // Navy Black
   "#4B5563", // Slate
-  "#4F46E5", // Indigo
-  "#FB7185", // Coral
 ];
 
 /**
