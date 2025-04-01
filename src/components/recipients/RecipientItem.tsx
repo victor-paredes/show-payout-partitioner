@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,7 +49,11 @@ const RecipientItem: React.FC<RecipientItemProps> = ({
   }, [recipient.name]);
 
   const handleTypeChange = (value: string) => {
-    onUpdate({ type: value as RecipientType });
+    const newType = value as RecipientType;
+    onUpdate({ 
+      type: newType,
+      isFixedAmount: newType === "$"
+    });
   };
 
   const handleClick = (e: React.MouseEvent) => {
@@ -67,7 +70,6 @@ const RecipientItem: React.FC<RecipientItemProps> = ({
     }
   };
 
-  // Use custom color if available, otherwise use the generated color
   const recipientColor = recipient.color || getRecipientColor(recipient.id);
 
   return (

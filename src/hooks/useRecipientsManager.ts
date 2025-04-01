@@ -11,6 +11,7 @@ export interface Recipient {
   value: number;
   payout: number;
   type: RecipientType;
+  isFixedAmount: boolean; // Added this property to make types compatible
   color?: string;
   groupId?: string;
 }
@@ -71,6 +72,7 @@ export function useRecipientsManager() {
         value: 1,
         payout: 0,
         type: "shares" as RecipientType,
+        isFixedAmount: false, // Initialize with false for share types
         groupId
       };
     });
@@ -103,6 +105,11 @@ export function useRecipientsManager() {
     // Sanitize name if present
     if (updates.name) {
       updates.name = updates.name.replace(/<[^>]*>/g, '');
+    }
+    
+    // Handle type changes by updating isFixedAmount too
+    if (updates.type) {
+      updates.isFixedAmount = updates.type === '$';
     }
     
     // Handle multi-selection update
