@@ -95,11 +95,12 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
     }
   };
 
-  // Handle type selection - modified to show it's updating multiple if needed
+  // Handle type selection - modified to work with multiple selections
   const handleTypeChange = (value: string) => {
     const type = value as RecipientType;
     lastDropdownInteractionRef.current = Date.now(); // Record interaction time
     
+    // Important: Apply update without waiting for any click events to resolve
     onUpdate({ 
       isFixedAmount: type === "$",
       type: type

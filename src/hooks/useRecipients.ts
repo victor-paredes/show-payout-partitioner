@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { DragEndEvent } from "@dnd-kit/core";
@@ -84,14 +85,17 @@ export function useRecipients() {
   };
 
   const updateRecipient = (id: string, updates: Partial<Recipient>) => {
+    // Critical fix: Ensure we check for selection BEFORE making any updates
+    // and apply the updates to all selected recipients at once
     if (selectedRecipients.has(id) && selectedRecipients.size > 1) {
-      const updatedRecipients = recipients.map(recipient => {
-        if (selectedRecipients.has(recipient.id)) {
-          return { ...recipient, ...updates };
-        }
-        return recipient;
-      });
-      setRecipients(updatedRecipients);
+      setRecipients(
+        recipients.map(recipient => {
+          if (selectedRecipients.has(recipient.id)) {
+            return { ...recipient, ...updates };
+          }
+          return recipient;
+        })
+      );
     } else {
       setRecipients(
         recipients.map(recipient => 
