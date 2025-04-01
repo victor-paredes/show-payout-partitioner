@@ -124,11 +124,6 @@ const GroupItem: React.FC<GroupItemProps> = ({
             <ChevronRight className="h-4 w-4 text-gray-500" />
           )}
           
-          <div 
-            className="w-3 h-3 rounded-sm" 
-            style={{ backgroundColor: group.color }}
-          />
-          
           {isEditing ? (
             <Input
               value={name}

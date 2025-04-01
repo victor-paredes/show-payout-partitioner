@@ -76,18 +76,20 @@ export const exportToPdf = async (element: HTMLElement, defaultFileName: string)
  * @param recipients The array of recipients with payout information
  * @param totalPayout The total payout amount
  * @param defaultFileName The default name for the CSV file
+ * @param groups An array of groups with color and expanded status
  */
 export const exportToCsv = (
-  recipients: Array<{id: string; name: string; value: number; type?: string; payout: number; color?: string}>,
+  recipients: Array<{id: string; name: string; value: number; type?: string; payout: number; color?: string; groupId?: string}>,
   totalPayout: number,
-  defaultFileName: string
+  defaultFileName: string,
+  groups?: Array<{id: string; name: string; color: string; expanded: boolean}>
 ) => {
   try {
     // Ask user for file name
     const fileName = prompt("Enter a name for your CSV file", defaultFileName) || defaultFileName;
     
-    // Create CSV header row
-    const headers = ['Name', 'Type', 'Value', 'Payout ($)', 'Percentage (%)', 'Color'];
+    // Create CSV header row for recipients
+    const headers = ['Name', 'Type', 'Value', 'Payout ($)', 'Percentage (%)', 'Color', 'GroupID'];
     
     // Create CSV content
     let csvContent = headers.join(',') + '\n';
@@ -109,7 +111,8 @@ export const exportToCsv = (
         recipient.value.toString(),
         recipient.payout.toFixed(2),
         percentage,
-        `"${color}"`
+        `"${color}"`,
+        `"${recipient.groupId || ''}"`
       ];
       
       csvContent += row.join(',') + '\n';
@@ -120,6 +123,29 @@ export const exportToCsv = (
     
     // Add a special marker row with the total payout for import purposes
     csvContent += `"__TOTAL_PAYOUT__",,"${totalPayout.toFixed(2)}",,\n`;
+    
+    // Add group information if available
+    if (groups && groups.length > 0) {
+      // Add a separator
+      csvContent += '\n';
+      
+      // Add group header row
+      const groupHeaders = ['__GROUP_DATA__', 'ID', 'Name', 'Color', 'Expanded'];
+      csvContent += groupHeaders.join(',') + '\n';
+      
+      // Add group data
+      groups.forEach(group => {
+        const groupRow = [
+          '"__GROUP_DATA__"',
+          `"${group.id}"`,
+          `"${group.name.replace(/"/g, '""')}"`,
+          `"${group.color}"`,
+          group.expanded ? 'true' : 'false'
+        ];
+        
+        csvContent += groupRow.join(',') + '\n';
+      });
+    }
     
     // Create a blob and download link
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -199,7 +225,8 @@ function sanitizeString(input: string): string {
 export const importFromCsv = async (
   csvString: string
 ): Promise<{
-  importedData: Array<{id: string; name: string; value: number; type?: string; payout: number; color?: string}>;
+  importedData: Array<{id: string; name: string; value: number; type?: string; payout: number; color?: string; groupId?: string}>;
+  importedGroups?: Array<{id: string; name: string; color: string; expanded: boolean}>;
   importedTotalPayout?: number;
 }> => {
   try {
@@ -218,13 +245,14 @@ export const importFromCsv = async (
       throw new Error("CSV file must contain at least a header row and one data row");
     }
     
-    // Parse the header row to identify column indices
+    // Parse the header row to identify column indices for recipients
     const headers = parseCSVRow(rows[0]);
     
     const nameIndex = headers.findIndex(h => h.toLowerCase() === 'name');
     const typeIndex = headers.findIndex(h => h.toLowerCase() === 'type');
     const valueIndex = headers.findIndex(h => h.toLowerCase() === 'value');
     const colorIndex = headers.findIndex(h => h.toLowerCase() === 'color');
+    const groupIdIndex = headers.findIndex(h => h.toLowerCase() === 'groupid');
     
     if (nameIndex === -1) {
       throw new Error("CSV must contain a 'Name' column");
@@ -235,7 +263,8 @@ export const importFromCsv = async (
       nameIndex, 
       typeIndex, 
       valueIndex, 
-      colorIndex 
+      colorIndex,
+      groupIdIndex
     });
     
     // Look for total payout marker
@@ -256,15 +285,43 @@ export const importFromCsv = async (
     
     // Process data rows (skip header, total and marker rows)
     const recipients = [];
+    const groups: Array<{id: string; name: string; color: string; expanded: boolean}> = [];
     let colorsImported = 0;
     let rowCount = 0;
     const MAX_ROWS = 1000; // Limit number of rows to prevent DoS
+    let inGroupSection = false;
     
     for (let i = 1; i < rows.length && rowCount < MAX_ROWS; i++) {
       const rowData = parseCSVRow(rows[i]);
       
-      // Skip if this appears to be a total row or the marker row
-      if (rowData[nameIndex]?.toLowerCase() === 'total' || 
+      // Check if we've entered the group data section
+      if (rowData[0] === '__GROUP_DATA__') {
+        inGroupSection = true;
+        
+        // If this is the header row for groups, continue to the next row
+        if (rowData[1] === 'ID') continue;
+        
+        // Process group data
+        if (rowData.length >= 5) {
+          const groupId = rowData[1].replace(/^["']|["']$/g, '').trim();
+          const groupName = sanitizeString(rowData[2].replace(/^["']|["']$/g, '').trim() || 'Unnamed Group');
+          const groupColor = rowData[3].replace(/^["']|["']$/g, '').trim();
+          const isExpanded = rowData[4].toLowerCase() === 'true';
+          
+          groups.push({
+            id: groupId,
+            name: groupName,
+            color: groupColor,
+            expanded: isExpanded
+          });
+        }
+        
+        continue;
+      }
+      
+      // Skip if we're in the group section or if this appears to be a total row or the marker row
+      if (inGroupSection || 
+          rowData[nameIndex]?.toLowerCase() === 'total' || 
           rowData[nameIndex] === '__TOTAL_PAYOUT__') continue;
       
       if (rowData.length >= Math.max(nameIndex, typeIndex, valueIndex) + 1) {
@@ -301,14 +358,24 @@ export const importFromCsv = async (
           if (rawColor && rawColor.trim() !== '') {
             color = rawColor.replace(/^["']|["']$/g, '').trim();
             
-            console.log(`Row ${i} - Found color: "${color}" for recipient "${name}"`);
-            
             // Validate it's a proper color format (hex code or named color)
             if (!/^#[0-9A-F]{6}$/i.test(color) && !COLORS.includes(color)) {
               console.warn(`Invalid color format: ${color}, using generated color instead`);
               color = undefined;
             } else {
               colorsImported++;
+            }
+          }
+        }
+        
+        // Get groupId if available
+        let groupId = undefined;
+        if (groupIdIndex !== -1 && groupIdIndex < rowData.length) {
+          const rawGroupId = rowData[groupIdIndex];
+          if (rawGroupId && rawGroupId.trim() !== '') {
+            groupId = rawGroupId.replace(/^["']|["']$/g, '').trim();
+            if (groupId === '') {
+              groupId = undefined;
             }
           }
         }
@@ -322,12 +389,10 @@ export const importFromCsv = async (
           payout: 0, // Payout will be calculated later
           isFixedAmount: type === "$",
           // Only set color if it's valid
-          ...(color ? { color } : {})
+          ...(color ? { color } : {}),
+          // Add groupId if it exists
+          ...(groupId ? { groupId } : {})
         };
-        
-        if (color) {
-          console.log(`Adding color ${color} to recipient ${name}`);
-        }
         
         recipients.push(recipient);
         rowCount++;
@@ -340,8 +405,13 @@ export const importFromCsv = async (
     }
     
     console.log(`Import summary: ${colorsImported} of ${recipients.length} recipients have custom colors`);
+    console.log(`Imported ${groups.length} groups`);
     
-    return { importedData: recipients, importedTotalPayout };
+    return { 
+      importedData: recipients, 
+      importedGroups: groups.length > 0 ? groups : undefined,
+      importedTotalPayout 
+    };
   } catch (error) {
     console.error('Error parsing CSV:', error);
     throw error;

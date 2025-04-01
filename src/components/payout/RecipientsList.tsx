@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -252,10 +251,6 @@ const RecipientsList = ({
                   {groupedRecipients.recipientsByGroup.map(({ group, recipients }) => (
                     <div key={group.id} className="mb-6">
                       <h3 className="text-sm font-medium mb-2 text-gray-600 flex items-center">
-                        <div 
-                          className="w-3 h-3 rounded-sm mr-2" 
-                          style={{ backgroundColor: group.color }}
-                        />
                         {group.name}
                         <span className="text-xs ml-2 text-gray-500">
                           ({recipients.length} recipient{recipients.length !== 1 ? 's' : ''})

@@ -1,3 +1,4 @@
+
 import React, { useRef, useState } from "react";
 import { 
   HoverCard,
@@ -7,7 +8,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Save, FileUp, AlertTriangle } from "lucide-react";
 import { exportToPdf, exportToCsv, importFromCsv } from "@/lib/exportUtils";
-import { Recipient } from "@/hooks/useRecipients";
+import { Recipient, Group } from "@/hooks/useRecipients";
 import { useToast } from "@/hooks/use-toast";
 import { RecipientType } from "@/components/RecipientRow";
 import {
@@ -24,18 +25,21 @@ import {
 interface PayoutHeaderMenuProps {
   totalPayout: number;
   recipients: Recipient[];
-  onImport: (newRecipients: Recipient[], replace: boolean) => void;
+  groups: Group[];
+  onImport: (newRecipients: Recipient[], replace: boolean, newGroups?: Group[]) => void;
 }
 
 const PayoutHeaderMenu: React.FC<PayoutHeaderMenuProps> = ({ 
   totalPayout, 
   recipients, 
+  groups,
   onImport 
 }) => {
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isImportWarningOpen, setIsImportWarningOpen] = useState(false);
   const [pendingImportData, setPendingImportData] = useState<Recipient[] | null>(null);
+  const [pendingImportGroups, setPendingImportGroups] = useState<Group[] | null>(null);
   const [pendingTotalPayout, setPendingTotalPayout] = useState<number | null>(null);
   const [isImporting, setIsImporting] = useState(false);
 
@@ -53,7 +57,7 @@ const PayoutHeaderMenu: React.FC<PayoutHeaderMenuProps> = ({
   };
 
   const handleExportCsv = () => {
-    exportToCsv(recipients, totalPayout, 'payout-summary');
+    exportToCsv(recipients, totalPayout, 'payout-summary', groups);
   };
 
   const handleImportClick = () => {
@@ -94,7 +98,7 @@ const PayoutHeaderMenu: React.FC<PayoutHeaderMenuProps> = ({
         const csvContent = event.target?.result as string;
         if (!csvContent) throw new Error("Failed to read file");
 
-        const { importedData, importedTotalPayout } = await importFromCsv(csvContent);
+        const { importedData, importedGroups, importedTotalPayout } = await importFromCsv(csvContent);
         
         if (importedData.length === 0) {
           toast({
@@ -116,11 +120,24 @@ const PayoutHeaderMenu: React.FC<PayoutHeaderMenuProps> = ({
             payout: item.payout,
             isFixedAmount: type === "$",
             type: type,
-            ...(item.color ? { color: item.color } : {})
+            ...(item.color ? { color: item.color } : {}),
+            ...(item.groupId ? { groupId: item.groupId } : {})
           };
         });
 
+        // Process group data if available
+        let processedGroups: Group[] | null = null;
+        if (importedGroups && importedGroups.length > 0) {
+          processedGroups = importedGroups.map(group => ({
+            id: group.id,
+            name: group.name,
+            color: group.color,
+            expanded: group.expanded
+          }));
+        }
+
         setPendingImportData(processedData);
+        setPendingImportGroups(processedGroups);
         setPendingTotalPayout(importedTotalPayout || null);
         setIsImportWarningOpen(true);
         setIsImporting(false);
@@ -154,15 +171,17 @@ const PayoutHeaderMenu: React.FC<PayoutHeaderMenuProps> = ({
         localStorage.setItem('importedTotalPayout', pendingTotalPayout.toString());
       }
       
-      onImport(pendingImportData, true);
+      onImport(pendingImportData, true, pendingImportGroups || undefined);
       setIsImportWarningOpen(false);
       
+      const groupMessage = pendingImportGroups ? ` and ${pendingImportGroups.length} groups` : '';
       toast({
         title: "Import successful",
-        description: `Imported ${pendingImportData.length} recipients`,
+        description: `Imported ${pendingImportData.length} recipients${groupMessage}`,
       });
       
       setPendingImportData(null);
+      setPendingImportGroups(null);
       setPendingTotalPayout(null);
     }
   };

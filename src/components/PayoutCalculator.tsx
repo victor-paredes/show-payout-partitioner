@@ -4,7 +4,7 @@ import TotalPayoutInput from "./payout/TotalPayoutInput";
 import RecipientsList from "./payout/RecipientsList";
 import PayoutSummary from "./PayoutSummary";
 import PayoutHeaderMenu from "./payout/PayoutHeaderMenu";
-import { useRecipients, Recipient } from "@/hooks/useRecipients";
+import { useRecipients, Recipient, Group } from "@/hooks/useRecipients";
 import { usePayoutCalculation } from "@/hooks/usePayoutCalculation";
 import { useToast } from "@/hooks/use-toast";
 
@@ -123,13 +123,31 @@ const PayoutCalculator = () => {
     setHoveredRecipientId(id);
   };
 
-  const handleImport = (newRecipients: Recipient[], replace: boolean) => {
+  const handleImport = (newRecipients: Recipient[], replace: boolean, newGroups?: Group[]) => {
     if (replace) {
       console.log("Importing recipients with colors:", 
         newRecipients.map(r => ({ id: r.id, name: r.name, color: r.color }))
       );
       
       setRecipients(newRecipients);
+      
+      // If we have groups to import, set them
+      if (newGroups && newGroups.length > 0) {
+        console.log("Importing groups:", newGroups);
+        setGroups(newGroups);
+        
+        // Find the highest group ID to update lastUsedGroupId
+        let highestGroupId = 0;
+        newGroups.forEach(group => {
+          const groupIdNum = parseInt(group.id);
+          if (!isNaN(groupIdNum) && groupIdNum > highestGroupId) {
+            highestGroupId = groupIdNum;
+          }
+        });
+      } else {
+        // Clear existing groups if no new ones are imported
+        setGroups([]);
+      }
       
       const missingColors = newRecipients.filter(r => r.color === undefined || r.color === '').length;
       const totalWithColors = newRecipients.length - missingColors;
@@ -164,6 +182,7 @@ const PayoutCalculator = () => {
       <PayoutHeaderMenu 
         totalPayout={totalPayout} 
         recipients={recipients}
+        groups={groups}
         onImport={handleImport}
       />
       
