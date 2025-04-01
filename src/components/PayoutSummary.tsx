@@ -247,7 +247,7 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
 
           <div className="border-t pt-4 mt-4">
             {hasSurplus && (
-              <div className="text-xs bg-blue-100 text-blue-700 py-1 px-2 rounded-md flex items-center gap-1">
+              <div className="text-xs bg-blue-100 text-blue-700 py-1 px-2 rounded-md flex items-center gap-1 mb-2">
                 <span>Surplus</span>
                 <span className="text-xs text-blue-500 ml-2">
                   ({((surplus / totalPayout) * 100).toFixed(1)}%)
@@ -257,7 +257,7 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
             )}
             
             {hasOverdraw && (
-              <div className="text-xs bg-blue-100 text-blue-700 py-1 px-2 rounded-md flex items-center gap-1">
+              <div className="text-xs bg-blue-100 text-blue-700 py-1 px-2 rounded-md flex items-center gap-1 mb-2">
                 <span>Overdraw</span>
                 <span className="text-xs text-blue-500 ml-2">
                   ({((overdraw / totalPayout) * 100).toFixed(1)}%)
