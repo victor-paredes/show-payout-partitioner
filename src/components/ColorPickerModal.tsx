@@ -32,8 +32,8 @@ const ColorPickerModal: React.FC<ColorPickerModalProps> = ({
         </DialogHeader>
         
         <div className="py-4">
-          <div className="flex flex-col md:flex-row gap-4 w-full items-center">
-            <div className="flex-1">
+          <div className="flex gap-4 w-full items-center justify-between">
+            <div className="w-[50%]">
               <HexColorPicker 
                 color={selectedColor} 
                 onChange={setSelectedColor} 
@@ -42,7 +42,7 @@ const ColorPickerModal: React.FC<ColorPickerModalProps> = ({
             </div>
             
             <div 
-              className="w-full md:w-[240px] h-[240px] rounded-md border" 
+              className="w-[40%] aspect-square rounded-md border" 
               style={{ backgroundColor: selectedColor }}
             />
           </div>
