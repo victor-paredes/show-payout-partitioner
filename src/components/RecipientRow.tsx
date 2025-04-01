@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -162,14 +163,24 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
         <Select 
           value={currentType} 
           onValueChange={handleTypeChange}
+          onOpenChange={(open) => {
+            // Prevent row deselection when opening the dropdown
+            if (open) {
+              setTimeout(() => {
+                document.body.click = function(e) {
+                  e.stopPropagation();
+                };
+              }, 0);
+            }
+          }}
         >
-          <SelectTrigger className="w-28">
+          <SelectTrigger className="w-28" onClick={(e) => e.stopPropagation()}>
             <SelectValue placeholder="Type" />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="shares">Shares</SelectItem>
-            <SelectItem value="$">$</SelectItem>
-            <SelectItem value="%">%</SelectItem>
+          <SelectContent onClick={(e) => e.stopPropagation()}>
+            <SelectItem value="shares" onClick={(e) => e.stopPropagation()}>Shares</SelectItem>
+            <SelectItem value="$" onClick={(e) => e.stopPropagation()}>$</SelectItem>
+            <SelectItem value="%" onClick={(e) => e.stopPropagation()}>%</SelectItem>
           </SelectContent>
         </Select>
       </div>
