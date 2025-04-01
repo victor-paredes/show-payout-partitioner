@@ -24,8 +24,6 @@ interface RecipientRowProps {
   valuePerShare: number;
   isSelected: boolean;
   onToggleSelect: () => void;
-  isHighlighted: boolean;
-  onHover: (isHovered: boolean) => void;
 }
 
 const RecipientRow: React.FC<RecipientRowProps> = ({
@@ -35,12 +33,8 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
   valuePerShare,
   isSelected,
   onToggleSelect,
-  isHighlighted,
-  onHover
 }) => {
   const [isInputHover, setIsInputHover] = useState(false);
-  // New state to track if the row itself is being hovered
-  const [isRowHovered, setIsRowHovered] = useState(false);
   const [nameWidth, setNameWidth] = useState(150); // Default width
   const nameRef = useRef<HTMLSpanElement>(null);
   
@@ -69,40 +63,23 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
     }
   }, [recipient.name]);
 
-  // Only show highlighting if the row itself is being hovered,
-  // not when the highlight comes from elsewhere in the UI
-  const shouldShowHighlight = isRowHovered;
-
   const inputHoverClass = "hover:outline hover:outline-2 hover:outline-black";
 
   return (
     <div 
       ref={setNodeRef} 
-      style={{
-        ...style,
-        borderWidth: shouldShowHighlight ? '2px' : '1px',
-        borderColor: shouldShowHighlight ? 'black' : isSelected ? '#90cdf4' : '#e2e8f0', 
-        backgroundColor: shouldShowHighlight ? 'rgb(249 250 251)' : isSelected ? 'rgb(239 246 255)' : 'white',
-        boxSizing: 'border-box'
-      }}
-      className={`flex items-center rounded-md shadow-sm p-4 gap-4 cursor-pointer transition-colors ${
+      style={style}
+      className={`flex items-center bg-white rounded-md shadow-sm border p-4 gap-4 cursor-pointer transition-colors ${
+        isSelected ? "bg-blue-50 border-blue-300" : ""
+      } ${
         !isInputHover 
           ? isSelected 
-            ? "hover:bg-blue-100" 
+            ? "hover:border-blue-500 hover:bg-blue-100" 
             : "hover:border-black" 
           : ""
       }`}
       onClick={onToggleSelect}
-      onMouseEnter={() => {
-        setIsInputHover(false);
-        setIsRowHovered(true);
-        onHover(true);
-      }}
-      onMouseLeave={() => {
-        setIsInputHover(false);
-        setIsRowHovered(false);
-        onHover(false);
-      }}
+      onMouseEnter={() => setIsInputHover(false)}
     >
       {/* Drag Handle */}
       <Button
@@ -132,9 +109,7 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
           <Input
             value={recipient.name}
             onChange={(e) => onUpdate({ name: e.target.value })}
-            className={`border-none p-0 h-auto text-base font-medium focus-visible:ring-0 ${inputHoverClass} ${
-              shouldShowHighlight ? 'bg-gray-50' : ''
-            }`}
+            className={`border-none p-0 h-auto text-base font-medium focus-visible:ring-0 ${inputHoverClass}`}
             placeholder="Enter Name"
             onClick={(e) => e.stopPropagation()} // Prevent selection toggle when editing
             style={{ width: `${nameWidth}px` }}
@@ -173,16 +148,14 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
           step={recipient.isFixedAmount ? "10" : "0.1"}
           value={recipient.value || ""}
           onChange={(e) => onUpdate({ value: parseFloat(e.target.value) || 0 })}
-          className={`w-24 text-right ${inputHoverClass} ${
-            shouldShowHighlight ? 'bg-gray-50' : ''
-          }`}
+          className={`w-24 text-right ${inputHoverClass}`}
           placeholder={recipient.isFixedAmount ? "Amount" : "Shares"}
         />
       </div>
 
       {/* Payout Display */}
       <div className="w-28 text-right">
-        <span>
+        <span className="font-medium">
           {formatCurrency(recipient.payout)}
         </span>
       </div>

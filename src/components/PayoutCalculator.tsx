@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+
+import { useEffect, useRef } from "react";
 import TotalPayoutInput from "./payout/TotalPayoutInput";
 import RecipientsList from "./payout/RecipientsList";
 import PayoutSummary from "./PayoutSummary";
@@ -6,8 +7,6 @@ import { useRecipients } from "@/hooks/useRecipients";
 import { usePayoutCalculation } from "@/hooks/usePayoutCalculation";
 
 const PayoutCalculator = () => {
-  const [hoveredRecipientId, setHoveredRecipientId] = useState<string | null>(null);
-  
   const {
     recipients,
     setRecipients,
@@ -75,10 +74,6 @@ const PayoutCalculator = () => {
      recipients.map(r => r.value).join(','),
      valuePerShare]);
 
-  const handleRecipientHover = (id: string | null) => {
-    setHoveredRecipientId(id);
-  };
-
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6" ref={calculatorRef}>
       {/* Left Column - Input Sections (2/3 width) */}
@@ -100,8 +95,6 @@ const PayoutCalculator = () => {
           setSelectedRecipients={setSelectedRecipients}
           handleDragEnd={handleDragEnd}
           valuePerShare={valuePerShare}
-          hoveredRecipientId={hoveredRecipientId}
-          onRecipientHover={handleRecipientHover}
         />
       </div>
 
@@ -111,8 +104,6 @@ const PayoutCalculator = () => {
           totalPayout={totalPayout}
           recipients={recipients}
           remainingAmount={remainingAmount}
-          hoveredRecipientId={hoveredRecipientId}
-          onRecipientHover={handleRecipientHover}
         />
       </div>
     </div>

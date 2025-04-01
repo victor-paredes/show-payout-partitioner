@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, X } from "lucide-react";
@@ -39,8 +38,6 @@ interface RecipientsListProps {
   setSelectedRecipients: (selections: Set<string>) => void;
   handleDragEnd: (event: DragEndEvent) => void;
   valuePerShare: number;
-  hoveredRecipientId: string | null;
-  onRecipientHover: (id: string | null) => void;
 }
 
 const RecipientsList = ({
@@ -54,9 +51,7 @@ const RecipientsList = ({
   toggleSelectRecipient,
   setSelectedRecipients,
   handleDragEnd,
-  valuePerShare,
-  hoveredRecipientId,
-  onRecipientHover
+  valuePerShare
 }: RecipientsListProps) => {
   // Set up DnD sensors
   const sensors = useSensors(
@@ -129,14 +124,6 @@ const RecipientsList = ({
                   valuePerShare={valuePerShare}
                   isSelected={selectedRecipients.has(recipient.id)}
                   onToggleSelect={() => toggleSelectRecipient(recipient.id)}
-                  isHighlighted={hoveredRecipientId === recipient.id}
-                  onHover={(isHovered) => {
-                    if (isHovered) {
-                      onRecipientHover(recipient.id);
-                    } else {
-                      onRecipientHover(null);
-                    }
-                  }}
                 />
               ))}
             </SortableContext>
