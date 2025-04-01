@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -48,6 +47,7 @@ interface RecipientsListProps {
   clearRecipients?: () => void;
   createGroup: (name: string) => void;
   ungroupRecipients: (groupId: string) => void;
+  onOpenGroupNameModal: () => void;
 }
 
 const RecipientsList = ({
@@ -67,7 +67,8 @@ const RecipientsList = ({
   onRecipientHover,
   clearRecipients,
   createGroup,
-  ungroupRecipients
+  ungroupRecipients,
+  onOpenGroupNameModal
 }: RecipientsListProps) => {
   const [confirmClearOpen, setConfirmClearOpen] = useState(false);
   const [columnWiseTabbing, setColumnWiseTabbing] = useState(false);
