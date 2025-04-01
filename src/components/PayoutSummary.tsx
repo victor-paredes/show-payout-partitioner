@@ -16,6 +16,8 @@ interface PayoutSummaryProps {
   totalPayout: number;
   recipients: Recipient[];
   remainingAmount: number;
+  hoveredRecipientId: string | null;
+  onRecipientHover: (id: string | null) => void;
 }
 
 // More distinct colors for better visual separation
@@ -36,6 +38,8 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
   totalPayout,
   recipients,
   remainingAmount,
+  hoveredRecipientId,
+  onRecipientHover,
 }) => {
   // Track which segment is currently being hovered
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
@@ -45,15 +49,8 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
   const calculatedTotal = recipients.reduce((total, r) => total + r.payout, 0);
   
   const difference = Math.abs(totalPayout - calculatedTotal);
-  
-  const sortedRecipients = [...recipients].sort((a, b) => {
-    if (a.isFixedAmount !== b.isFixedAmount) {
-      return a.isFixedAmount ? -1 : 1;
-    }
-    return b.payout - a.payout;
-  });
 
-  const chartData = sortedRecipients
+  const chartData = recipients
     .filter(recipient => recipient.payout > 0)
     .map((recipient, index) => {
       const percentage = totalPayout > 0 
@@ -61,6 +58,7 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
         : "0";
         
       return {
+        id: recipient.id,
         name: recipient.name || `Recipient ${index + 1}`,
         value: recipient.payout,
         percentage: percentage,
@@ -73,20 +71,32 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
     
     return (
       <div className="flex flex-wrap justify-center gap-4 text-sm mt-2">
-        {payload.map((entry: any, index: number) => (
-          <div 
-            key={`legend-${index}`} 
-            className="flex items-center cursor-pointer"
-            onMouseEnter={() => setHoveredIndex(index)}
-            onMouseLeave={() => setHoveredIndex(null)}
-          >
+        {payload.map((entry: any, index: number) => {
+          const recipientId = chartData[index]?.id;
+          const isHighlighted = recipientId === hoveredRecipientId;
+          
+          return (
             <div 
-              className="h-3 w-3 mr-2 rounded-sm" 
-              style={{ backgroundColor: entry.color }}
-            />
-            <span>{entry.value} ({chartData[index].percentage}%)</span>
-          </div>
-        ))}
+              key={`legend-${index}`} 
+              className={`flex items-center cursor-pointer transition-colors
+                ${isHighlighted ? 'font-semibold text-black' : ''}`}
+              onMouseEnter={() => {
+                setHoveredIndex(index);
+                onRecipientHover(recipientId);
+              }}
+              onMouseLeave={() => {
+                setHoveredIndex(null);
+                onRecipientHover(null);
+              }}
+            >
+              <div 
+                className={`h-3 w-3 mr-2 rounded-sm ${isHighlighted ? 'ring-2 ring-black' : ''}`} 
+                style={{ backgroundColor: entry.color }}
+              />
+              <span>{entry.value} ({chartData[index].percentage}%)</span>
+            </div>
+          );
+        })}
       </div>
     );
   };
@@ -137,13 +147,26 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
                     dataKey="value"
                     label={false}
                     isAnimationActive={false}
+                    onMouseEnter={(data, index) => {
+                      setHoveredIndex(index);
+                      onRecipientHover(data.id);
+                    }}
+                    onMouseLeave={() => {
+                      setHoveredIndex(null);
+                      onRecipientHover(null);
+                    }}
                   >
-                    {chartData.map((entry, index) => (
-                      <Cell 
-                        key={`cell-${index}`} 
-                        fill={hoveredIndex === index ? "#000000e6" : COLORS[index % COLORS.length]} 
-                      />
-                    ))}
+                    {chartData.map((entry, index) => {
+                      const isHighlighted = entry.id === hoveredRecipientId;
+                      return (
+                        <Cell 
+                          key={`cell-${index}`} 
+                          fill={isHighlighted ? "#000000e6" : COLORS[index % COLORS.length]} 
+                          stroke={isHighlighted ? "#000000" : undefined}
+                          strokeWidth={isHighlighted ? 2 : 0}
+                        />
+                      );
+                    })}
                   </Pie>
                   <Legend content={renderCustomizedLegend} />
                 </PieChart>
@@ -154,19 +177,29 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
           <div className="border-t pt-4 mt-4">
             <h3 className="font-semibold mb-3">Individual Payouts</h3>
             <div className="space-y-2">
-              {recipients.map((recipient) => (
-                <div key={recipient.id} className="flex justify-between">
-                  <div className="flex items-center">
-                    <span>{recipient.name}</span>
-                    <span className="text-xs text-gray-500 ml-2">
-                      {recipient.isFixedAmount 
-                        ? `(Fixed: ${formatCurrency(recipient.value)})` 
-                        : `(${recipient.value}x)`}
-                    </span>
+              {recipients.map((recipient) => {
+                const isHighlighted = recipient.id === hoveredRecipientId;
+                return (
+                  <div 
+                    key={recipient.id} 
+                    className={`flex justify-between p-1 rounded transition-colors ${
+                      isHighlighted ? 'bg-gray-100 font-medium' : ''
+                    }`}
+                    onMouseEnter={() => onRecipientHover(recipient.id)}
+                    onMouseLeave={() => onRecipientHover(null)}
+                  >
+                    <div className="flex items-center">
+                      <span>{recipient.name}</span>
+                      <span className="text-xs text-gray-500 ml-2">
+                        {recipient.isFixedAmount 
+                          ? `(Fixed: ${formatCurrency(recipient.value)})` 
+                          : `(${recipient.value}x)`}
+                      </span>
+                    </div>
+                    <div className="font-medium">{formatCurrency(recipient.payout)}</div>
                   </div>
-                  <div className="font-medium">{formatCurrency(recipient.payout)}</div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 

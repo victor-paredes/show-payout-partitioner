@@ -24,6 +24,8 @@ interface RecipientRowProps {
   valuePerShare: number;
   isSelected: boolean;
   onToggleSelect: () => void;
+  isHighlighted: boolean;
+  onHover: (isHovered: boolean) => void;
 }
 
 const RecipientRow: React.FC<RecipientRowProps> = ({
@@ -33,6 +35,8 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
   valuePerShare,
   isSelected,
   onToggleSelect,
+  isHighlighted,
+  onHover
 }) => {
   const [isInputHover, setIsInputHover] = useState(false);
   const [nameWidth, setNameWidth] = useState(150); // Default width
@@ -72,6 +76,8 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
       className={`flex items-center bg-white rounded-md shadow-sm border p-4 gap-4 cursor-pointer transition-colors ${
         isSelected ? "bg-blue-50 border-blue-300" : ""
       } ${
+        isHighlighted ? "border-black border-2" : ""
+      } ${
         !isInputHover 
           ? isSelected 
             ? "hover:border-blue-500 hover:bg-blue-100" 
@@ -79,7 +85,14 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
           : ""
       }`}
       onClick={onToggleSelect}
-      onMouseEnter={() => setIsInputHover(false)}
+      onMouseEnter={() => {
+        setIsInputHover(false);
+        onHover(true);
+      }}
+      onMouseLeave={() => {
+        setIsInputHover(false);
+        onHover(false);
+      }}
     >
       {/* Drag Handle */}
       <Button
@@ -109,7 +122,9 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
           <Input
             value={recipient.name}
             onChange={(e) => onUpdate({ name: e.target.value })}
-            className={`border-none p-0 h-auto text-base font-medium focus-visible:ring-0 ${inputHoverClass}`}
+            className={`border-none p-0 h-auto text-base font-medium focus-visible:ring-0 ${inputHoverClass} ${
+              isHighlighted ? 'bg-gray-100' : ''
+            }`}
             placeholder="Enter Name"
             onClick={(e) => e.stopPropagation()} // Prevent selection toggle when editing
             style={{ width: `${nameWidth}px` }}
@@ -148,14 +163,16 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
           step={recipient.isFixedAmount ? "10" : "0.1"}
           value={recipient.value || ""}
           onChange={(e) => onUpdate({ value: parseFloat(e.target.value) || 0 })}
-          className={`w-24 text-right ${inputHoverClass}`}
+          className={`w-24 text-right ${inputHoverClass} ${
+            isHighlighted ? 'bg-gray-100' : ''
+          }`}
           placeholder={recipient.isFixedAmount ? "Amount" : "Shares"}
         />
       </div>
 
       {/* Payout Display */}
       <div className="w-28 text-right">
-        <span className="font-medium">
+        <span className={`font-medium ${isHighlighted ? 'text-black' : ''}`}>
           {formatCurrency(recipient.payout)}
         </span>
       </div>
