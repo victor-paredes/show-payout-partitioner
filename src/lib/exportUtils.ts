@@ -1,6 +1,6 @@
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
-import { getRecipientColor } from "./colorUtils";
+import { getRecipientColor, COLORS } from "./colorUtils";
 
 /**
  * Exports an HTML element to a PDF file and triggers download
@@ -249,9 +249,6 @@ export const importFromCsv = async (
  * @returns An ID string that will produce the target color
  */
 function generateIdForColor(targetColor: string, seed: string): string {
-  // Import the COLORS array from colorUtils
-  const { COLORS } = require('./colorUtils');
-  
   // Find the index of the target color in the COLORS array
   const colorIndex = COLORS.indexOf(targetColor);
   
