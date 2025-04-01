@@ -23,8 +23,7 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
   totalPayout,
   recipients,
   remainingAmount,
-  totalShares,
-  valuePerShare,
+  // Removed totalShares and valuePerShare from usage
 }) => {
   // Calculate total of fixed amounts
   const totalFixedAmount = totalPayout - remainingAmount;
@@ -76,12 +75,6 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
             
             <div className="font-medium">Amount for Shares:</div>
             <div className="text-right">{formatCurrency(remainingAmount)}</div>
-            
-            <div className="font-medium">Total Shares:</div>
-            <div className="text-right">{totalShares.toFixed(2)}</div>
-            
-            <div className="font-medium">Value Per Share:</div>
-            <div className="text-right">{formatCurrency(valuePerShare)}</div>
           </div>
 
           <div className="border-t pt-4 mt-4">
