@@ -1,20 +1,24 @@
 import React, { useRef, useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/format";
-import { Recipient } from "@/hooks/useRecipients";
-import { Divider } from "@/components/DividerRow";
-import { getRecipientColor } from "@/lib/colorUtils";
-import { PieChart, Pie, Cell, Sector, ResponsiveContainer } from "recharts";
-import { Separator } from "@/components/ui/separator";
-import { cn } from "@/lib/utils";
+import { PieChart, Pie, Cell } from "recharts";
 import { X } from "lucide-react";
+import { RecipientType } from "@/components/RecipientRow";
+import { getRecipientColor } from "@/lib/colorUtils";
 
-type PayoutItem = Recipient | Divider;
+interface Recipient {
+  id: string;
+  name: string;
+  isFixedAmount: boolean;
+  value: number;
+  payout: number;
+  type?: RecipientType;
+  color?: string;
+}
 
 interface PayoutSummaryProps {
   totalPayout: number;
   recipients: Recipient[];
-  items?: PayoutItem[];
   remainingAmount: number;
   hoveredRecipientId?: string;
   onRecipientHover?: (id: string | null) => void;
@@ -26,7 +30,6 @@ const OVERDRAW_COLOR = "#EF4444";
 const PayoutSummary: React.FC<PayoutSummaryProps> = ({
   totalPayout,
   recipients,
-  items = [],
   remainingAmount,
   hoveredRecipientId,
   onRecipientHover
@@ -77,27 +80,46 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
     return recipient.color || getRecipientColor(recipient.id);
   };
 
-  const chartData = recipients.map(recipient => ({
-    id: recipient.id,
-    name: recipient.name || "Unnamed",
-    value: recipient.payout,
-    color: recipient.color || getRecipientColor(recipient.id)
-  }));
-
-  const positiveChartData = chartData.filter(item => item.value > 0);
-
-  if (hasSurplus) {
-    positiveChartData.push({
+  const chartData = sortedRecipients
+    .filter(recipient => recipient.payout > 0)
+    .map((recipient) => {
+      const percentage = totalPayout > 0 
+        ? ((recipient.payout / totalPayout) * 100).toFixed(1) 
+        : "0";
+        
+      return {
+        name: recipient.name || "Unnamed",
+        value: recipient.payout,
+        percentage: percentage,
+        id: recipient.id,
+        color: getRecipientDisplayColor(recipient)
+      };
+    });
+    
+  if (hasSurplus && isCalculationStable) {
+    const surplusPercentage = totalPayout > 0 
+      ? ((surplus / totalPayout) * 100).toFixed(1) 
+      : "0";
+      
+    chartData.push({
+      name: "Surplus",
+      value: surplus,
+      percentage: surplusPercentage,
       id: "surplus",
-      name: "Remaining",
-      value: difference,
       color: SURPLUS_COLOR
     });
-  } else if (hasOverdraw) {
-    positiveChartData.push({
+  }
+  
+  if (hasOverdraw && isCalculationStable) {
+    const overdrawPercentage = totalPayout > 0 
+      ? ((overdraw / totalPayout) * 100).toFixed(1) 
+      : "0";
+      
+    chartData.push({
+      name: "Overdraw",
+      value: overdraw,
+      percentage: overdrawPercentage,
       id: "overdraw",
-      name: "Overdrawn",
-      value: Math.abs(difference),
       color: OVERDRAW_COLOR
     });
   }
@@ -135,11 +157,11 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="pb-2">
         <CardTitle>Payout Summary</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="flex flex-col space-y-4">
+        <div className="space-y-4" ref={summaryRef} id="payout-summary">
           <div className="text-center mb-4">
             <h2 className="text-3xl font-bold text-blue-900">
               {formatCurrency(totalPayout)}
@@ -185,7 +207,7 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
                     style={{ margin: '0 auto', width: 'auto' }}
                   >
                     <Pie
-                      data={positiveChartData}
+                      data={chartData}
                       cx="50%"
                       cy="50%"
                       outerRadius={80}
@@ -196,7 +218,7 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
                       onMouseEnter={(_, index) => handleChartHover(index)}
                       onMouseLeave={() => handleChartHover(null)}
                     >
-                      {positiveChartData.map((entry, index) => (
+                      {chartData.map((entry, index) => (
                         <Cell 
                           key={`cell-${index}`} 
                           fill={entry.color}
@@ -231,45 +253,61 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
           )}
           
           {recipients.length > 0 && (
-            <div>
-              <h3 className="text-sm font-medium mb-2">Individual Payouts</h3>
-              <div className="max-h-80 overflow-y-auto pr-2">
-                {items.map((item) => {
-                  if ('type' in item && item.type === 'divider') {
-                    const divider = item as Divider;
-                    return (
-                      <div 
-                        key={divider.id}
-                        className="text-sm text-gray-600 font-medium py-2 px-1 border-t"
-                      >
-                        {divider.text}
-                      </div>
-                    );
+            <div className="border-t pt-4 mt-4">
+              <h3 className="font-semibold mb-3">Individual Payouts</h3>
+              <div className="space-y-1">
+                {recipients.map((recipient) => {
+                  const percentage = totalPayout > 0 
+                    ? ((recipient.payout / totalPayout) * 100).toFixed(1) 
+                    : "0";
+                  
+                  const recipientColor = getRecipientDisplayColor(recipient);
+                  const type = recipient.type || (recipient.isFixedAmount ? "$" : "shares");
+                  
+                  let valueDisplay = "";
+                  if (type === "$") {
+                    valueDisplay = "($)";
+                  } else if (type === "%") {
+                    valueDisplay = "";
                   } else {
-                    const recipient = item as Recipient;
-                    const color = recipient.color || getRecipientColor(recipient.id);
-                    
-                    return (
-                      <div 
-                        key={recipient.id}
-                        className={cn(
-                          "flex justify-between py-1 px-1 rounded hover:bg-gray-50 transition-colors",
-                          hoveredRecipientId === recipient.id ? "bg-gray-100" : ""
-                        )}
-                        onMouseEnter={() => onRecipientHover && onRecipientHover(recipient.id)}
-                        onMouseLeave={() => onRecipientHover && onRecipientHover(null)}
-                      >
-                        <div className="flex items-center gap-2">
-                          <div 
-                            className="w-3 h-3 rounded-sm" 
-                            style={{ backgroundColor: color }}
-                          ></div>
-                          <span className="font-medium">{recipient.name || "Unnamed"}</span>
-                        </div>
-                        <span>{formatCurrency(recipient.payout)}</span>
-                      </div>
-                    );
+                    valueDisplay = `(${recipient.value} ${recipient.value === 1 ? 'share' : 'shares'})`;
                   }
+                  
+                  return (
+                    <div 
+                      key={recipient.id} 
+                      className={`flex justify-between p-1 rounded ${
+                        hoveredRecipientId === recipient.id 
+                          ? 'bg-gray-100' 
+                          : ''
+                      }`}
+                      onMouseEnter={() => onRecipientHover?.(recipient.id)}
+                      onMouseLeave={() => onRecipientHover?.(null)}
+                    >
+                      <div className="flex items-center">
+                        <div 
+                          className={`w-3 h-3 rounded-sm mr-2 ${
+                            hoveredRecipientId === recipient.id 
+                              ? 'ring-1 ring-black' 
+                              : ''
+                          }`}
+                          style={{ backgroundColor: recipientColor }}
+                        />
+                        <span>{recipient.name}</span>
+                        {valueDisplay && (
+                          <span className="text-xs text-gray-500 ml-2">
+                            {valueDisplay}
+                          </span>
+                        )}
+                        <span className={`text-xs text-blue-500 ${type === '%' ? 'ml-2' : 'ml-1'}`}>
+                          {percentage}%
+                        </span>
+                      </div>
+                      <div className="font-medium">
+                        {formatCurrency(recipient.payout)}
+                      </div>
+                    </div>
+                  );
                 })}
               </div>
             </div>
