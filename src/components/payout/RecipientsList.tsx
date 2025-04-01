@@ -1,4 +1,5 @@
 
+import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, X, Trash2 } from "lucide-react";
@@ -104,6 +105,9 @@ const RecipientsList = ({
                 ))}
               </SelectContent>
             </Select>
+            <Button onClick={addRecipients} variant="outline" size="sm" className="flex items-center">
+              <Plus className="mr-1 h-4 w-4" /> Add Recipient{parseInt(recipientCount) > 1 ? 's' : ''}
+            </Button>
             {recipients.length > 1 && (
               <Button 
                 onClick={clearRecipients} 
@@ -114,9 +118,6 @@ const RecipientsList = ({
                 <Trash2 className="mr-1 h-4 w-4" /> Clear
               </Button>
             )}
-            <Button onClick={addRecipients} variant="outline" size="sm" className="flex items-center">
-              <Plus className="mr-1 h-4 w-4" /> Add Recipient{parseInt(recipientCount) > 1 ? 's' : ''}
-            </Button>
           </div>
         </CardTitle>
       </CardHeader>
@@ -153,4 +154,3 @@ const RecipientsList = ({
 };
 
 export default RecipientsList;
-
