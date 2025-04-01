@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -38,7 +37,7 @@ const COLORS = [
   "#0284C7", // Ocean Blue
   "#4338CA", // Deep Blue
   "#A16207", // Gold
-  "#BE185D", // Raspberry
+  "#BE123C", // Raspberry
   "#0F766E", // Deep Teal
   "#7E22CE", // Royal Purple
   "#1D4ED8", // Cobalt Blue
@@ -159,6 +158,13 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
     }
   };
 
+  const handleNameInputClick = (e: React.MouseEvent<HTMLInputElement>) => {
+    // Select all text in the input when clicked
+    const target = e.target as HTMLInputElement;
+    target.select();
+    e.stopPropagation(); // Prevent row selection
+  };
+
   const getRecipientColor = (recipientId: string) => {
     const hashCode = Array.from(recipientId).reduce(
       (acc, char) => acc + char.charCodeAt(0), 0
@@ -218,7 +224,7 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
             onChange={(e) => onUpdate({ name: e.target.value })}
             className={`border-none p-0 h-auto text-base font-medium focus-visible:ring-0 ${inputHoverClass}`}
             placeholder="Enter Name"
-            onClick={(e) => e.stopPropagation()}
+            onClick={handleNameInputClick}
             style={{ width: `${nameWidth}px` }}
           />
         </div>
