@@ -32,7 +32,14 @@ const PayoutCalculator = () => {
   } = usePayoutCalculation(recipients);
 
   useEffect(() => {
-    if (totalPayout === 0) {
+    const importedTotalPayout = parseFloat(
+      localStorage.getItem('importedTotalPayout') || '0'
+    );
+    
+    if (importedTotalPayout > 0) {
+      setTotalPayout(importedTotalPayout);
+      localStorage.removeItem('importedTotalPayout');
+    } else if (totalPayout === 0) {
       setTotalPayout(100);
     }
   }, []);

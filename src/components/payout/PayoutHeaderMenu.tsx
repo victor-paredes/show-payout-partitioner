@@ -39,6 +39,7 @@ const PayoutHeaderMenu: React.FC<PayoutHeaderMenuProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isImportWarningOpen, setIsImportWarningOpen] = React.useState(false);
   const [pendingImportData, setPendingImportData] = React.useState<Recipient[] | null>(null);
+  const [pendingTotalPayout, setPendingTotalPayout] = React.useState<number | null>(null);
 
   const handleExportPdf = () => {
     const element = document.getElementById('payout-summary');
@@ -101,6 +102,7 @@ const PayoutHeaderMenu: React.FC<PayoutHeaderMenuProps> = ({
         }
 
         setPendingImportData(processedData);
+        setPendingTotalPayout(importedTotalPayout || null);
         setIsImportWarningOpen(true);
       } catch (error) {
         console.error('Error importing CSV:', error);
@@ -119,10 +121,16 @@ const PayoutHeaderMenu: React.FC<PayoutHeaderMenuProps> = ({
 
   const handleImport = () => {
     if (pendingImportData) {
+      // Store the total payout in localStorage if available
+      if (pendingTotalPayout !== null) {
+        localStorage.setItem('importedTotalPayout', pendingTotalPayout.toString());
+      }
+      
       // Always replace existing data with imported data
       onImport(pendingImportData, true);
       setIsImportWarningOpen(false);
       setPendingImportData(null);
+      setPendingTotalPayout(null);
       toast({
         title: "Import successful",
         description: `${pendingImportData.length} recipients imported`,
