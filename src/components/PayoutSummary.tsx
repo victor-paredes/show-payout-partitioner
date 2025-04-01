@@ -1,3 +1,4 @@
+
 import React, { useRef, useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/format";
@@ -262,7 +263,8 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
                       {chartData.map((entry, index) => (
                         <Cell 
                           key={`cell-${index}`} 
-                          fill={hoveredChartIndex === index ? "#000000" : entry.color} 
+                          fill={entry.color}
+                          fillOpacity={hoveredChartIndex !== -1 && hoveredChartIndex !== index ? 0.4 : 1} 
                         />
                       ))}
                     </Pie>
@@ -325,12 +327,12 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
                   >
                     <div className="flex items-center">
                       <div 
-                        className="w-3 h-3 rounded-sm mr-2" 
-                        style={{ 
-                          backgroundColor: hoveredRecipientId === recipient.id 
-                            ? "#000000" 
-                            : recipientColor 
-                        }}
+                        className={`w-3 h-3 rounded-sm mr-2 ${
+                          hoveredRecipientId === recipient.id 
+                            ? 'ring-1 ring-black' 
+                            : ''
+                        }`}
+                        style={{ backgroundColor: recipientColor }}
                       />
                       <span>{recipient.name}</span>
                       {valueDisplay && (
