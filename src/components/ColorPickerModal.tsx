@@ -33,27 +33,27 @@ const ColorPickerModal: React.FC<ColorPickerModalProps> = ({
         
         <div className="py-4">
           <div className="flex gap-4 w-full items-center justify-between">
-            <div className="w-[50%]">
+            <div className="w-[50%] flex flex-col items-center">
               <HexColorPicker 
                 color={selectedColor} 
                 onChange={setSelectedColor} 
                 className="w-full"
               />
+              
+              <div className="mt-4 flex items-center justify-center gap-3">
+                <div className="text-sm font-medium">Hex:</div>
+                <input
+                  type="text"
+                  value={selectedColor}
+                  onChange={(e) => setSelectedColor(e.target.value)}
+                  className="px-2 py-1 border rounded w-28 text-sm font-mono"
+                />
+              </div>
             </div>
             
             <div 
               className="w-[40%] aspect-square rounded-md border" 
               style={{ backgroundColor: selectedColor }}
-            />
-          </div>
-          
-          <div className="mt-4 flex items-center justify-center gap-3">
-            <div className="text-sm font-medium">Hex:</div>
-            <input
-              type="text"
-              value={selectedColor}
-              onChange={(e) => setSelectedColor(e.target.value)}
-              className="px-2 py-1 border rounded w-28 text-sm font-mono"
             />
           </div>
         </div>
