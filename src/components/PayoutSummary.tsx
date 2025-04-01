@@ -1,3 +1,4 @@
+
 import React, { useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/format";
@@ -255,6 +256,7 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
                         stroke={OVERDRAW_COLOR}
                         strokeWidth={3}
                         isAnimationActive={false}
+                        dataKey="value"
                       >
                         <Cell fill="#FFFFFF" />
                       </Pie>
@@ -303,12 +305,13 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
               </div>
             </div>
           )}
-
-          <div className="border-t pt-4 mt-4">
+          
+          {/* Moved tags above the divider */}
+          <div className="space-y-2">
             {hasSurplus && (
-              <div className="text-xs bg-blue-100 text-blue-700 py-1 px-2 rounded-md flex items-center gap-1 mb-2">
+              <div className="text-xs bg-green-100 text-green-700 py-1 px-2 rounded-md flex items-center gap-1 mb-2">
                 <span>Surplus</span>
-                <span className="text-xs text-blue-500 ml-2">
+                <span className="text-xs text-green-500 ml-2">
                   ({((surplus / totalPayout) * 100).toFixed(1)}%)
                 </span>
                 <span className="ml-auto">{formatCurrency(surplus)}</span>
@@ -324,7 +327,9 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
                 <span className="ml-auto">{formatCurrency(overdraw)}</span>
               </div>
             )}
+          </div>
 
+          <div className="border-t pt-4 mt-4">
             <h3 className="font-semibold mb-3">Individual Payouts</h3>
             <div className="space-y-1">
               {recipients.map((recipient) => {
