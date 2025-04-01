@@ -1,12 +1,17 @@
+
 import React, { useRef } from "react";
 import { 
-  Menubar, 
-  MenubarContent, 
-  MenubarItem, 
-  MenubarMenu, 
-  MenubarTrigger 
-} from "@/components/ui/menubar";
-import { 
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger 
+} from "@/components/ui/hover-card";
+import { Button } from "@/components/ui/button";
+import { FileDown, FileUp } from "lucide-react";
+import { exportToPdf, exportToCsv, importFromCsv } from "@/lib/exportUtils";
+import { Recipient } from "@/hooks/useRecipients";
+import { useToast } from "@/hooks/use-toast";
+import { RecipientType } from "@/components/RecipientRow";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -16,12 +21,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
-import { FileDown, FileUp } from "lucide-react";
-import { exportToPdf, exportToCsv, importFromCsv } from "@/lib/exportUtils";
-import { Recipient } from "@/hooks/useRecipients";
-import { useToast } from "@/hooks/use-toast";
-import { RecipientType } from "@/components/RecipientRow";
 
 interface PayoutHeaderMenuProps {
   totalPayout: number;
@@ -134,34 +133,57 @@ const PayoutHeaderMenu: React.FC<PayoutHeaderMenuProps> = ({
 
   return (
     <>
-      <Menubar className="mb-6 px-3 border-none bg-transparent justify-end">
-        <MenubarMenu>
-          <MenubarTrigger className="font-medium flex items-center gap-2">
-            <FileDown className="h-4 w-4" />
-            Export
-          </MenubarTrigger>
-          <MenubarContent align="end">
-            <MenubarItem onClick={handleExportPdf}>
-              PDF
-            </MenubarItem>
-            <MenubarItem onClick={handleExportCsv}>
-              CSV
-            </MenubarItem>
-          </MenubarContent>
-        </MenubarMenu>
+      <div className="flex justify-end gap-2 mb-6">
+        <HoverCard openDelay={0} closeDelay={100}>
+          <HoverCardTrigger asChild>
+            <Button variant="outline" size="sm" className="font-medium flex items-center gap-2">
+              <FileDown className="h-4 w-4" />
+              Export
+            </Button>
+          </HoverCardTrigger>
+          <HoverCardContent className="w-32 p-0" align="end">
+            <div className="flex flex-col">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="justify-start rounded-none" 
+                onClick={handleExportPdf}
+              >
+                PDF
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="justify-start rounded-none" 
+                onClick={handleExportCsv}
+              >
+                CSV
+              </Button>
+            </div>
+          </HoverCardContent>
+        </HoverCard>
         
-        <MenubarMenu>
-          <MenubarTrigger className="font-medium flex items-center gap-2">
-            <FileUp className="h-4 w-4" />
-            Import
-          </MenubarTrigger>
-          <MenubarContent align="end">
-            <MenubarItem onClick={handleImportClick}>
-              CSV
-            </MenubarItem>
-          </MenubarContent>
-        </MenubarMenu>
-      </Menubar>
+        <HoverCard openDelay={0} closeDelay={100}>
+          <HoverCardTrigger asChild>
+            <Button variant="outline" size="sm" className="font-medium flex items-center gap-2">
+              <FileUp className="h-4 w-4" />
+              Import
+            </Button>
+          </HoverCardTrigger>
+          <HoverCardContent className="w-32 p-0" align="end">
+            <div className="flex flex-col">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="justify-start rounded-none" 
+                onClick={handleImportClick}
+              >
+                CSV
+              </Button>
+            </div>
+          </HoverCardContent>
+        </HoverCard>
+      </div>
 
       <input 
         type="file" 
