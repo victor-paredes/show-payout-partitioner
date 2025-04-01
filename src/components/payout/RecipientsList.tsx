@@ -25,6 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Alert } from "@/components/ui/alert";
 
 interface RecipientsListProps {
   recipients: Recipient[];
@@ -63,7 +64,14 @@ const RecipientsList = ({
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
-          <span>Recipients</span>
+          <div className="flex items-center gap-2">
+            <span>Recipients</span>
+            {selectedRecipients.size > 1 && (
+              <div className="text-xs bg-blue-100 text-blue-700 py-1 px-2 rounded-md">
+                Editing Multiple
+              </div>
+            )}
+          </div>
           <div className="flex items-center space-x-2">
             <Select value={recipientCount} onValueChange={setRecipientCount}>
               <SelectTrigger className="w-16">

@@ -58,7 +58,13 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
       style={style}
       className={`flex flex-col bg-white rounded-md shadow-sm border p-4 space-y-2 cursor-pointer transition-colors ${
         isSelected ? "bg-blue-50 border-blue-300" : ""
-      } ${!isInputHover ? "hover:border-black" : ""}`}
+      } ${
+        !isInputHover 
+          ? isSelected 
+            ? "hover:border-blue-500 hover:bg-blue-100" 
+            : "hover:border-black" 
+          : ""
+      }`}
       onClick={onToggleSelect}
       onMouseEnter={() => setIsInputHover(false)}
     >
