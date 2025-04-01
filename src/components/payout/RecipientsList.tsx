@@ -15,7 +15,8 @@ import {
   DragEndEvent,
   DragStartEvent,
   DragOverEvent,
-  MeasuringStrategy
+  MeasuringStrategy,
+  DragCancelEvent
 } from "@dnd-kit/core";
 import {
   sortableKeyboardCoordinates
@@ -87,13 +88,12 @@ const RecipientsList = ({
   const [activeDroppableId, setActiveDroppableId] = useState<string | null>(null);
   const [dragSourceId, setDragSourceId] = useState<string | null>(null);
   
+  // Configure sensors with improved activation constraints
   const sensors = useSensors(
     useSensor(PointerSensor, {
-      // Enhanced activation constraints for all items, including the first one
       activationConstraint: {
-        distance: 1, // Even lower distance to make dragging start more easily
-        tolerance: 15, // Increased tolerance for better sensitivity
-        delay: 0,  // No delay
+        distance: 3, // Lower distance to make dragging start more easily
+        tolerance: 5, // Lower tolerance for better accuracy
       }
     }),
     useSensor(KeyboardSensor, {
@@ -101,50 +101,70 @@ const RecipientsList = ({
     })
   );
 
-  // Debug log when recipients change - helps identify issues with the first recipient
-  useEffect(() => {
-    if (recipients.length === 1) {
-      console.log("Only one recipient:", recipients[0]);
-    }
-  }, [recipients]);
-
   const handleDragStart = (event: DragStartEvent) => {
-    const { active } = event;
-    // Ensure active.id is always treated as a string
-    const activeId = active.id.toString();
-    
+    // Always convert IDs to strings for consistency
+    const activeId = String(event.active.id);
     setActiveDragId(activeId);
     
     // Determine the source group
     const draggedRecipient = recipients.find(r => r.id === activeId);
-    setDragSourceId(draggedRecipient?.groupId || 'ungrouped');
+    const sourceGroupId = draggedRecipient?.groupId || 'ungrouped';
+    setDragSourceId(sourceGroupId);
     
-    // Debug log
-    console.log(`Drag started: ${activeId} from ${draggedRecipient?.groupId || 'ungrouped'}`);
+    console.log(`Drag started: Recipient ${activeId} from ${sourceGroupId}`);
   };
 
   const handleDragOver = (event: DragOverEvent) => {
-    const { over } = event;
-    if (over) {
-      // Ensure over.id is always treated as a string
-      const overId = over.id.toString();
+    if (!event.over) {
+      setActiveDroppableId(null);
+      return;
+    }
+    
+    const overId = String(event.over.id);
+    
+    // Check if this is a drop zone (group or ungrouped section)
+    const isGroup = groups.some(g => g.id === overId);
+    const isUngrouped = overId === 'ungrouped';
+    const isRecipient = recipients.some(r => r.id === overId);
+    
+    if (isGroup || isUngrouped) {
+      // This is a direct group/ungrouped droppable
       setActiveDroppableId(overId);
-      
-      // Debug log
-      console.log(`Dragging over: ${overId}`);
-    } else {
+    } 
+    else if (isRecipient) {
+      // When over a recipient, find its group
+      const overRecipient = recipients.find(r => r.id === overId);
+      setActiveDroppableId(overRecipient?.groupId || 'ungrouped');
+    }
+    else {
       setActiveDroppableId(null);
     }
   };
 
+  const handleDragCancel = (event: DragCancelEvent) => {
+    setActiveDragId(null);
+    setActiveDroppableId(null);
+    setDragSourceId(null);
+  };
+
   // Renamed to onDragEnd to avoid name conflict with the prop
   const onDragEnd = (event: DragEndEvent) => {
-    // Debug log
-    console.log(`Drag ended: ${activeDragId} -> ${activeDroppableId}`);
+    console.log(`Drag ended: Recipient ${activeDragId} -> ${activeDroppableId}`);
+    
+    // Make sure we always pass strings to handleDragEnd
+    if (event.active && event.active.id) {
+      event.active.id = String(event.active.id);
+    }
+    
+    if (event.over && event.over.id) {
+      event.over.id = String(event.over.id);
+    }
     
     setActiveDragId(null);
     setActiveDroppableId(null);
     setDragSourceId(null);
+    
+    // Call the props handler
     handleDragEnd(event);
   };
 
@@ -255,6 +275,7 @@ const RecipientsList = ({
           onDragStart={handleDragStart}
           onDragOver={handleDragOver}
           onDragEnd={onDragEnd}
+          onDragCancel={handleDragCancel}
           measuring={{
             droppable: {
               strategy: MeasuringStrategy.Always

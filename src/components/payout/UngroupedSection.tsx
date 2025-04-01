@@ -55,9 +55,7 @@ const UngroupedSection: React.FC<UngroupedSectionProps> = ({
   };
 
   // Ensure we always have a valid array of sortable items, even if empty
-  const sortableItems = recipients.length > 0 
-    ? recipients.map(r => r.id) 
-    : [];
+  const sortableItems = recipients.map(r => r.id);
 
   return (
     <div className="mb-6">
@@ -69,19 +67,19 @@ const UngroupedSection: React.FC<UngroupedSectionProps> = ({
               ref={setNodeRef}
               className="space-y-2 p-2 rounded-md border-2 border-dashed border-gray-200 transition-all hover:border-gray-300"
               style={{ 
-                background: activeDroppableId === 'ungrouped' ? 'rgba(0, 0, 0, 0.03)' : 'transparent',
+                background: isOver ? 'rgba(0, 0, 0, 0.05)' : 
+                           activeDroppableId === 'ungrouped' ? 'rgba(0, 0, 0, 0.03)' : 'transparent',
                 minHeight: calculateMinHeight(),
-                transition: "min-height 0.15s ease-in-out, background-color 0.15s ease-in-out"
+                transition: "all 0.15s ease-in-out"
               }}
               data-droppable-id="ungrouped" 
             >
-              {/* Always provide a stable context for sorting, even with a single item */}
-              <SortableContext 
-                items={sortableItems} 
-                strategy={verticalListSortingStrategy}
-              >
-                {recipients.length > 0 ? (
-                  recipients.map((recipient, rowIndex) => (
+              {recipients.length > 0 ? (
+                <SortableContext 
+                  items={sortableItems} 
+                  strategy={verticalListSortingStrategy}
+                >
+                  {recipients.map((recipient, rowIndex) => (
                     <RecipientRow
                       key={recipient.id}
                       recipient={recipient}
@@ -96,14 +94,13 @@ const UngroupedSection: React.FC<UngroupedSectionProps> = ({
                       rowIndex={rowIndex}
                       totalRows={recipients.length}
                     />
-                  ))
-                ) : (
-                  // Use a div that doesn't interfere with the droppable area
-                  <div className="flex items-center justify-center h-[72px] rounded-md border border-dashed border-gray-300 bg-gray-50 text-gray-400 text-sm opacity-80 pointer-events-none">
-                    Drop a recipient here
-                  </div>
-                )}
-              </SortableContext>
+                  ))}
+                </SortableContext>
+              ) : (
+                <div className="flex items-center justify-center h-[72px] rounded-md border border-dashed border-gray-300 bg-gray-50 text-gray-400 text-sm">
+                  Drop a recipient here
+                </div>
+              )}
             </div>
           </TooltipTrigger>
           {shouldShowTooltip && (

@@ -62,9 +62,7 @@ const GroupSection: React.FC<GroupSectionProps> = ({
   const shouldShowTooltip = tooltipType !== null;
 
   // Ensure we always have a valid array of sortable items, even if empty
-  const sortableItems = recipients.length > 0 
-    ? recipients.map(r => r.id) 
-    : [];
+  const sortableItems = recipients.map(r => r.id);
 
   const calculateMinHeight = () => {
     const baseRowHeight = 72;
@@ -104,19 +102,19 @@ const GroupSection: React.FC<GroupSectionProps> = ({
               className="space-y-2 p-2 rounded-md border-2 border-dashed border-gray-200 transition-all hover:border-gray-300"
               style={{ 
                 borderColor: group.color + '40',
-                background: activeDroppableId === group.id ? group.color + '10' : 'transparent',
+                background: isOver ? group.color + '20' : 
+                            activeDroppableId === group.id ? group.color + '10' : 'transparent',
                 minHeight: calculateMinHeight(),
-                transition: "min-height 0.15s ease-in-out, background-color 0.15s ease-in-out"
+                transition: "all 0.15s ease-in-out"
               }}
               data-droppable-id={group.id}
             >
-              {/* Always provide a stable context for sorting, even with a single item */}
-              <SortableContext 
-                items={sortableItems}
-                strategy={verticalListSortingStrategy}
-              >
-                {recipients.length > 0 ? (
-                  recipients.map((recipient, rowIndex) => (
+              {recipients.length > 0 ? (
+                <SortableContext 
+                  items={sortableItems}
+                  strategy={verticalListSortingStrategy}
+                >
+                  {recipients.map((recipient, rowIndex) => (
                     <RecipientRow
                       key={recipient.id}
                       recipient={recipient}
@@ -131,14 +129,13 @@ const GroupSection: React.FC<GroupSectionProps> = ({
                       rowIndex={rowIndex}
                       totalRows={recipients.length}
                     />
-                  ))
-                ) : (
-                  // Use a div that doesn't interfere with the droppable area
-                  <div className="flex items-center justify-center h-[72px] rounded-md border border-dashed border-gray-300 bg-gray-50 text-gray-400 text-sm opacity-80 pointer-events-none">
-                    Drop a recipient here
-                  </div>
-                )}
-              </SortableContext>
+                  ))}
+                </SortableContext>
+              ) : (
+                <div className="flex items-center justify-center h-[72px] rounded-md border border-dashed border-gray-300 bg-gray-50 text-gray-400 text-sm">
+                  Drop a recipient here
+                </div>
+              )}
               
               <Button
                 variant="ghost"
