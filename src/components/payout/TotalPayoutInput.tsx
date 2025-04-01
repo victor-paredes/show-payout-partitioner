@@ -14,7 +14,7 @@ const TotalPayoutInput = ({ totalPayout, onChange }: TotalPayoutInputProps) => {
       <CardHeader>
         <CardTitle className="flex items-center">
           <Calculator className="mr-2 h-5 w-5 text-blue-600" />
-          Total Show Payout
+          Total Payout
         </CardTitle>
       </CardHeader>
       <CardContent>

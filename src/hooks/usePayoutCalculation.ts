@@ -1,8 +1,9 @@
+
 import { useState, useEffect } from "react";
 import { Recipient } from "./useRecipients";
 
 export function usePayoutCalculation(recipients: Recipient[]) {
-  const [totalPayout, setTotalPayout] = useState<number>(0);
+  const [totalPayout, setTotalPayout] = useState<number>(100); // Set default to $100
   const [remainingAmount, setRemainingAmount] = useState<number>(0);
   const [totalShares, setTotalShares] = useState<number>(0);
   const [valuePerShare, setValuePerShare] = useState<number>(0);
