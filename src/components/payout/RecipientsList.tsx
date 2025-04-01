@@ -155,33 +155,39 @@ const RecipientsList = ({
       </CardHeader>
       <CardContent>
         <div className="space-y-0">
-          <DndContext 
-            sensors={sensors} 
-            collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd}
-          >
-            <SortableContext 
-              items={recipients.map(r => r.id)} 
-              strategy={verticalListSortingStrategy}
+          {recipients.length === 0 ? (
+            <div className="text-center py-6 text-gray-500 italic">
+              No recipients added. Click "Add Recipient" to get started.
+            </div>
+          ) : (
+            <DndContext 
+              sensors={sensors} 
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
             >
-              {recipients.map((recipient, rowIndex) => (
-                <RecipientRow
-                  key={recipient.id}
-                  recipient={recipient}
-                  onUpdate={(updates) => updateRecipient(recipient.id, updates)}
-                  onRemove={() => removeRecipient(recipient.id)}
-                  valuePerShare={valuePerShare}
-                  isSelected={selectedRecipients.has(recipient.id)}
-                  onToggleSelect={() => toggleSelectRecipient(recipient.id)}
-                  isHighlighted={hoveredRecipientId === recipient.id}
-                  onRecipientHover={onRecipientHover}
-                  columnWiseTabbing={columnWiseTabbing}
-                  rowIndex={rowIndex}
-                  totalRows={recipients.length}
-                />
-              ))}
-            </SortableContext>
-          </DndContext>
+              <SortableContext 
+                items={recipients.map(r => r.id)} 
+                strategy={verticalListSortingStrategy}
+              >
+                {recipients.map((recipient, rowIndex) => (
+                  <RecipientRow
+                    key={recipient.id}
+                    recipient={recipient}
+                    onUpdate={(updates) => updateRecipient(recipient.id, updates)}
+                    onRemove={() => removeRecipient(recipient.id)}
+                    valuePerShare={valuePerShare}
+                    isSelected={selectedRecipients.has(recipient.id)}
+                    onToggleSelect={() => toggleSelectRecipient(recipient.id)}
+                    isHighlighted={hoveredRecipientId === recipient.id}
+                    onRecipientHover={onRecipientHover}
+                    columnWiseTabbing={columnWiseTabbing}
+                    rowIndex={rowIndex}
+                    totalRows={recipients.length}
+                  />
+                ))}
+              </SortableContext>
+            </DndContext>
+          )}
         </div>
       </CardContent>
       

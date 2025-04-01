@@ -1,4 +1,3 @@
-
 import React, { useRef, useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/format";
@@ -25,8 +24,7 @@ interface PayoutSummaryProps {
   onRecipientHover?: (id: string | null) => void;
 }
 
-// Updated surplus color to match the light green in the surplus tag background
-const SURPLUS_COLOR = "#ecfdf5"; // Light green matching bg-green-100
+const SURPLUS_COLOR = "#ecfdf5";
 const OVERDRAW_COLOR = "#EF4444";
 
 const PayoutSummary: React.FC<PayoutSummaryProps> = ({
@@ -312,12 +310,6 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
                   );
                 })}
               </div>
-            </div>
-          )}
-
-          {recipients.length === 0 && (
-            <div className="border-t pt-4 mt-4 text-center text-gray-500 italic">
-              No recipients added. Click "Add Recipient" to get started.
             </div>
           )}
 
