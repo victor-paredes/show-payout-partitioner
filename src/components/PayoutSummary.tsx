@@ -112,7 +112,7 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
     return recipient.color || getRecipientColor(recipient.id);
   };
 
-  const chartData = sortedRecipients
+  const chartData: ChartDataItem[] = sortedRecipients
     .filter(recipient => recipient.payout > 0)
     .map((recipient) => {
       const percentage = totalPayout > 0 
@@ -140,7 +140,9 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
       value: surplus,
       percentage: surplusPercentage,
       id: "surplus",
-      color: SURPLUS_COLOR
+      color: SURPLUS_COLOR,
+      groupId: undefined,
+      groupName: undefined
     });
   }
   
@@ -154,7 +156,9 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
       value: overdraw,
       percentage: overdrawPercentage,
       id: "overdraw",
-      color: OVERDRAW_COLOR
+      color: OVERDRAW_COLOR,
+      groupId: undefined,
+      groupName: undefined
     });
   }
 
@@ -218,7 +222,7 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
     
     const dataByGroup: { [groupId: string]: ChartDataItem[] } = {};
     
-    chartData.forEach((item, index) => {
+    chartData.forEach((item) => {
       if (item.groupId && item.startAngle !== undefined && item.endAngle !== undefined) {
         if (!dataByGroup[item.groupId]) {
           dataByGroup[item.groupId] = [];
@@ -353,7 +357,7 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
                       isAnimationActive={false}
                       onMouseEnter={(_, index) => handleChartHover(index)}
                       onMouseLeave={() => handleChartHover(null)}
-                      onAnimationStart={(data) => {
+                      onAnimationStart={(data: any) => {
                         if (data && data.sectors) {
                           data.sectors.forEach((sector: any, i: number) => {
                             if (i < chartData.length) {
