@@ -72,15 +72,17 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
   return (
     <div 
       ref={setNodeRef} 
-      style={style}
-      className={`flex items-center bg-white rounded-md shadow-sm border p-4 gap-4 cursor-pointer transition-colors ${
-        isSelected ? "bg-blue-50 border-blue-300" : ""
-      } ${
-        isHighlighted ? "border-black border-2 bg-gray-50" : ""
-      } ${
+      style={{
+        ...style,
+        borderWidth: isHighlighted ? '2px' : '1px',
+        borderColor: isHighlighted ? 'black' : isSelected ? '#90cdf4' : '#e2e8f0', 
+        backgroundColor: isHighlighted ? 'rgb(249 250 251)' : isSelected ? 'rgb(239 246 255)' : 'white',
+        boxSizing: 'border-box'
+      }}
+      className={`flex items-center rounded-md shadow-sm p-4 gap-4 cursor-pointer transition-colors ${
         !isInputHover 
           ? isSelected 
-            ? "hover:border-blue-500 hover:bg-blue-100" 
+            ? "hover:bg-blue-100" 
             : "hover:border-black" 
           : ""
       }`}
@@ -123,7 +125,7 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
             value={recipient.name}
             onChange={(e) => onUpdate({ name: e.target.value })}
             className={`border-none p-0 h-auto text-base font-medium focus-visible:ring-0 ${inputHoverClass} ${
-              isHighlighted ? 'bg-gray-100' : ''
+              isHighlighted ? 'bg-gray-50' : ''
             }`}
             placeholder="Enter Name"
             onClick={(e) => e.stopPropagation()} // Prevent selection toggle when editing
@@ -164,7 +166,7 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
           value={recipient.value || ""}
           onChange={(e) => onUpdate({ value: parseFloat(e.target.value) || 0 })}
           className={`w-24 text-right ${inputHoverClass} ${
-            isHighlighted ? 'bg-gray-100' : ''
+            isHighlighted ? 'bg-gray-50' : ''
           }`}
           placeholder={recipient.isFixedAmount ? "Amount" : "Shares"}
         />
@@ -172,7 +174,7 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
 
       {/* Payout Display */}
       <div className="w-28 text-right">
-        <span className={`font-medium ${isHighlighted ? 'text-black' : ''}`}>
+        <span>
           {formatCurrency(recipient.payout)}
         </span>
       </div>

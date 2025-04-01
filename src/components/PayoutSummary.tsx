@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/format";
@@ -20,7 +19,6 @@ interface PayoutSummaryProps {
   onRecipientHover: (id: string | null) => void;
 }
 
-// More distinct colors for better visual separation
 const COLORS = [
   "#8B5CF6", // Vivid Purple
   "#D946EF", // Magenta Pink
@@ -41,7 +39,6 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
   hoveredRecipientId,
   onRecipientHover,
 }) => {
-  // Track which segment is currently being hovered
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   
   const totalFixedAmount = totalPayout - remainingAmount;
@@ -65,7 +62,6 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
       };
     });
 
-  // Custom renderer for the legend with percentages and hover effect
   const renderCustomizedLegend = (props: any) => {
     const { payload } = props;
     
@@ -78,8 +74,11 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
           return (
             <div 
               key={`legend-${index}`} 
-              className={`flex items-center cursor-pointer transition-colors
-                ${isHighlighted ? 'outline outline-1 outline-black bg-gray-100 p-0.5 rounded' : ''}`}
+              className="flex items-center cursor-pointer transition-colors p-0.5 rounded"
+              style={{
+                outline: isHighlighted ? '1px solid black' : 'none',
+                backgroundColor: isHighlighted ? 'rgb(243 244 246)' : 'transparent',
+              }}
               onMouseEnter={() => {
                 setHoveredIndex(index);
                 onRecipientHover(recipientId);
@@ -90,10 +89,13 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
               }}
             >
               <div 
-                className={`h-3 w-3 mr-2 rounded-sm ${isHighlighted ? 'ring-2 ring-black' : ''}`} 
-                style={{ backgroundColor: entry.color }}
+                className={`h-3 w-3 mr-2 rounded-sm`}
+                style={{ 
+                  backgroundColor: entry.color,
+                  boxShadow: isHighlighted ? '0 0 0 2px black' : 'none',
+                }}
               />
-              <span className="font-medium">{entry.value} ({chartData[index].percentage}%)</span>
+              <span>{entry.value} ({chartData[index].percentage}%)</span>
             </div>
           );
         })}
@@ -182,14 +184,16 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
                 return (
                   <div 
                     key={recipient.id} 
-                    className={`flex justify-between p-1 rounded transition-colors ${
-                      isHighlighted ? 'bg-gray-100 outline outline-1 outline-black' : ''
-                    }`}
+                    className="flex justify-between p-1 rounded transition-colors"
+                    style={{
+                      outline: isHighlighted ? '1px solid black' : 'none',
+                      backgroundColor: isHighlighted ? 'rgb(243 244 246)' : 'transparent',
+                    }}
                     onMouseEnter={() => onRecipientHover(recipient.id)}
                     onMouseLeave={() => onRecipientHover(null)}
                   >
                     <div className="flex items-center">
-                      <span className="font-medium">{recipient.name}</span>
+                      <span>{recipient.name}</span>
                       <span className="text-xs text-gray-500 ml-2">
                         {recipient.isFixedAmount 
                           ? `(Fixed: ${formatCurrency(recipient.value)})` 
