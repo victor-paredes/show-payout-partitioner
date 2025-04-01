@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from "react";
 import TotalPayoutInput from "./payout/TotalPayoutInput";
 import RecipientsList from "./payout/RecipientsList";
@@ -13,6 +14,7 @@ const PayoutCalculator = () => {
   const {
     recipients,
     setRecipients,
+    recipientGroups,
     selectedRecipients,
     setSelectedRecipients,
     recipientCount,
@@ -23,7 +25,9 @@ const PayoutCalculator = () => {
     updateRecipient,
     handleDragEnd,
     clearRecipients,
-    setLastUsedId
+    setLastUsedId,
+    createGroup,
+    ungroupRecipients
   } = useRecipients();
 
   const {
@@ -79,33 +83,53 @@ const PayoutCalculator = () => {
       return;
     }
 
-    const updatedRecipients = recipients.map(recipient => {
-      const type = recipient.type || (recipient.isFixedAmount ? "$" : "shares");
-      
-      if (type === "$") {
-        return {
-          ...recipient,
-          payout: isNaN(recipient.value) ? 0 : recipient.value,
-        };
-      } else if (type === "%") {
-        return {
-          ...recipient,
-          payout: isNaN(recipient.value) ? 0 : (recipient.value / 100) * totalPayout,
-        };
-      } else {
-        return {
-          ...recipient,
-          payout: isNaN(recipient.value) ? 0 : recipient.value * valuePerShare,
-        };
-      }
-    });
+    // If there are no recipients, all amount is surplus
+    if (recipients.length === 0) {
+      setRemainingAmount(totalPayout);
+      setTotalShares(0);
+      setValuePerShare(0);
+      return;
+    }
 
-    setRecipients(updatedRecipients);
-  }, [totalPayout, recipients.map(r => r.id).join(','), 
-     recipients.map(r => r.name).join(','),
-     recipients.map(r => r.isFixedAmount).join(','), 
-     recipients.map(r => r.value).join(','),
-     valuePerShare]);
+    // Calculate fixed amounts total
+    const fixedRecipients = recipients.filter(r => r.type === "$");
+    
+    const fixedAmounts = fixedRecipients.reduce(
+      (sum, r) => sum + (isNaN(r.value) ? 0 : r.value), 
+      0
+    );
+
+    // Calculate percentage amounts
+    const percentageRecipients = recipients.filter(r => r.type === "%");
+    
+    const totalPercentage = percentageRecipients.reduce(
+      (sum, r) => sum + (isNaN(r.value) ? 0 : r.value), 
+      0
+    );
+    
+    // Ensure percentage doesn't exceed 100%
+    const safePercentage = Math.min(totalPercentage, 100);
+    const percentageAmount = (safePercentage / 100) * totalPayout;
+    
+    // Calculate total reserved amount (fixed + percentage)
+    const reservedAmount = fixedAmounts + percentageAmount;
+    
+    // Calculate shares
+    const sharesRecipients = recipients.filter(r => r.type === "shares");
+    
+    const shares = sharesRecipients.reduce(
+      (sum, r) => sum + (isNaN(r.value) ? 0 : r.value), 
+      0
+    );
+
+    // Calculate remaining amount for shares
+    const remaining = Math.max(0, totalPayout - reservedAmount);
+    const perShare = shares > 0 ? remaining / shares : 0;
+
+    setRemainingAmount(remaining);
+    setTotalShares(shares);
+    setValuePerShare(perShare);
+  }, [totalPayout, recipients]);
 
   const handleRecipientHover = (id: string | null) => {
     setHoveredRecipientId(id);
@@ -147,6 +171,11 @@ const PayoutCalculator = () => {
     }
   };
 
+  // Update PayoutSummary to show grouped rows
+  const getPayoutSummaryRecipients = () => {
+    return recipients;
+  };
+
   return (
     <div className="space-y-2">
       <PayoutHeaderMenu 
@@ -164,6 +193,7 @@ const PayoutCalculator = () => {
 
           <RecipientsList
             recipients={recipients}
+            recipientGroups={recipientGroups}
             recipientCount={recipientCount}
             setRecipientCount={setRecipientCount}
             addRecipients={addRecipients}
@@ -177,13 +207,15 @@ const PayoutCalculator = () => {
             hoveredRecipientId={hoveredRecipientId || undefined}
             onRecipientHover={handleRecipientHover}
             clearRecipients={clearRecipients}
+            createGroup={createGroup}
+            ungroupRecipients={ungroupRecipients}
           />
         </div>
 
         <div className="md:sticky md:top-4 h-fit">
           <PayoutSummary
             totalPayout={totalPayout}
-            recipients={recipients}
+            recipients={getPayoutSummaryRecipients()}
             remainingAmount={remainingAmount}
             hoveredRecipientId={hoveredRecipientId || undefined}
             onRecipientHover={handleRecipientHover}
