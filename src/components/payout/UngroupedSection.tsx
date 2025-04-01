@@ -33,7 +33,7 @@ const UngroupedSection: React.FC<UngroupedSectionProps> = ({
   activeDroppableId,
   dragSourceId
 }) => {
-  const { setNodeRef } = useDroppable({
+  const { setNodeRef, isOver } = useDroppable({
     id: 'ungrouped'
   });
 
@@ -90,8 +90,8 @@ const UngroupedSection: React.FC<UngroupedSectionProps> = ({
                     />
                   ))
                 ) : (
-                  // Make sure this placeholder div doesn't block the droppable area
-                  <div className="flex items-center justify-center h-[72px] rounded-md border border-dashed border-gray-300 bg-gray-50 text-gray-400 text-sm pointer-events-none">
+                  // Use a div that doesn't interfere with the droppable area
+                  <div className="flex items-center justify-center h-[72px] rounded-md border border-dashed border-gray-300 bg-gray-50 text-gray-400 text-sm opacity-80 pointer-events-none">
                     Drop a recipient here
                   </div>
                 )}

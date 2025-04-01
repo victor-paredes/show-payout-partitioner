@@ -14,7 +14,8 @@ import {
   useSensors,
   DragEndEvent,
   DragStartEvent,
-  DragOverEvent
+  DragOverEvent,
+  MeasuringStrategy
 } from "@dnd-kit/core";
 import {
   sortableKeyboardCoordinates
@@ -88,10 +89,10 @@ const RecipientsList = ({
   
   const sensors = useSensors(
     useSensor(PointerSensor, {
-      // Reduce the activation constraints to make it easier to drop on empty areas
+      // Enhanced activation constraints to improve first item drag experience
       activationConstraint: {
-        distance: 3, // Lower distance to make dragging start more easily
-        tolerance: 5, // Add tolerance for better sensitivity
+        distance: 2, // Even lower distance to make dragging start more easily
+        tolerance: 10, // Increased tolerance for better sensitivity
         delay: 0,  // No delay
       }
     }),
@@ -233,6 +234,11 @@ const RecipientsList = ({
           onDragStart={handleDragStart}
           onDragOver={handleDragOver}
           onDragEnd={onDragEnd}
+          measuring={{
+            droppable: {
+              strategy: MeasuringStrategy.Always
+            }
+          }}
         >
           <div className="space-y-2">
             {recipients.length === 0 && groups.length === 0 ? (
