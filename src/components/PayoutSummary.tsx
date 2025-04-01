@@ -32,69 +32,69 @@ interface PayoutSummaryProps {
   onRecipientHover?: (id: string | null) => void;
 }
 
-// Enhanced saturated color palette with 50 unique colors
+// Enhanced darker color palette with 50 unique colors
 const COLORS = [
-  // Bold Primary Colors
-  "#FF0000", // Red
-  "#00FF00", // Lime
-  "#0000FF", // Blue
-  "#FFFF00", // Yellow
-  "#FF00FF", // Magenta
-  "#00FFFF", // Cyan
+  // Dark Primary Colors
+  "#8B0000", // Dark Red
+  "#006400", // Dark Green
+  "#00008B", // Dark Blue
+  "#808000", // Olive
+  "#800080", // Purple
+  "#008080", // Teal
   
-  // Vivid Secondary Colors
-  "#FF8000", // Orange
-  "#8000FF", // Violet
-  "#0080FF", // Azure
-  "#FF0080", // Rose
-  "#00FF80", // Spring Green
-  "#80FF00", // Chartreuse
+  // Deep Secondary Colors
+  "#A0522D", // Sienna
+  "#4B0082", // Indigo
+  "#4682B4", // Steel Blue
+  "#8B008B", // Dark Magenta
+  "#2E8B57", // Sea Green
+  "#6B8E23", // Olive Drab
   
-  // Saturated Tertiary Colors
-  "#FF4000", // Vermilion
-  "#FF0040", // Crimson
-  "#4000FF", // Indigo
-  "#00FF40", // Harlequin
-  "#40FF00", // Bright Green
-  "#0040FF", // Ultramarine
-  "#8000C0", // Purple
-  "#C00080", // Ruby
-  "#C08000", // Amber
-  "#00C080", // Jade
-  "#80C000", // Olive
-  "#0080C0", // Cerulean
+  // Rich Tertiary Colors
+  "#B22222", // Firebrick
+  "#8B4513", // Saddle Brown
+  "#483D8B", // Dark Slate Blue
+  "#2F4F4F", // Dark Slate Gray
+  "#556B2F", // Dark Olive Green
+  "#800000", // Maroon
+  "#708090", // Slate Gray
+  "#4B0082", // Indigo
+  "#2E8B57", // Sea Green
+  "#8B4513", // Saddle Brown
+  "#483D8B", // Dark Slate Blue
+  "#556B2F", // Dark Olive Green
   
-  // Additional Bright Colors
-  "#FF6000", // Dark Orange
-  "#FF0060", // Folly
-  "#6000FF", // Electric Indigo
-  "#00FF60", // Malachite
-  "#60FF00", // Bright Yellow-Green
-  "#0060FF", // Bright Blue
+  // Deeper Accent Colors
+  "#CD5C5C", // Indian Red
+  "#8B0000", // Dark Red
+  "#6B4423", // Dark Brown
+  "#4B0082", // Indigo
+  "#2E8B57", // Sea Green
+  "#800080", // Purple
   
-  // More Vibrant Colors
-  "#FF3000", // Ferrari Red
-  "#FF0030", // Raspberry
-  "#3000FF", // Ultramarine Blue
-  "#00FF30", // Neon Green
-  "#30FF00", // Acid Green
-  "#0030FF", // Cobalt Blue
+  // Muted Vibrant Colors
+  "#9ACD32", // Yellow Green
+  "#BC8F8F", // Rosy Brown
+  "#696969", // Dim Gray
+  "#CD853F", // Peru
+  "#5D3754", // Dark Purple
+  "#2F4F4F", // Dark Slate Gray
   
-  // Extra Colors to Reach 50
-  "#FF1000", // Bright Red
-  "#FF0010", // Crimson Glory
-  "#1000FF", // Electric Purple
-  "#00FF10", // Bright Green
-  "#10FF00", // Spring Bud
-  "#0010FF", // Medium Blue
-  "#FA5252", // Flamingo
-  "#20C997", // Jungle Green
-  "#7950F2", // Medium Purple
-  "#FCC419", // Sunglow
-  "#FF922B", // Dark Orange
-  "#4C6EF5", // Cornflower Blue
-  "#BE4BDB", // Medium Orchid
-  "#15AABF"  // Cerulean
+  // Additional Darker Hues
+  "#7B68EE", // Medium Slate Blue
+  "#6A5ACD", // Slate Blue
+  "#48D1CC", // Medium Turquoise
+  "#3CB371", // Medium Sea Green
+  "#8FBC8F", // Dark Sea Green
+  "#9370DB", // Medium Purple
+  "#7B68EE", // Medium Slate Blue
+  "#6495ED", // Cornflower Blue
+  "#5F9EA0", // Cadet Blue
+  "#4682B4", // Steel Blue
+  "#708090", // Slate Gray
+  "#BA55D3", // Medium Orchid
+  "#7B68EE", // Medium Slate Blue
+  "#4169E1"  // Royal Blue
 ];
 
 // Light grey for surplus
