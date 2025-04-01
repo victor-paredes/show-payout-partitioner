@@ -269,8 +269,6 @@ const PayoutCalculator = () => {
         totalPayout={totalPayout}
         recipients={recipients}
         remainingAmount={remainingAmount}
-        totalShares={totalShares}
-        valuePerShare={valuePerShare}
       />
     </div>
   );
