@@ -1,14 +1,60 @@
-
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Trash2, GripVertical } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Trash2, GripVertical, ChevronDown, Square } from "lucide-react";
+import { formatCurrency } from "@/lib/format";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import RecipientColorSwatch from "./recipient/RecipientColorSwatch";
-import RecipientName from "./recipient/RecipientName";
-import RecipientTypeSelector from "./recipient/RecipientTypeSelector";
-import RecipientValueInput from "./recipient/RecipientValueInput";
-import RecipientPayout from "./recipient/RecipientPayout";
+import {
+  Select,
+  SelectContent,
+  SelectContentNonPortal,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+const COLORS = [
+  "#3B82F6", // Blue
+  "#F97316", // Orange
+  "#10B981", // Green
+  "#EF4444", // Red
+  "#8B5CF6", // Purple
+  "#F59E0B", // Amber
+  "#DB2777", // Fuchsia
+  "#16A34A", // Green
+  "#9333EA", // Purple
+  "#D946EF", // Magenta
+  "#B45309", // Brown
+  "#4F46E5", // Indigo
+  "#0D9488", // Dark Teal
+  "#A21CAF", // Dark Magenta
+  "#15803D", // Forest Green
+  "#B91C1C", // Burgundy
+  "#1E40AF", // Navy Blue
+  "#C2410C", // Burnt Orange
+  "#0284C7", // Ocean Blue
+  "#4338CA", // Deep Blue
+  "#A16207", // Gold
+  "#BE185D", // Raspberry
+  "#0F766E", // Deep Teal
+  "#7E22CE", // Royal Purple
+  "#1D4ED8", // Cobalt Blue
+  "#065F46", // Hunter Green
+  "#9D174D", // Crimson
+  "#CA8A04", // Mustard
+  "#0F172A", // Navy Black
+  "#166534", // Jungle Green
+  "#701A75", // Plum
+  "#C026D3", // Bright Purple
+  "#B45309", // Cinnamon
+  "#0E7490", // Blue Lagoon
+  "#1E3A8A", // Dark Navy
+  "#65A30D", // Avocado
+  "#A16207", // Bronze
+  "#BE123C"  // Ruby
+];
 
 export type RecipientType = "shares" | "$" | "%";
 
@@ -19,7 +65,6 @@ interface Recipient {
   value: number;
   payout: number;
   type?: RecipientType;
-  color?: string;
 }
 
 interface RecipientRowProps {
@@ -44,6 +89,8 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
   onRecipientHover,
 }) => {
   const [isInputHover, setIsInputHover] = useState(false);
+  const [nameWidth, setNameWidth] = useState(150);
+  const nameRef = useRef<HTMLSpanElement>(null);
   const [isDraggingInput, setIsDraggingInput] = useState(false);
   
   const {
@@ -62,6 +109,15 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
     zIndex: isDragging ? 1 : 0,
   };
   
+  useEffect(() => {
+    if (nameRef.current) {
+      const newWidth = Math.max(150, nameRef.current.scrollWidth + 20);
+      setNameWidth(newWidth);
+    }
+  }, [recipient.name]);
+
+  const inputHoverClass = "hover:outline hover:outline-2 hover:outline-black";
+
   const handleMouseEnter = () => {
     setIsInputHover(false);
     if (onRecipientHover) {
@@ -75,7 +131,9 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
     }
   };
 
-  const handleTypeChange = (type: RecipientType) => {
+  const handleTypeChange = (value: string) => {
+    const type = value as RecipientType;
+    
     onUpdate({ 
       isFixedAmount: type === "$",
       type: type
@@ -92,6 +150,15 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
     
     setIsDraggingInput(false);
   };
+
+  const getRecipientColor = (recipientId: string) => {
+    const hashCode = Array.from(recipientId).reduce(
+      (acc, char) => acc + char.charCodeAt(0), 0
+    );
+    return COLORS[hashCode % COLORS.length];
+  };
+
+  const recipientColor = getRecipientColor(recipient.id);
 
   return (
     <div 
@@ -126,17 +193,30 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
         onMouseEnter={() => setIsInputHover(true)}
         onMouseLeave={() => setIsInputHover(false)}
       >
-        <RecipientColorSwatch
-          color={recipient.color || "#CCCCCC"}
-          isHighlighted={isHighlighted}
+        <div 
+          className={`w-4 h-4 rounded-sm transition-all ${
+            isHighlighted ? "border border-black" : ""
+          }`} 
+          style={{ backgroundColor: recipientColor }}
         />
-        <RecipientName
-          name={recipient.name}
-          onUpdate={(name) => onUpdate({ name })}
-          onClick={(e) => e.stopPropagation()}
-          onMouseDown={() => setIsDraggingInput(false)}
-          onMouseMove={() => setIsDraggingInput(true)}
-        />
+        <div className="relative inline-block">
+          <span 
+            ref={nameRef} 
+            className="invisible absolute whitespace-nowrap"
+          >
+            {recipient.name || "Enter Name"}
+          </span>
+          <Input
+            value={recipient.name}
+            onChange={(e) => onUpdate({ name: e.target.value })}
+            className={`border-none p-0 h-auto text-base font-medium focus-visible:ring-0 ${inputHoverClass}`}
+            placeholder="Enter Name"
+            onClick={(e) => e.stopPropagation()}
+            onMouseDown={() => setIsDraggingInput(false)}
+            onMouseMove={() => setIsDraggingInput(true)}
+            style={{ width: `${nameWidth}px` }}
+          />
+        </div>
       </div>
 
       <div 
@@ -145,10 +225,19 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
         onMouseEnter={() => setIsInputHover(true)}
         onMouseLeave={() => setIsInputHover(false)}
       >
-        <RecipientTypeSelector
-          type={currentType}
-          onTypeChange={handleTypeChange}
-        />
+        <Select 
+          value={currentType} 
+          onValueChange={handleTypeChange}
+        >
+          <SelectTrigger className="w-28">
+            <SelectValue placeholder="Type" />
+          </SelectTrigger>
+          <SelectContentNonPortal>
+            <SelectItem value="shares">Shares</SelectItem>
+            <SelectItem value="$">$</SelectItem>
+            <SelectItem value="%">%</SelectItem>
+          </SelectContentNonPortal>
+        </Select>
       </div>
 
       <div 
@@ -157,19 +246,30 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
         onMouseEnter={() => setIsInputHover(true)}
         onMouseLeave={() => setIsInputHover(false)}
       >
-        <RecipientValueInput
-          value={recipient.value}
-          type={currentType}
-          onValueChange={(value) => onUpdate({ value })}
+        <Input
+          type="number"
+          min="0"
+          step={currentType === "$" ? "10" : currentType === "%" ? "1" : "0.1"}
+          value={recipient.value || ""}
+          onChange={(e) => onUpdate({ value: parseFloat(e.target.value) || 0 })}
+          className={`w-24 text-right ${inputHoverClass}`}
+          placeholder={
+            currentType === "shares" ? "Shares" : 
+            currentType === "$" ? "Amount" : 
+            "Percent"
+          }
           onMouseDown={() => setIsDraggingInput(false)}
           onMouseMove={() => setIsDraggingInput(true)}
         />
       </div>
 
-      <RecipientPayout
-        payout={recipient.payout}
-        type={currentType}
-      />
+      <div className="w-28 text-right">
+        <span className="font-medium">
+          {recipient.type === "$" ? formatCurrency(recipient.payout) : 
+           recipient.type === "%" ? `${recipient.payout.toFixed(2)}%` : 
+           formatCurrency(recipient.payout)}
+        </span>
+      </div>
 
       <Button
         variant="ghost"

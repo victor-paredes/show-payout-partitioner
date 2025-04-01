@@ -1,9 +1,9 @@
+
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { DragEndEvent } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
 import { RecipientType } from "@/components/RecipientRow";
-import { resetColorIndex, getNextColor } from "@/lib/colorUtils";
 
 export interface Recipient {
   id: string;
@@ -12,7 +12,6 @@ export interface Recipient {
   value: number;
   payout: number;
   type?: RecipientType;
-  color?: string;
 }
 
 export function useRecipients() {
@@ -24,17 +23,13 @@ export function useRecipients() {
       isFixedAmount: false, 
       value: 1, 
       payout: 0, 
-      type: "shares",
-      color: getNextColor() 
+      type: "shares" 
     },
   ]);
   const [selectedRecipients, setSelectedRecipients] = useState<Set<string>>(new Set());
   const [recipientCount, setRecipientCount] = useState<string>("1");
 
   const addRecipients = () => {
-    // Don't reset color index when adding recipients
-    // We want colors to continue in sequence
-    
     const currentRecipientCount = recipients.length;
     const count = parseInt(recipientCount);
     
@@ -48,8 +43,7 @@ export function useRecipients() {
         isFixedAmount: false, 
         value: 1, 
         payout: 0,
-        type: "shares" as RecipientType,
-        color: getNextColor()
+        type: "shares" as RecipientType
       };
     });
     
@@ -126,18 +120,14 @@ export function useRecipients() {
       return;
     }
     
-    // Reset the color index to start from the beginning
-    resetColorIndex();
-    
-    // Reset the first recipient to default values with a new color
+    // Reset the first recipient to default values
     const firstRecipient = {
       ...recipients[0],
       name: "Recipient 1",
       isFixedAmount: false,
       value: 1,
       payout: 0,
-      type: "shares" as RecipientType,
-      color: getNextColor()
+      type: "shares" as RecipientType // Explicitly cast type to RecipientType
     };
     
     setRecipients([firstRecipient]);
