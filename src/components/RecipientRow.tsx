@@ -180,8 +180,6 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
         onMouseEnter={() => setIsInputHover(true)}
         onMouseLeave={() => setIsInputHover(false)}
       >
-        {currentType === "$" && <span className="mr-1">$</span>}
-        {currentType === "%" && <span className="mr-1">%</span>}
         <Input
           type="number"
           min="0"
@@ -190,18 +188,18 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
           onChange={(e) => onUpdate({ value: parseFloat(e.target.value) || 0 })}
           className={`w-24 text-right ${inputHoverClass}`}
           placeholder={
-            currentType === "$" 
-              ? "Amount" 
-              : currentType === "%" 
-                ? "Percent" 
-                : "Shares"
+            currentType === "shares" ? "Shares" : 
+            currentType === "$" ? "Amount" : 
+            "Percent"
           }
         />
       </div>
 
       <div className="w-28 text-right">
         <span className="font-medium">
-          {formatCurrency(recipient.payout)}
+          {recipient.type === "$" ? formatCurrency(recipient.payout) : 
+           recipient.type === "%" ? `${recipient.payout.toFixed(2)}%` : 
+           formatCurrency(recipient.payout)}
         </span>
       </div>
 
