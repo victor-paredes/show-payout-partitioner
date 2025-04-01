@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { FileDown } from "lucide-react";
+import { FileDown, X } from "lucide-react";
 import { exportToPdf } from "@/lib/exportUtils";
 import { RecipientType } from "@/components/RecipientRow";
 
@@ -72,6 +72,8 @@ const COLORS = [
 
 // Light grey for surplus
 const SURPLUS_COLOR = "#E5E7EB";
+// Red for overdraw
+const OVERDRAW_COLOR = "#EF4444";
 
 const PayoutSummary: React.FC<PayoutSummaryProps> = ({
   totalPayout,
@@ -203,6 +205,9 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
     );
   }
 
+  // Create empty pie data for overdraw visualization
+  const emptyPieData = [{ name: "empty", value: 1 }];
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -234,38 +239,67 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
           {chartData.length > 0 && (
             <div className="flex justify-center py-1">
               <div className="w-full" style={{ height: 200 }}>
-                <PieChart 
-                  width={400} 
-                  height={200}
-                  style={{ margin: '0 auto', width: 'auto' }}
-                >
-                  <Pie
-                    data={chartData}
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                    label={false}
-                    isAnimationActive={false}
-                    onMouseEnter={(_, index) => handleChartHover(index)}
-                    onMouseLeave={() => handleChartHover(null)}
+                {hasOverdraw ? (
+                  <div className="relative" style={{ height: 200 }}>
+                    <PieChart 
+                      width={400} 
+                      height={200}
+                      style={{ margin: '0 auto', width: 'auto' }}
+                    >
+                      <Pie
+                        data={emptyPieData}
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={80}
+                        fill="#FFFFFF"
+                        stroke={OVERDRAW_COLOR}
+                        strokeWidth={3}
+                        isAnimationActive={false}
+                      >
+                        <Cell fill="#FFFFFF" />
+                      </Pie>
+                    </PieChart>
+                    <div 
+                      className="absolute inset-0 flex items-center justify-center"
+                      style={{ pointerEvents: 'none' }}
+                    >
+                      <X size={60} color={OVERDRAW_COLOR} strokeWidth={3} />
+                    </div>
+                  </div>
+                ) : (
+                  <PieChart 
+                    width={400} 
+                    height={200}
+                    style={{ margin: '0 auto', width: 'auto' }}
                   >
-                    {chartData.map((entry, index) => {
-                      // Use light grey color for surplus or overdraw
-                      const color = entry.id === "surplus" || entry.id === "overdraw"
-                        ? SURPLUS_COLOR 
-                        : COLORS[index % COLORS.length];
-                        
-                      return (
-                        <Cell 
-                          key={`cell-${index}`} 
-                          fill={hoveredChartIndex === index ? "#000000" : color} 
-                        />
-                      );
-                    })}
-                  </Pie>
-                </PieChart>
+                    <Pie
+                      data={chartData}
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                      label={false}
+                      isAnimationActive={false}
+                      onMouseEnter={(_, index) => handleChartHover(index)}
+                      onMouseLeave={() => handleChartHover(null)}
+                    >
+                      {chartData.map((entry, index) => {
+                        // Use light grey color for surplus or overdraw
+                        const color = entry.id === "surplus" || entry.id === "overdraw"
+                          ? SURPLUS_COLOR 
+                          : COLORS[index % COLORS.length];
+                          
+                        return (
+                          <Cell 
+                            key={`cell-${index}`} 
+                            fill={hoveredChartIndex === index ? "#000000" : color} 
+                          />
+                        );
+                      })}
+                    </Pie>
+                  </PieChart>
+                )}
               </div>
             </div>
           )}
@@ -282,9 +316,9 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
             )}
             
             {hasOverdraw && (
-              <div className="text-xs bg-blue-100 text-blue-700 py-1 px-2 rounded-md flex items-center gap-1 mb-2">
+              <div className="text-xs bg-red-100 text-red-700 py-1 px-2 rounded-md flex items-center gap-1 mb-2">
                 <span>Overdraw</span>
-                <span className="text-xs text-blue-500 ml-2">
+                <span className="text-xs text-red-500 ml-2">
                   ({((overdraw / totalPayout) * 100).toFixed(1)}%)
                 </span>
                 <span className="ml-auto">{formatCurrency(overdraw)}</span>
