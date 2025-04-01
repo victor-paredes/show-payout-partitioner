@@ -37,7 +37,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent 
         className={cn(
-          variant === "destructive" && "border-2 border-[#ea384c]" // More vibrant red
+          variant === "destructive" && "border-2 border-[#ff3850]" // Even more vibrant red
         )}
       >
         <AlertDialogHeader>
@@ -49,7 +49,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
           <AlertDialogAction 
             onClick={onConfirm}
             className={cn(
-              variant === "destructive" && "bg-[#ea384c] hover:bg-[#ea384c]/90"
+              variant === "destructive" && "bg-[#ff3850] hover:bg-[#ff3850]/90"
             )}
           >
             {confirmLabel}
