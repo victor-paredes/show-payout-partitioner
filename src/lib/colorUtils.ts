@@ -4,44 +4,73 @@
  * Used by both RecipientRow and PayoutSummary components
  */
 export const COLORS = [
-  "#3B82F6", // Blue
-  "#F97316", // Orange
-  "#10B981", // Green
-  "#EF4444", // Red
-  "#8B5CF6", // Purple
-  "#F59E0B", // Amber
-  "#DB2777", // Fuchsia
-  "#16A34A", // Green
-  "#9333EA", // Purple
-  "#D946EF", // Magenta
-  "#B45309", // Brown
-  "#4F46E5", // Indigo
-  "#0D9488", // Dark Teal
-  "#A21CAF", // Dark Magenta
-  "#15803D", // Forest Green
-  "#B91C1C", // Burgundy
-  "#1E40AF", // Navy Blue
-  "#C2410C", // Burnt Orange
+  // Blues
+  "#2563EB", // Royal Blue
+  "#0EA5E9", // Vivid Sky Blue
   "#0284C7", // Ocean Blue
-  "#4338CA", // Deep Blue
-  "#A16207", // Gold
-  "#BE185D", // Raspberry
-  "#0F766E", // Deep Teal
-  "#7E22CE", // Royal Purple
+  "#1E40AF", // Navy Blue
   "#1D4ED8", // Cobalt Blue
-  "#065F46", // Hunter Green
-  "#9D174D", // Crimson
-  "#CA8A04", // Mustard
-  "#0F172A", // Navy Black
-  "#166534", // Jungle Green
-  "#701A75", // Plum
-  "#C026D3", // Bright Purple
-  "#B45309", // Cinnamon
-  "#0E7490", // Blue Lagoon
+  "#4338CA", // Deep Blue
   "#1E3A8A", // Dark Navy
+  
+  // Greens
+  "#10B981", // Emerald
+  "#059669", // Vivid Green
+  "#16A34A", // Bright Green
+  "#15803D", // Forest Green
+  "#166534", // Jungle Green
+  "#22C55E", // Lime Green
   "#65A30D", // Avocado
-  "#A16207", // Bronze
-  "#BE123C"  // Ruby
+  
+  // Reds/Pinks
+  "#EF4444", // Bright Red
+  "#E11D48", // Crimson
+  "#DC2626", // Fire Red
+  "#BE123C", // Ruby
+  "#DB2777", // Fuchsia
+  "#EC4899", // Hot Pink
+  "#9D174D", // Deep Crimson
+  
+  // Purples
+  "#8B5CF6", // Vivid Purple
+  "#7C3AED", // Electric Purple
+  "#9333EA", // Rich Purple
+  "#7E22CE", // Royal Purple
+  "#D946EF", // Magenta Pink
+  "#C026D3", // Bright Purple
+  "#701A75", // Plum
+  "#A21CAF", // Dark Magenta
+  
+  // Oranges/Yellows
+  "#F97316", // Vivid Orange
+  "#F59E0B", // Amber
+  "#EA580C", // Dark Orange
+  "#D97706", // Bronze
+  "#CA8A04", // Mustard
+  "#FACC15", // Sunny Yellow
+  "#EAB308", // Golden Yellow
+  "#C2410C", // Burnt Orange
+  
+  // Teals/Cyans
+  "#0D9488", // Dark Teal
+  "#0F766E", // Deep Teal
+  "#0891B2", // Cyan
+  "#06B6D4", // Bright Cyan
+  "#0E7490", // Blue Lagoon
+  
+  // Browns/Earthy
+  "#B45309", // Cinnamon
+  "#92400E", // Coffee
+  "#A16207", // Gold
+  "#78350F", // Chocolate
+  "#713F12", // Deep Brown
+  
+  // Miscellaneous 
+  "#0F172A", // Navy Black
+  "#4B5563", // Slate
+  "#4F46E5", // Indigo
+  "#A855F7", // Orchid
+  "#FB7185", // Coral
 ];
 
 /**
