@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -233,25 +232,6 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
           className="flex items-center space-x-2" 
           onClick={(e) => e.stopPropagation()}
         >
-          <Select 
-            value={currentType} 
-            onValueChange={handleTypeChange}
-          >
-            <SelectTrigger tabIndex={typeTabIndex} className="w-28">
-              <SelectValue placeholder="Type" />
-            </SelectTrigger>
-            <SelectContentNonPortal>
-              <SelectItem value="shares">Shares</SelectItem>
-              <SelectItem value="$">$</SelectItem>
-              <SelectItem value="%">%</SelectItem>
-            </SelectContentNonPortal>
-          </Select>
-        </div>
-
-        <div 
-          className="flex items-center" 
-          onClick={(e) => e.stopPropagation()}
-        >
           <Input
             tabIndex={valueTabIndex}
             type="number"
@@ -267,6 +247,20 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
             }
             onClick={handleValueInputClick}
           />
+          
+          <Select 
+            value={currentType} 
+            onValueChange={handleTypeChange}
+          >
+            <SelectTrigger tabIndex={typeTabIndex} className="w-28">
+              <SelectValue placeholder="Type" />
+            </SelectTrigger>
+            <SelectContentNonPortal>
+              <SelectItem value="shares">Shares</SelectItem>
+              <SelectItem value="$">$</SelectItem>
+              <SelectItem value="%">%</SelectItem>
+            </SelectContentNonPortal>
+          </Select>
         </div>
 
         <Button
