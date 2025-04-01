@@ -114,6 +114,15 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
     return b.payout - a.payout;
   });
 
+  // Assign consistent colors based on recipient ID instead of chart data index
+  const getRecipientColor = (recipientId: string) => {
+    // Hash the recipient ID to get a consistent color index
+    const hashCode = Array.from(recipientId).reduce(
+      (acc, char) => acc + char.charCodeAt(0), 0
+    );
+    return COLORS[hashCode % COLORS.length];
+  };
+
   const chartData = sortedRecipients
     .filter(recipient => recipient.payout > 0)
     .map((recipient) => {
@@ -126,6 +135,7 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
         value: recipient.payout,
         percentage: percentage,
         id: recipient.id,
+        color: getRecipientColor(recipient.id)
       };
     });
     
@@ -139,7 +149,8 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
       name: "Surplus",
       value: surplus,
       percentage: surplusPercentage,
-      id: "surplus"
+      id: "surplus",
+      color: SURPLUS_COLOR
     });
   }
   
@@ -153,7 +164,8 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
       name: "Overdraw",
       value: overdraw,
       percentage: overdrawPercentage,
-      id: "overdraw"
+      id: "overdraw",
+      color: OVERDRAW_COLOR
     });
   }
 
@@ -286,19 +298,12 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
                       onMouseEnter={(_, index) => handleChartHover(index)}
                       onMouseLeave={() => handleChartHover(null)}
                     >
-                      {chartData.map((entry, index) => {
-                        // Use light grey color for surplus or overdraw
-                        const color = entry.id === "surplus" || entry.id === "overdraw"
-                          ? SURPLUS_COLOR 
-                          : COLORS[index % COLORS.length];
-                          
-                        return (
-                          <Cell 
-                            key={`cell-${index}`} 
-                            fill={hoveredChartIndex === index ? "#000000" : color} 
-                          />
-                        );
-                      })}
+                      {chartData.map((entry, index) => (
+                        <Cell 
+                          key={`cell-${index}`} 
+                          fill={hoveredChartIndex === index ? "#000000" : entry.color} 
+                        />
+                      ))}
                     </Pie>
                   </PieChart>
                 )}
@@ -337,8 +342,7 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
                   ? ((recipient.payout / totalPayout) * 100).toFixed(1) 
                   : "0";
                 
-                const recipientChartData = chartData.find(item => item.id === recipient.id);
-                const recipientColor = COLORS[chartData.findIndex(item => item.id === recipient.id) % COLORS.length] || COLORS[0];
+                const recipientColor = getRecipientColor(recipient.id);
                 const type = recipient.type || (recipient.isFixedAmount ? "$" : "shares");
                 
                 let valueDisplay = "";
