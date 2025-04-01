@@ -72,7 +72,7 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
     const { payload } = props;
     
     return (
-      <div className="flex flex-wrap justify-center gap-4 text-sm mt-2">
+      <div className="flex flex-wrap justify-center text-sm mt-2">
         {payload.map((entry: any, index: number) => (
           <div 
             key={`legend-${index}`} 
