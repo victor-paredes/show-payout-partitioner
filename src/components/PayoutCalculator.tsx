@@ -74,31 +74,37 @@ const PayoutCalculator = () => {
      valuePerShare]);
 
   return (
-    <div className="space-y-6" ref={calculatorRef}>
-      <TotalPayoutInput 
-        totalPayout={totalPayout} 
-        onChange={setTotalPayout} 
-      />
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6" ref={calculatorRef}>
+      {/* Left Column - Input Sections */}
+      <div className="space-y-6">
+        <TotalPayoutInput 
+          totalPayout={totalPayout} 
+          onChange={setTotalPayout} 
+        />
 
-      <RecipientsList
-        recipients={recipients}
-        recipientCount={recipientCount}
-        setRecipientCount={setRecipientCount}
-        addRecipients={addRecipients}
-        updateRecipient={updateRecipient}
-        removeRecipient={removeRecipient}
-        selectedRecipients={selectedRecipients}
-        toggleSelectRecipient={toggleSelectRecipient}
-        setSelectedRecipients={setSelectedRecipients}
-        handleDragEnd={handleDragEnd}
-        valuePerShare={valuePerShare}
-      />
+        <RecipientsList
+          recipients={recipients}
+          recipientCount={recipientCount}
+          setRecipientCount={setRecipientCount}
+          addRecipients={addRecipients}
+          updateRecipient={updateRecipient}
+          removeRecipient={removeRecipient}
+          selectedRecipients={selectedRecipients}
+          toggleSelectRecipient={toggleSelectRecipient}
+          setSelectedRecipients={setSelectedRecipients}
+          handleDragEnd={handleDragEnd}
+          valuePerShare={valuePerShare}
+        />
+      </div>
 
-      <PayoutSummary
-        totalPayout={totalPayout}
-        recipients={recipients}
-        remainingAmount={remainingAmount}
-      />
+      {/* Right Column - Summary */}
+      <div className="md:sticky md:top-4 h-fit">
+        <PayoutSummary
+          totalPayout={totalPayout}
+          recipients={recipients}
+          remainingAmount={remainingAmount}
+        />
+      </div>
     </div>
   );
 };
