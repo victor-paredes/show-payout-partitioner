@@ -44,17 +44,36 @@ const TotalPayoutInput = ({ totalPayout, onChange }: TotalPayoutInputProps) => {
     }
 
     const input = e.target.value;
-    // Remove commas and non-numeric characters (except for decimal point)
-    const rawValue = input.replace(/[^0-9.]/g, '');
+    
+    // Allow only one decimal point
+    let rawValue = input.replace(/[^0-9.]/g, '');
+    const decimalCount = (rawValue.match(/\./g) || []).length;
+    if (decimalCount > 1) {
+      const parts = rawValue.split('.');
+      rawValue = parts[0] + '.' + parts.slice(1).join('');
+    }
     
     // Handle numeric processing
-    const numericValue = rawValue ? parseFloat(rawValue) : 0;
+    let numericValue = 0;
+    if (rawValue) {
+      // Check if it ends with a decimal point
+      if (rawValue.endsWith('.')) {
+        numericValue = parseFloat(rawValue + '0');
+      } else {
+        numericValue = parseFloat(rawValue);
+      }
+    }
     
     // Count commas before cursor to adjust position
     if (cursorPositionRef.current !== null) {
       const beforeCursor = input.substring(0, cursorPositionRef.current);
       const commasBeforeCursor = (beforeCursor.match(/,/g) || []).length;
       cursorPositionRef.current -= commasBeforeCursor;
+    }
+    
+    // If it's not a number, use the last valid value
+    if (isNaN(numericValue)) {
+      numericValue = 0;
     }
     
     onChange(numericValue);
