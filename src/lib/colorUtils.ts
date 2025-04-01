@@ -1,31 +1,51 @@
+
 /**
  * Standard color palette for the application
  * Used by both RecipientRow and PayoutSummary components
  */
 export const COLORS = [
-  // Distinct color spectrum
-  "#E11D48",     // Crimson Red
-  "#DC2626",     // Fire Red
-  "#2563EB",     // Royal Blue
-  "#16A34A",     // Bright Green
-  "#EAB308",     // Golden Yellow
-  
-  "#F97316",     // Vivid Orange
-  "#7C3AED",     // Electric Purple
-  "#06B6D4",     // Bright Cyan
-  "#059669",     // Vivid Green
-  "#F59E0B",     // Amber
-  
-  "#D946EF",     // Magenta Pink
-  "#0EA5E9",     // Vivid Sky Blue
-  "#4F46E5",     // Indigo
-  "#FACC15",     // Sunny Yellow
-  "#EC4899",     // Hot Pink
-  
-  "#22C55E",     // Lime Green
-  "#1E3A8A",     // Dark Navy
-  "#0891B2",     // Cyan
+  // Distinct color spectrum in specified order
+  "#FF4136",     // Red
+  "#FF851B",     // Orange
+  "#FFDC00",     // Yellow
+  "#01FF70",     // Lime
+  "#2ECC40",     // Green
+  "#7FDBFF",     // Turquoise
+  "#39CCCC",     // Cyan
+  "#87CEFA",     // Sky Blue
+  "#0074D9",     // Blue
+  "#6610f2",     // Indigo
+  "#B10DC9",     // Violet
+  "#F012BE",     // Pink
+  "#FF69B4",     // Hot Pink
+  "#FF00FF",     // Magenta
+  "#FFB347",     // Peach
+  "#FF6F61",     // Coral
+  "#00FF7F",     // Spring Green
+  "#00FFFF",     // Aqua
+  "#1E90FF",     // Dodger Blue
+  "#BA55D3",     // Medium Orchid
 ];
+
+// Track which color to use next
+let currentColorIndex = 0;
+
+/**
+ * Resets the color index to start from the beginning
+ */
+export const resetColorIndex = (): void => {
+  currentColorIndex = 0;
+};
+
+/**
+ * Returns the next color in the palette in sequential order
+ * @returns A color from the COLORS array
+ */
+export const getNextColor = (): string => {
+  const color = COLORS[currentColorIndex % COLORS.length];
+  currentColorIndex++;
+  return color;
+};
 
 /**
  * Deterministically generates a color from a recipient ID

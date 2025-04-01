@@ -4,6 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 import { DragEndEvent } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
 import { RecipientType } from "@/components/RecipientRow";
+import { resetColorIndex, getNextColor } from "@/lib/colorUtils";
 
 export interface Recipient {
   id: string;
@@ -120,6 +121,9 @@ export function useRecipients() {
       return;
     }
     
+    // Reset the color index to start from the beginning
+    resetColorIndex();
+    
     // Reset the first recipient to default values
     const firstRecipient = {
       ...recipients[0],
@@ -127,7 +131,7 @@ export function useRecipients() {
       isFixedAmount: false,
       value: 1,
       payout: 0,
-      type: "shares" as RecipientType // Explicitly cast type to RecipientType
+      type: "shares" as RecipientType
     };
     
     setRecipients([firstRecipient]);
