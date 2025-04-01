@@ -1,12 +1,10 @@
-
 import React, { useRef, useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/format";
 import { PieChart, Pie, Cell } from "recharts";
-import { X, Plus } from "lucide-react";
+import { X } from "lucide-react";
 import { RecipientType } from "@/components/RecipientRow";
 import { getRecipientColor } from "@/lib/colorUtils";
-import { Button } from "@/components/ui/button";
 
 interface Recipient {
   id: string;
@@ -24,7 +22,6 @@ interface PayoutSummaryProps {
   remainingAmount: number;
   hoveredRecipientId?: string;
   onRecipientHover?: (id: string | null) => void;
-  onAddRecipient?: () => void;
 }
 
 const SURPLUS_COLOR = "#E5E7EB";
@@ -35,8 +32,7 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
   recipients,
   remainingAmount,
   hoveredRecipientId,
-  onRecipientHover,
-  onAddRecipient
+  onRecipientHover
 }) => {
   const summaryRef = useRef<HTMLDivElement>(null);
   const [isCalculationStable, setIsCalculationStable] = useState<boolean>(false);
@@ -60,7 +56,6 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
   const hasSurplus = difference < -0.01 || recipients.length === 0;
   const hasOverdraw = difference > 0.01;
   
-  // If we have no recipients, the entire amount is surplus
   const surplus = hasSurplus ? (recipients.length === 0 ? totalPayout : Math.abs(difference)) : 0;
   const overdraw = hasOverdraw ? difference : 0;
   
@@ -258,19 +253,7 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
           )}
           
           <div className="border-t pt-4 mt-4">
-            <div className="flex justify-between items-center mb-3">
-              <h3 className="font-semibold">Individual Payouts</h3>
-              {recipients.length === 0 && onAddRecipient && (
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={onAddRecipient} 
-                  className="flex items-center gap-1"
-                >
-                  <Plus className="h-4 w-4" /> Add Recipient
-                </Button>
-              )}
-            </div>
+            <h3 className="font-semibold mb-3">Individual Payouts</h3>
             {recipients.length > 0 ? (
               <div className="space-y-1">
                 {recipients.map((recipient) => {

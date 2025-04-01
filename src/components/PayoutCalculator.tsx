@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from "react";
 import TotalPayoutInput from "./payout/TotalPayoutInput";
 import RecipientsList from "./payout/RecipientsList";
@@ -6,7 +5,6 @@ import PayoutSummary from "./PayoutSummary";
 import PayoutHeaderMenu from "./payout/PayoutHeaderMenu";
 import { useRecipients, Recipient } from "@/hooks/useRecipients";
 import { usePayoutCalculation } from "@/hooks/usePayoutCalculation";
-import { RecipientType } from "@/components/RecipientRow";
 
 const PayoutCalculator = () => {
   const {
@@ -57,7 +55,6 @@ const PayoutCalculator = () => {
       }
     };
 
-    // Add Escape key handler
     const handleEscapeKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && selectedRecipients.size > 0) {
         setSelectedRecipients(new Set());
@@ -153,24 +150,22 @@ const PayoutCalculator = () => {
             onChange={setTotalPayout} 
           />
 
-          {recipients.length > 0 && (
-            <RecipientsList
-              recipients={recipients}
-              recipientCount={recipientCount}
-              setRecipientCount={setRecipientCount}
-              addRecipients={addRecipients}
-              updateRecipient={updateRecipient}
-              removeRecipient={removeRecipient}
-              selectedRecipients={selectedRecipients}
-              toggleSelectRecipient={toggleSelectRecipient}
-              setSelectedRecipients={setSelectedRecipients}
-              handleDragEnd={handleDragEnd}
-              valuePerShare={valuePerShare}
-              hoveredRecipientId={hoveredRecipientId || undefined}
-              onRecipientHover={handleRecipientHover}
-              clearRecipients={clearRecipients}
-            />
-          )}
+          <RecipientsList
+            recipients={recipients}
+            recipientCount={recipientCount}
+            setRecipientCount={setRecipientCount}
+            addRecipients={addRecipients}
+            updateRecipient={updateRecipient}
+            removeRecipient={removeRecipient}
+            selectedRecipients={selectedRecipients}
+            toggleSelectRecipient={toggleSelectRecipient}
+            setSelectedRecipients={setSelectedRecipients}
+            handleDragEnd={handleDragEnd}
+            valuePerShare={valuePerShare}
+            hoveredRecipientId={hoveredRecipientId || undefined}
+            onRecipientHover={handleRecipientHover}
+            clearRecipients={clearRecipients}
+          />
         </div>
 
         <div className="md:sticky md:top-4 h-fit">
@@ -180,7 +175,6 @@ const PayoutCalculator = () => {
             remainingAmount={remainingAmount}
             hoveredRecipientId={hoveredRecipientId || undefined}
             onRecipientHover={handleRecipientHover}
-            onAddRecipient={recipients.length === 0 ? addRecipients : undefined}
           />
         </div>
       </div>
