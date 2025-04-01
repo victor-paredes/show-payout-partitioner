@@ -1,3 +1,4 @@
+
 import React, { useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/format";
@@ -13,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { FileDown } from "lucide-react";
 import { exportToPdf } from "@/lib/exportUtils";
+import { RecipientType } from "@/components/RecipientRow";
 
 interface Recipient {
   id: string;
@@ -20,7 +22,7 @@ interface Recipient {
   isFixedAmount: boolean;
   value: number;
   payout: number;
-  type?: "shares" | "fixed" | "percentage";
+  type?: RecipientType;
 }
 
 interface PayoutSummaryProps {
@@ -61,13 +63,13 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
   
   const sortedRecipients = [...recipients].sort((a, b) => {
     const typeOrder = {
-      fixed: 0,
-      percentage: 1,
-      shares: 2
+      "$": 0,
+      "%": 1,
+      "shares": 2
     };
     
-    const aType = a.type || (a.isFixedAmount ? "fixed" : "shares");
-    const bType = b.type || (b.isFixedAmount ? "fixed" : "shares");
+    const aType = a.type || (a.isFixedAmount ? "$" : "shares");
+    const bType = b.type || (b.isFixedAmount ? "$" : "shares");
     
     if (aType !== bType) {
       return typeOrder[aType] - typeOrder[bType];
@@ -211,12 +213,12 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
                 const recipientChartData = chartData.find(item => item.id === recipient.id);
                 const percentage = recipientChartData ? recipientChartData.percentage : "0";
                 const recipientColor = COLORS[chartData.findIndex(item => item.id === recipient.id) % COLORS.length] || COLORS[0];
-                const type = recipient.type || (recipient.isFixedAmount ? "fixed" : "shares");
+                const type = recipient.type || (recipient.isFixedAmount ? "$" : "shares");
                 
                 let valueDisplay = "";
-                if (type === "fixed") {
-                  valueDisplay = `(Fixed: ${formatCurrency(recipient.value)})`;
-                } else if (type === "percentage") {
+                if (type === "$") {
+                  valueDisplay = `($${formatCurrency(recipient.value).substring(1)})`;
+                } else if (type === "%") {
                   valueDisplay = `(${recipient.value}%)`;
                 } else {
                   valueDisplay = `(${recipient.value}x, ${percentage}%)`;

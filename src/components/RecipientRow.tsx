@@ -180,19 +180,19 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
         onMouseEnter={() => setIsInputHover(true)}
         onMouseLeave={() => setIsInputHover(false)}
       >
-        {currentType === "fixed" && <span className="mr-1">$</span>}
-        {currentType === "percentage" && <span className="mr-1">%</span>}
+        {currentType === "$" && <span className="mr-1">$</span>}
+        {currentType === "%" && <span className="mr-1">%</span>}
         <Input
           type="number"
           min="0"
-          step={currentType === "fixed" ? "10" : currentType === "percentage" ? "1" : "0.1"}
+          step={currentType === "$" ? "10" : currentType === "%" ? "1" : "0.1"}
           value={recipient.value || ""}
           onChange={(e) => onUpdate({ value: parseFloat(e.target.value) || 0 })}
           className={`w-24 text-right ${inputHoverClass}`}
           placeholder={
-            currentType === "fixed" 
+            currentType === "$" 
               ? "Amount" 
-              : currentType === "percentage" 
+              : currentType === "%" 
                 ? "Percent" 
                 : "Shares"
           }

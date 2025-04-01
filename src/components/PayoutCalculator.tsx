@@ -5,6 +5,17 @@ import RecipientsList from "./payout/RecipientsList";
 import PayoutSummary from "./PayoutSummary";
 import { useRecipients } from "@/hooks/useRecipients";
 import { usePayoutCalculation } from "@/hooks/usePayoutCalculation";
+import { RecipientType } from "@/components/RecipientRow";
+
+// Update the Recipient interface to use the RecipientType from RecipientRow
+interface Recipient {
+  id: string;
+  name: string;
+  isFixedAmount: boolean;
+  value: number;
+  payout: number;
+  type?: RecipientType;
+}
 
 const PayoutCalculator = () => {
   const {
@@ -58,10 +69,17 @@ const PayoutCalculator = () => {
 
     // Update payouts for each recipient
     const updatedRecipients = recipients.map(recipient => {
-      if (recipient.isFixedAmount) {
+      const type = recipient.type || (recipient.isFixedAmount ? "$" : "shares");
+      
+      if (type === "$") {
         return {
           ...recipient,
           payout: isNaN(recipient.value) ? 0 : recipient.value,
+        };
+      } else if (type === "%") {
+        return {
+          ...recipient,
+          payout: isNaN(recipient.value) ? 0 : (recipient.value / 100) * totalPayout,
         };
       } else {
         return {
