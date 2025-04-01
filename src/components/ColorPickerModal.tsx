@@ -46,7 +46,7 @@ const ColorPickerModal: React.FC<ColorPickerModalProps> = ({
                   type="text"
                   value={selectedColor}
                   onChange={(e) => setSelectedColor(e.target.value)}
-                  className="px-2 py-1 border rounded w-28 text-sm font-mono"
+                  className="px-2 py-1 border rounded w-28 text-sm font-mono text-center" // Added text-center here
                 />
               </div>
             </div>
@@ -73,3 +73,4 @@ const ColorPickerModal: React.FC<ColorPickerModalProps> = ({
 };
 
 export default ColorPickerModal;
+
