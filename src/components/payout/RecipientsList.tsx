@@ -25,7 +25,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Alert } from "@/components/ui/alert";
 
 interface RecipientsListProps {
   recipients: Recipient[];
@@ -105,14 +104,16 @@ const RecipientsList = ({
                 ))}
               </SelectContent>
             </Select>
-            <Button 
-              onClick={clearRecipients} 
-              variant="outline" 
-              size="sm" 
-              className="flex items-center"
-            >
-              <Trash2 className="mr-1 h-4 w-4" /> Clear
-            </Button>
+            {recipients.length > 1 && (
+              <Button 
+                onClick={clearRecipients} 
+                variant="outline" 
+                size="sm" 
+                className="flex items-center"
+              >
+                <Trash2 className="mr-1 h-4 w-4" /> Clear
+              </Button>
+            )}
             <Button onClick={addRecipients} variant="outline" size="sm" className="flex items-center">
               <Plus className="mr-1 h-4 w-4" /> Add Recipient{parseInt(recipientCount) > 1 ? 's' : ''}
             </Button>
@@ -152,3 +153,4 @@ const RecipientsList = ({
 };
 
 export default RecipientsList;
+
