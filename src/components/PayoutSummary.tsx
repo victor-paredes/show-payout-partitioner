@@ -7,6 +7,7 @@ import { getRecipientColor } from "@/lib/colorUtils";
 import { PieChart, Pie, Cell, Sector, ResponsiveContainer } from "recharts";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
+import { X } from "lucide-react";
 
 type PayoutItem = Recipient | Divider;
 

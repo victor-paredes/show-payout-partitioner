@@ -170,6 +170,6 @@ export function useRecipients() {
     updateRecipient,
     handleDragEnd,
     clearRecipients,
-    setLastUsedId, // Expose this to allow updating after import
+    setLastUsedId,
   };
 }
