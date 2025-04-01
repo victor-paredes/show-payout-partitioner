@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { DragEndEvent } from "@dnd-kit/core";
@@ -13,14 +14,6 @@ export interface Recipient {
   payout: number;
   type?: RecipientType;
   color?: string;
-  groupId?: string;
-  groupName?: string;
-}
-
-export interface Group {
-  id: string;
-  name: string;
-  memberIds: string[];
 }
 
 export function useRecipients() {
@@ -35,7 +28,6 @@ export function useRecipients() {
       type: "shares" 
     },
   ]);
-  const [groups, setGroups] = useState<Group[]>([]);
   const [selectedRecipients, setSelectedRecipients] = useState<Set<string>>(new Set());
   const [recipientCount, setRecipientCount] = useState<string>("1");
   const [lastUsedId, setLastUsedId] = useState<number>(1);
@@ -44,8 +36,10 @@ export function useRecipients() {
     const currentRecipientCount = recipients.length;
     const count = parseInt(recipientCount);
     
+    // Calculate the next available ID by analyzing existing IDs
     let nextId = lastUsedId + 1;
     
+    // Find any numeric IDs in the current recipients list
     recipients.forEach(recipient => {
       const idNum = parseInt(recipient.id);
       if (!isNaN(idNum) && idNum >= nextId) {
@@ -54,6 +48,7 @@ export function useRecipients() {
     });
     
     const newRecipients = Array.from({ length: count }, (_, index) => {
+      // Generate a truly unique ID by using timestamp + random number
       const newId = (nextId + index).toString();
       const defaultName = `Recipient ${currentRecipientCount + index + 1}`;
       
@@ -72,6 +67,7 @@ export function useRecipients() {
       ...newRecipients,
     ]);
     
+    // Update the last used ID
     setLastUsedId(nextId + count - 1);
     setRecipientCount("1");
   };
@@ -141,6 +137,7 @@ export function useRecipients() {
       return;
     }
     
+    // Reset the first recipient to default values
     const firstRecipient = {
       ...recipients[0],
       name: "Recipient 1",
@@ -153,136 +150,12 @@ export function useRecipients() {
     setRecipients([firstRecipient]);
     setSelectedRecipients(new Set());
     setRecipientCount("1");
-    setLastUsedId(1);
-  };
-
-  const createGroup = (groupName: string) => {
-    if (selectedRecipients.size < 2) return;
-    
-    const groupId = `group-${Date.now()}`;
-    
-    const selectedIds = Array.from(selectedRecipients);
-    
-    const newGroup: Group = {
-      id: groupId,
-      name: groupName,
-      memberIds: selectedIds
-    };
-    
-    const updatedRecipients = recipients.map(recipient => {
-      if (selectedIds.includes(recipient.id)) {
-        return {
-          ...recipient,
-          groupId,
-          groupName
-        };
-      }
-      return recipient;
-    });
-    
-    setGroups([...groups, newGroup]);
-    setRecipients(updatedRecipients);
-    setSelectedRecipients(new Set());
-    
-    toast({
-      title: "Group Created",
-      description: `Created group "${groupName}" with ${selectedIds.length} recipients`,
-    });
-  };
-
-  const removeFromGroup = (recipientId: string) => {
-    const recipient = recipients.find(r => r.id === recipientId);
-    if (!recipient || !recipient.groupId) return;
-    
-    const groupId = recipient.groupId;
-    
-    const updatedRecipients = recipients.map(r => {
-      if (r.id === recipientId) {
-        const { groupId, groupName, ...recipientWithoutGroup } = r;
-        return recipientWithoutGroup;
-      }
-      return r;
-    });
-    
-    const updatedGroups = groups.map(group => {
-      if (group.id === groupId) {
-        return {
-          ...group,
-          memberIds: group.memberIds.filter(id => id !== recipientId)
-        };
-      }
-      return group;
-    });
-    
-    const filteredGroups = updatedGroups.filter(group => group.memberIds.length > 1);
-    
-    setRecipients(updatedRecipients);
-    setGroups(filteredGroups);
-    setSelectedRecipients(new Set());
-    
-    toast({
-      title: "Removed from Group",
-      description: "Recipient removed from group"
-    });
-  };
-
-  const dissolveGroup = (groupId: string) => {
-    const group = groups.find(g => g.id === groupId);
-    if (!group) return;
-    
-    const updatedRecipients = recipients.map(recipient => {
-      if (recipient.groupId === groupId) {
-        const { groupId, groupName, ...recipientWithoutGroup } = recipient;
-        return recipientWithoutGroup;
-      }
-      return recipient;
-    });
-    
-    const updatedGroups = groups.filter(g => g.id !== groupId);
-    
-    setRecipients(updatedRecipients);
-    setGroups(updatedGroups);
-    setSelectedRecipients(new Set());
-    
-    toast({
-      title: "Group Dissolved",
-      description: `Group "${group.name}" has been dissolved`
-    });
-  };
-
-  const getSelectedRecipientsGroups = (): { groupId: string, groupName: string }[] => {
-    if (selectedRecipients.size === 0) return [];
-    
-    const groups: { groupId: string, groupName: string }[] = [];
-    
-    selectedRecipients.forEach(id => {
-      const recipient = recipients.find(r => r.id === id);
-      if (recipient && recipient.groupId && recipient.groupName) {
-        if (!groups.some(g => g.groupId === recipient.groupId)) {
-          groups.push({
-            groupId: recipient.groupId,
-            groupName: recipient.groupName
-          });
-        }
-      }
-    });
-    
-    return groups;
-  };
-
-  const isAnySelectedRecipientGrouped = (): boolean => {
-    if (selectedRecipients.size === 0) return false;
-    
-    return Array.from(selectedRecipients).some(id => {
-      const recipient = recipients.find(r => r.id === id);
-      return recipient && recipient.groupId !== undefined;
-    });
+    setLastUsedId(1); // Reset the last used ID counter
   };
 
   return {
     recipients,
     setRecipients,
-    groups,
     selectedRecipients,
     setSelectedRecipients,
     recipientCount,
@@ -293,11 +166,6 @@ export function useRecipients() {
     updateRecipient,
     handleDragEnd,
     clearRecipients,
-    setLastUsedId,
-    createGroup,
-    removeFromGroup,
-    dissolveGroup,
-    getSelectedRecipientsGroups,
-    isAnySelectedRecipientGrouped
+    setLastUsedId, // Expose this to allow updating after import
   };
 }

@@ -2,12 +2,10 @@
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Trash2, X, ArrowRight, ArrowDown, UserMinus, Users, UserX } from "lucide-react";
+import { Plus, Trash2, X, ArrowRight, ArrowDown } from "lucide-react";
 import RecipientRow from "../RecipientRow";
 import { Recipient } from "@/hooks/useRecipients";
 import ConfirmationModal from "@/components/ConfirmationModal";
-import GroupNameModal from "@/components/GroupNameModal";
-import ConfirmGroupDissolutionModal from "@/components/ConfirmGroupDissolutionModal";
 import {
   DndContext,
   closestCenter,
@@ -46,11 +44,6 @@ interface RecipientsListProps {
   hoveredRecipientId?: string;
   onRecipientHover?: (id: string | null) => void;
   clearRecipients?: () => void;
-  createGroup?: (groupName: string) => void;
-  removeFromGroup?: (recipientId: string) => void;
-  dissolveGroup?: (groupId: string) => void;
-  getSelectedRecipientsGroups?: () => { groupId: string, groupName: string }[];
-  isAnySelectedRecipientGrouped?: () => boolean;
 }
 
 const RecipientsList = ({
@@ -67,18 +60,10 @@ const RecipientsList = ({
   valuePerShare,
   hoveredRecipientId,
   onRecipientHover,
-  clearRecipients,
-  createGroup,
-  removeFromGroup,
-  dissolveGroup,
-  getSelectedRecipientsGroups,
-  isAnySelectedRecipientGrouped
+  clearRecipients
 }: RecipientsListProps) => {
   const [confirmClearOpen, setConfirmClearOpen] = useState(false);
   const [columnWiseTabbing, setColumnWiseTabbing] = useState(false);
-  const [groupNameModalOpen, setGroupNameModalOpen] = useState(false);
-  const [confirmDissolutionOpen, setConfirmDissolutionOpen] = useState(false);
-  const [groupToDissolve, setGroupToDissolve] = useState<{ id: string, name: string } | null>(null);
   
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -106,62 +91,6 @@ const RecipientsList = ({
     setColumnWiseTabbing(!columnWiseTabbing);
   };
 
-  const handleCreateGroup = () => {
-    if (selectedRecipients.size >= 2) {
-      setGroupNameModalOpen(true);
-    }
-  };
-
-  const handleGroupNameConfirm = (groupName: string) => {
-    if (createGroup) {
-      createGroup(groupName);
-      setGroupNameModalOpen(false);
-    }
-  };
-
-  const handleRemoveFromGroup = () => {
-    if (selectedRecipients.size === 1 && removeFromGroup) {
-      const recipientId = Array.from(selectedRecipients)[0];
-      removeFromGroup(recipientId);
-    }
-  };
-
-  const handleDissolveGroupClick = () => {
-    if (!getSelectedRecipientsGroups) return;
-    
-    const groups = getSelectedRecipientsGroups();
-    if (groups.length > 0) {
-      setGroupToDissolve({
-        id: groups[0].groupId,
-        name: groups[0].groupName
-      });
-      setConfirmDissolutionOpen(true);
-    }
-  };
-
-  const handleConfirmDissolveGroup = () => {
-    if (dissolveGroup && groupToDissolve) {
-      dissolveGroup(groupToDissolve.id);
-      setConfirmDissolutionOpen(false);
-      setGroupToDissolve(null);
-    }
-  };
-
-  // Show the group button only when 2+ recipients are selected
-  const showGroupButton = selectedRecipients.size >= 2;
-  
-  // Show ungroup button when a single grouped recipient is selected
-  const showUngroupButton = 
-    selectedRecipients.size === 1 && 
-    recipients.some(r => 
-      selectedRecipients.has(r.id) && r.groupId !== undefined
-    );
-  
-  // Show dissolve group button when any selected recipient is grouped
-  const showDissolveButton = 
-    isAnySelectedRecipientGrouped && 
-    isAnySelectedRecipientGrouped();
-
   // Create the title with the correct singular/plural form
   const recipientsTitle = `${recipients.length} ${recipients.length === 1 ? 'Recipient' : 'Recipients'}`;
 
@@ -186,39 +115,6 @@ const RecipientsList = ({
             )}
           </div>
           <div className="flex items-center space-x-2">
-            {showDissolveButton && (
-              <Button
-                onClick={handleDissolveGroupClick}
-                variant="outline"
-                size="sm"
-                className="flex items-center"
-                title="Dissolve group"
-              >
-                <UserX className="h-4 w-4" />
-              </Button>
-            )}
-            {showUngroupButton && (
-              <Button
-                onClick={handleRemoveFromGroup}
-                variant="outline"
-                size="sm"
-                className="flex items-center"
-                title="Remove from group"
-              >
-                <UserMinus className="h-4 w-4" />
-              </Button>
-            )}
-            {showGroupButton && (
-              <Button
-                onClick={handleCreateGroup}
-                variant="outline"
-                size="sm"
-                className="flex items-center"
-                title="Create group from selected"
-              >
-                <Users className="h-4 w-4" />
-              </Button>
-            )}
             <Button
               onClick={toggleTabbingDirection}
               variant="outline"
@@ -298,21 +194,6 @@ const RecipientsList = ({
         onConfirm={handleConfirmClear}
         variant="destructive"
       />
-      
-      <GroupNameModal
-        open={groupNameModalOpen}
-        onOpenChange={setGroupNameModalOpen}
-        onConfirm={handleGroupNameConfirm}
-      />
-      
-      {groupToDissolve && (
-        <ConfirmGroupDissolutionModal
-          open={confirmDissolutionOpen}
-          onOpenChange={setConfirmDissolutionOpen}
-          onConfirm={handleConfirmDissolveGroup}
-          groupName={groupToDissolve.name}
-        />
-      )}
     </Card>
   );
 };
