@@ -103,7 +103,8 @@ const RecipientsList = ({
     setActiveDragId(active.id as string);
   };
 
-  const handleDragEnd = (event: DragEndEvent) => {
+  // Renamed to onDragEnd to avoid name conflict with the prop
+  const onDragEnd = (event: DragEndEvent) => {
     setActiveDragId(null);
     handleDragEnd(event);
   };
@@ -213,7 +214,7 @@ const RecipientsList = ({
           sensors={sensors} 
           collisionDetection={closestCenter}
           onDragStart={handleDragStart}
-          onDragEnd={handleDragEnd}
+          onDragEnd={onDragEnd}
         >
           <div className="space-y-2">
             {recipients.length === 0 ? (
