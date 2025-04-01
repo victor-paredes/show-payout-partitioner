@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/format";
@@ -15,6 +16,8 @@ interface PayoutSummaryProps {
   totalPayout: number;
   recipients: Recipient[];
   remainingAmount: number;
+  hoveredRecipientId?: string;
+  onRecipientHover?: (id: string | null) => void;
 }
 
 // More distinct colors for better visual separation
@@ -35,9 +38,11 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
   totalPayout,
   recipients,
   remainingAmount,
+  hoveredRecipientId,
+  onRecipientHover,
 }) => {
-  // Track which segment is currently being hovered
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  // Track which segment is currently being hovered within this component
+  const [internalHoveredIndex, setInternalHoveredIndex] = useState<number | null>(null);
   
   const totalFixedAmount = totalPayout - remainingAmount;
   
@@ -63,8 +68,30 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
         name: recipient.name || `Recipient ${index + 1}`,
         value: recipient.payout,
         percentage: percentage,
+        id: recipient.id,
       };
     });
+
+  // Find the index of the hovered recipient in our chart data
+  const hoveredChartIndex = hoveredRecipientId
+    ? chartData.findIndex(item => item.id === hoveredRecipientId)
+    : -1;
+    
+  // Determine the effective hovered index (from external prop or internal state)
+  const effectiveHoveredIndex = hoveredChartIndex >= 0 ? hoveredChartIndex : internalHoveredIndex;
+
+  // Handle hovering on a chart element
+  const handleChartHover = (index: number | null) => {
+    setInternalHoveredIndex(index);
+    
+    if (onRecipientHover) {
+      if (index !== null && index >= 0 && index < chartData.length) {
+        onRecipientHover(chartData[index].id);
+      } else {
+        onRecipientHover(null);
+      }
+    }
+  };
 
   // Custom renderer for the legend with percentages and hover effect
   const renderCustomizedLegend = (props: any) => {
@@ -76,12 +103,14 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
           <div 
             key={`legend-${index}`} 
             className="flex items-center cursor-pointer px-1"
-            onMouseEnter={() => setHoveredIndex(index)}
-            onMouseLeave={() => setHoveredIndex(null)}
+            onMouseEnter={() => handleChartHover(index)}
+            onMouseLeave={() => handleChartHover(null)}
           >
             <div 
               className="h-3 w-3 mr-2 rounded-sm" 
-              style={{ backgroundColor: entry.color }}
+              style={{ 
+                backgroundColor: effectiveHoveredIndex === index ? "#000000" : entry.color 
+              }}
             />
             <span>{entry.value} ({chartData[index].percentage}%)</span>
           </div>
@@ -136,11 +165,13 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
                     dataKey="value"
                     label={false}
                     isAnimationActive={false}
+                    onMouseEnter={(_, index) => handleChartHover(index)}
+                    onMouseLeave={() => handleChartHover(null)}
                   >
                     {chartData.map((entry, index) => (
                       <Cell 
                         key={`cell-${index}`} 
-                        fill={hoveredIndex === index ? "#000000e6" : COLORS[index % COLORS.length]} 
+                        fill={effectiveHoveredIndex === index ? "#000000" : COLORS[index % COLORS.length]} 
                       />
                     ))}
                   </Pie>
@@ -153,19 +184,30 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
           <div className="border-t pt-4 mt-4">
             <h3 className="font-semibold mb-3">Individual Payouts</h3>
             <div className="space-y-2">
-              {recipients.map((recipient) => (
-                <div key={recipient.id} className="flex justify-between">
-                  <div className="flex items-center">
-                    <span>{recipient.name}</span>
-                    <span className="text-xs text-gray-500 ml-2">
-                      {recipient.isFixedAmount 
-                        ? `(Fixed: ${formatCurrency(recipient.value)})` 
-                        : `(${recipient.value}x)`}
-                    </span>
+              {recipients.map((recipient) => {
+                // Find the chart index for this recipient
+                const recipientChartIndex = chartData.findIndex(item => item.id === recipient.id);
+                const isHighlighted = recipientChartIndex === effectiveHoveredIndex;
+                
+                return (
+                  <div 
+                    key={recipient.id} 
+                    className={`flex justify-between p-1 rounded ${isHighlighted ? 'bg-gray-100' : ''}`}
+                    onMouseEnter={() => handleChartHover(recipientChartIndex)}
+                    onMouseLeave={() => handleChartHover(null)}
+                  >
+                    <div className="flex items-center">
+                      <span>{recipient.name}</span>
+                      <span className="text-xs text-gray-500 ml-2">
+                        {recipient.isFixedAmount 
+                          ? `(Fixed: ${formatCurrency(recipient.value)})` 
+                          : `(${recipient.value}x)`}
+                      </span>
+                    </div>
+                    <div className="font-medium">{formatCurrency(recipient.payout)}</div>
                   </div>
-                  <div className="font-medium">{formatCurrency(recipient.payout)}</div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 

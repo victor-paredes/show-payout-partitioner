@@ -24,6 +24,8 @@ interface RecipientRowProps {
   valuePerShare: number;
   isSelected: boolean;
   onToggleSelect: () => void;
+  isHighlighted?: boolean;
+  onRecipientHover?: (id: string | null) => void;
 }
 
 const RecipientRow: React.FC<RecipientRowProps> = ({
@@ -33,6 +35,8 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
   valuePerShare,
   isSelected,
   onToggleSelect,
+  isHighlighted,
+  onRecipientHover,
 }) => {
   const [isInputHover, setIsInputHover] = useState(false);
   const [nameWidth, setNameWidth] = useState(150); // Default width
@@ -65,21 +69,37 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
 
   const inputHoverClass = "hover:outline hover:outline-2 hover:outline-black";
 
+  const handleMouseEnter = () => {
+    setIsInputHover(false);
+    if (onRecipientHover) {
+      onRecipientHover(recipient.id);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (onRecipientHover) {
+      onRecipientHover(null);
+    }
+  };
+
   return (
     <div 
       ref={setNodeRef} 
       style={style}
-      className={`flex items-center bg-white rounded-md shadow-sm border p-4 gap-4 cursor-pointer transition-colors ${
-        isSelected ? "bg-blue-50 border-blue-300" : ""
+      className={`flex items-center bg-white rounded-md shadow-sm p-4 gap-4 cursor-pointer transition-colors ${
+        isSelected ? "bg-blue-50" : ""
       } ${
         !isInputHover 
           ? isSelected 
             ? "hover:border-blue-500 hover:bg-blue-100" 
-            : "hover:border-black" 
+            : ""
           : ""
+      } ${
+        isHighlighted ? "border-black" : "border"
       }`}
       onClick={onToggleSelect}
-      onMouseEnter={() => setIsInputHover(false)}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       {/* Drag Handle */}
       <Button
