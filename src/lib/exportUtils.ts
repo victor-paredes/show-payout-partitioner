@@ -1,4 +1,3 @@
-
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
 
@@ -134,3 +133,104 @@ export const exportToCsv = (
     console.error('Error generating CSV:', error);
   }
 };
+
+/**
+ * Imports recipients data from a CSV string
+ * @param csvString The CSV content as a string
+ * @returns An array of recipient objects
+ */
+export const importFromCsv = async (csvString: string): Promise<Array<{id: string; name: string; value: number; type?: string; payout: number}>> => {
+  try {
+    // Split the CSV into rows
+    const rows = csvString
+      .split('\n')
+      .map(row => row.trim())
+      .filter(row => row); // Remove empty rows
+      
+    if (rows.length < 2) {
+      throw new Error("CSV file must contain at least a header row and one data row");
+    }
+    
+    // Parse the header row to identify column indices
+    const headers = parseCSVRow(rows[0]);
+    
+    const nameIndex = headers.findIndex(h => h.toLowerCase() === 'name');
+    const typeIndex = headers.findIndex(h => h.toLowerCase() === 'type');
+    const valueIndex = headers.findIndex(h => h.toLowerCase() === 'value');
+    
+    if (nameIndex === -1) {
+      throw new Error("CSV must contain a 'Name' column");
+    }
+    
+    // Process data rows (skip header and total rows)
+    const recipients = [];
+    for (let i = 1; i < rows.length - 1; i++) {
+      const rowData = parseCSVRow(rows[i]);
+      
+      // Skip if this appears to be a total row
+      if (rowData[nameIndex]?.toLowerCase() === 'total') continue;
+      
+      if (rowData.length >= Math.max(nameIndex, typeIndex, valueIndex) + 1) {
+        const name = rowData[nameIndex] || 'Unnamed Recipient';
+        
+        // Determine recipient type and value
+        const type = typeIndex !== -1 ? rowData[typeIndex] : 'shares';
+        let value = valueIndex !== -1 && rowData[valueIndex] ? parseFloat(rowData[valueIndex]) : 1;
+        
+        // Validate value
+        if (isNaN(value)) value = 1;
+        
+        // Create the recipient
+        recipients.push({
+          id: Math.random().toString(36).substr(2, 9), // Generate a random ID
+          name,
+          value,
+          type: type as ("shares" | "$" | "%"),
+          payout: 0, // Payout will be calculated later
+          isFixedAmount: type === "$"
+        });
+      }
+    }
+    
+    return recipients;
+  } catch (error) {
+    console.error('Error parsing CSV:', error);
+    throw error;
+  }
+};
+
+/**
+ * Parse a CSV row handling quoted values
+ * @param row The CSV row as a string
+ * @returns Array of cell values
+ */
+function parseCSVRow(row: string): string[] {
+  const result = [];
+  let current = '';
+  let inQuotes = false;
+  
+  for (let i = 0; i < row.length; i++) {
+    const char = row[i];
+    
+    if (char === '"') {
+      // Handle double quotes inside quoted strings
+      if (inQuotes && i + 1 < row.length && row[i + 1] === '"') {
+        current += '"';
+        i++; // Skip the next quote
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (char === ',' && !inQuotes) {
+      // End of field
+      result.push(current.trim());
+      current = '';
+    } else {
+      current += char;
+    }
+  }
+  
+  // Add the last field
+  result.push(current.trim());
+  
+  return result;
+}

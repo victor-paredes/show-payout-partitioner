@@ -2,17 +2,7 @@ import React, { useRef, useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/format";
 import { PieChart, Pie, Cell } from "recharts";
-import { 
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import { FileDown, X } from "lucide-react";
-import { exportToPdf, exportToCsv } from "@/lib/exportUtils";
+import { X } from "lucide-react";
 import { RecipientType } from "@/components/RecipientRow";
 
 interface Recipient {
@@ -190,38 +180,11 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
     }
   };
 
-  const handleExportPdf = () => {
-    if (summaryRef.current) {
-      exportToPdf(summaryRef.current, 'payout-summary');
-    }
-  };
-
-  const handleExportCsv = () => {
-    exportToCsv(recipients, totalPayout, 'payout-summary');
-  };
-
   if (totalPayout <= 0) {
     return (
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
+        <CardHeader className="pb-2">
           <CardTitle>Payout Summary</CardTitle>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                <FileDown className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Export</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem disabled>
-                PDF
-              </DropdownMenuItem>
-              <DropdownMenuItem disabled>
-                CSV
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
         </CardHeader>
         <CardContent>
           <p className="text-center text-gray-500 italic">
@@ -236,28 +199,11 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
+      <CardHeader className="pb-2">
         <CardTitle>Payout Summary</CardTitle>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-              <FileDown className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Export</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleExportPdf}>
-              PDF
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleExportCsv}>
-              CSV
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4" ref={summaryRef}>
+        <div className="space-y-4" ref={summaryRef} id="payout-summary">
           <div className="text-center mb-4">
             <h2 className="text-3xl font-bold text-blue-900">
               {formatCurrency(totalPayout)}

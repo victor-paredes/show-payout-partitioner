@@ -1,19 +1,12 @@
+
 import { useEffect, useRef, useState } from "react";
 import TotalPayoutInput from "./payout/TotalPayoutInput";
 import RecipientsList from "./payout/RecipientsList";
 import PayoutSummary from "./PayoutSummary";
-import { useRecipients } from "@/hooks/useRecipients";
+import PayoutHeaderMenu from "./payout/PayoutHeaderMenu";
+import { useRecipients, Recipient } from "@/hooks/useRecipients";
 import { usePayoutCalculation } from "@/hooks/usePayoutCalculation";
 import { RecipientType } from "@/components/RecipientRow";
-
-interface Recipient {
-  id: string;
-  name: string;
-  isFixedAmount: boolean;
-  value: number;
-  payout: number;
-  type?: RecipientType;
-}
 
 const PayoutCalculator = () => {
   const {
@@ -100,40 +93,56 @@ const PayoutCalculator = () => {
     setHoveredRecipientId(id);
   };
 
+  const handleImport = (newRecipients: Recipient[], replace: boolean) => {
+    if (replace) {
+      setRecipients(newRecipients);
+    } else {
+      setRecipients([...recipients, ...newRecipients]);
+    }
+  };
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6" ref={calculatorRef}>
-      <div className="md:col-span-2 space-y-6">
-        <TotalPayoutInput 
-          totalPayout={totalPayout} 
-          onChange={setTotalPayout} 
-        />
+    <div className="space-y-2">
+      <PayoutHeaderMenu 
+        totalPayout={totalPayout} 
+        recipients={recipients}
+        onImport={handleImport}
+      />
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6" ref={calculatorRef}>
+        <div className="md:col-span-2 space-y-6">
+          <TotalPayoutInput 
+            totalPayout={totalPayout} 
+            onChange={setTotalPayout} 
+          />
 
-        <RecipientsList
-          recipients={recipients}
-          recipientCount={recipientCount}
-          setRecipientCount={setRecipientCount}
-          addRecipients={addRecipients}
-          updateRecipient={updateRecipient}
-          removeRecipient={removeRecipient}
-          selectedRecipients={selectedRecipients}
-          toggleSelectRecipient={toggleSelectRecipient}
-          setSelectedRecipients={setSelectedRecipients}
-          handleDragEnd={handleDragEnd}
-          valuePerShare={valuePerShare}
-          hoveredRecipientId={hoveredRecipientId || undefined}
-          onRecipientHover={handleRecipientHover}
-          clearRecipients={clearRecipients}
-        />
-      </div>
+          <RecipientsList
+            recipients={recipients}
+            recipientCount={recipientCount}
+            setRecipientCount={setRecipientCount}
+            addRecipients={addRecipients}
+            updateRecipient={updateRecipient}
+            removeRecipient={removeRecipient}
+            selectedRecipients={selectedRecipients}
+            toggleSelectRecipient={toggleSelectRecipient}
+            setSelectedRecipients={setSelectedRecipients}
+            handleDragEnd={handleDragEnd}
+            valuePerShare={valuePerShare}
+            hoveredRecipientId={hoveredRecipientId || undefined}
+            onRecipientHover={handleRecipientHover}
+            clearRecipients={clearRecipients}
+          />
+        </div>
 
-      <div className="md:sticky md:top-4 h-fit">
-        <PayoutSummary
-          totalPayout={totalPayout}
-          recipients={recipients}
-          remainingAmount={remainingAmount}
-          hoveredRecipientId={hoveredRecipientId || undefined}
-          onRecipientHover={handleRecipientHover}
-        />
+        <div className="md:sticky md:top-4 h-fit">
+          <PayoutSummary
+            totalPayout={totalPayout}
+            recipients={recipients}
+            remainingAmount={remainingAmount}
+            hoveredRecipientId={hoveredRecipientId || undefined}
+            onRecipientHover={handleRecipientHover}
+          />
+        </div>
       </div>
     </div>
   );
