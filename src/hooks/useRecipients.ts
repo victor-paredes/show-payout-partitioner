@@ -89,7 +89,7 @@ export function useRecipients() {
     // Generate a new ID for the divider
     const dividerId = `div-${Date.now()}`;
     
-    // Create the new divider
+    // Create the new divider with the correct type
     const newDivider: Divider = {
       id: dividerId,
       type: 'divider',
