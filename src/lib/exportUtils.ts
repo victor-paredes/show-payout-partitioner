@@ -187,8 +187,8 @@ export const importFromCsv = async (
       }
     }
     
-    // Generate a seed for new IDs to prevent color collisions with previously imported data
-    const idSeed = Math.random().toString(36).substr(2, 3);
+    // Generate a timestamp-based prefix for IDs to ensure they're different from previous imports
+    const idPrefix = Date.now().toString(36);
     
     // Process data rows (skip header, total and marker rows)
     const recipients = [];
@@ -212,15 +212,14 @@ export const importFromCsv = async (
         // Validate value
         if (isNaN(value)) value = 1;
         
-        // Create the recipient with a deterministic ID based on the original color
-        // If color exists, we create an ID that will generate the same color
         let id;
         if (color) {
-          // Find an ID that would produce this color
-          id = generateIdForColor(color, idSeed + i);
+          // Generate a unique ID that will produce the desired color
+          // Add a unique prefix based on current timestamp to ensure uniqueness even for same colors
+          id = generateIdForColor(color, idPrefix + '-' + i);
         } else {
-          // Generate a random ID
-          id = idSeed + Math.random().toString(36).substr(2, 6);
+          // Generate a completely unique ID
+          id = idPrefix + '-' + i.toString();
         }
         
         // Create the recipient
@@ -262,8 +261,7 @@ function generateIdForColor(targetColor: string, seed: string): string {
   }
   
   // Create a deterministic ID that will hash to the desired color index
-  // We'll use a simple approach of creating an ID with a charCode sum that,
-  // when modded by COLORS.length, equals colorIndex
+  // Include the seed in the ID to ensure uniqueness across different import operations
   let id = seed;
   
   // Calculate the current hash

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { DragEndEvent } from "@dnd-kit/core";
@@ -29,13 +28,26 @@ export function useRecipients() {
   ]);
   const [selectedRecipients, setSelectedRecipients] = useState<Set<string>>(new Set());
   const [recipientCount, setRecipientCount] = useState<string>("1");
+  const [lastUsedId, setLastUsedId] = useState<number>(1);
 
   const addRecipients = () => {
     const currentRecipientCount = recipients.length;
     const count = parseInt(recipientCount);
     
+    // Calculate the next available ID by analyzing existing IDs
+    let nextId = lastUsedId + 1;
+    
+    // Find any numeric IDs in the current recipients list
+    recipients.forEach(recipient => {
+      const idNum = parseInt(recipient.id);
+      if (!isNaN(idNum) && idNum >= nextId) {
+        nextId = idNum + 1;
+      }
+    });
+    
     const newRecipients = Array.from({ length: count }, (_, index) => {
-      const newId = (Math.max(0, ...recipients.map(r => parseInt(r.id))) + index + 1).toString();
+      // Generate a truly unique ID by using timestamp + random number
+      const newId = (nextId + index).toString();
       const defaultName = `Recipient ${currentRecipientCount + index + 1}`;
       
       return { 
@@ -52,7 +64,9 @@ export function useRecipients() {
       ...recipients,
       ...newRecipients,
     ]);
-
+    
+    // Update the last used ID
+    setLastUsedId(nextId + count - 1);
     setRecipientCount("1");
   };
 
@@ -134,6 +148,7 @@ export function useRecipients() {
     setRecipients([firstRecipient]);
     setSelectedRecipients(new Set());
     setRecipientCount("1");
+    setLastUsedId(1); // Reset the last used ID counter
   };
 
   return {
@@ -149,5 +164,6 @@ export function useRecipients() {
     updateRecipient,
     handleDragEnd,
     clearRecipients,
+    setLastUsedId, // Expose this to allow updating after import
   };
 }

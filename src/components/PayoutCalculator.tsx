@@ -20,7 +20,8 @@ const PayoutCalculator = () => {
     toggleSelectRecipient,
     updateRecipient,
     handleDragEnd,
-    clearRecipients
+    clearRecipients,
+    setLastUsedId
   } = useRecipients();
 
   const {
@@ -102,6 +103,16 @@ const PayoutCalculator = () => {
   const handleImport = (newRecipients: Recipient[], replace: boolean) => {
     if (replace) {
       setRecipients(newRecipients);
+      
+      let highestId = 0;
+      newRecipients.forEach(recipient => {
+        const idNum = parseInt(recipient.id);
+        if (!isNaN(idNum) && idNum > highestId) {
+          highestId = idNum;
+        }
+      });
+      
+      setLastUsedId(highestId + 1);
       
       const importedTotalPayout = parseFloat(
         localStorage.getItem('importedTotalPayout') || '0'
