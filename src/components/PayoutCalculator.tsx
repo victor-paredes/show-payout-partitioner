@@ -4,8 +4,7 @@ import TotalPayoutInput from "./payout/TotalPayoutInput";
 import RecipientsList from "./payout/RecipientsList";
 import PayoutSummary from "./PayoutSummary";
 import PayoutHeaderMenu from "./payout/PayoutHeaderMenu";
-import { useRecipients } from "@/hooks/useRecipients";
-import { Recipient, Group } from "@/types/recipient";
+import { useRecipients, Recipient, Group } from "@/hooks/useRecipients";
 import { usePayoutCalculation } from "@/hooks/usePayoutCalculation";
 import { useToast } from "@/hooks/use-toast";
 

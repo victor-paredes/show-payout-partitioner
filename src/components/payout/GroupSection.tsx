@@ -5,7 +5,7 @@ import { Plus, Trash2 } from "lucide-react";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { useDroppable } from "@dnd-kit/core";
 import RecipientRow from "../RecipientRow";
-import { Recipient, Group } from "@/types/recipient";
+import { Recipient, Group } from "@/hooks/useRecipients";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface GroupSectionProps {

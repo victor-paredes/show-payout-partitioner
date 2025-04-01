@@ -1,3 +1,4 @@
+
 import React, { useRef, useState } from "react";
 import { 
   HoverCard,
@@ -7,7 +8,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Save, FileUp, AlertTriangle } from "lucide-react";
 import { exportToPdf, exportToCsv, importFromCsv } from "@/lib/exportUtils";
-import { Recipient, Group } from "@/types/recipient";
+import { Recipient, Group } from "@/hooks/useRecipients";
 import { useToast } from "@/hooks/use-toast";
 import { RecipientType } from "@/components/RecipientRow";
 import {
