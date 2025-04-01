@@ -1,3 +1,4 @@
+
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
 
@@ -113,6 +114,9 @@ export const exportToCsv = (
     // Add total row
     csvContent += `"Total",,,"${totalPayout.toFixed(2)}","100.00"\n`;
     
+    // Add a special marker row with the total payout for import purposes
+    csvContent += `"__TOTAL_PAYOUT__",,"${totalPayout.toFixed(2)}",,\n`;
+    
     // Create a blob and download link
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -137,9 +141,14 @@ export const exportToCsv = (
 /**
  * Imports recipients data from a CSV string
  * @param csvString The CSV content as a string
- * @returns An array of recipient objects
+ * @returns An array of recipient objects and the total payout if available
  */
-export const importFromCsv = async (csvString: string): Promise<Array<{id: string; name: string; value: number; type?: string; payout: number}>> => {
+export const importFromCsv = async (
+  csvString: string
+): Promise<{
+  importedData: Array<{id: string; name: string; value: number; type?: string; payout: number}>;
+  importedTotalPayout?: number;
+}> => {
   try {
     // Split the CSV into rows
     const rows = csvString
@@ -162,13 +171,27 @@ export const importFromCsv = async (csvString: string): Promise<Array<{id: strin
       throw new Error("CSV must contain a 'Name' column");
     }
     
-    // Process data rows (skip header and total rows)
+    // Look for total payout marker
+    let importedTotalPayout: number | undefined = undefined;
+    for (let i = 1; i < rows.length; i++) {
+      const rowData = parseCSVRow(rows[i]);
+      if (rowData[nameIndex] === '__TOTAL_PAYOUT__' && rowData.length > 2) {
+        const payoutValue = parseFloat(rowData[2]);
+        if (!isNaN(payoutValue)) {
+          importedTotalPayout = payoutValue;
+        }
+        break;
+      }
+    }
+    
+    // Process data rows (skip header, total and marker rows)
     const recipients = [];
-    for (let i = 1; i < rows.length - 1; i++) {
+    for (let i = 1; i < rows.length; i++) {
       const rowData = parseCSVRow(rows[i]);
       
-      // Skip if this appears to be a total row
-      if (rowData[nameIndex]?.toLowerCase() === 'total') continue;
+      // Skip if this appears to be a total row or the marker row
+      if (rowData[nameIndex]?.toLowerCase() === 'total' || 
+          rowData[nameIndex] === '__TOTAL_PAYOUT__') continue;
       
       if (rowData.length >= Math.max(nameIndex, typeIndex, valueIndex) + 1) {
         const name = rowData[nameIndex] || 'Unnamed Recipient';
@@ -192,7 +215,7 @@ export const importFromCsv = async (csvString: string): Promise<Array<{id: strin
       }
     }
     
-    return recipients;
+    return { importedData: recipients, importedTotalPayout };
   } catch (error) {
     console.error('Error parsing CSV:', error);
     throw error;

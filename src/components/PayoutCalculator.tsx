@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from "react";
 import TotalPayoutInput from "./payout/TotalPayoutInput";
 import RecipientsList from "./payout/RecipientsList";
@@ -96,6 +95,15 @@ const PayoutCalculator = () => {
   const handleImport = (newRecipients: Recipient[], replace: boolean) => {
     if (replace) {
       setRecipients(newRecipients);
+      
+      const importedTotalPayout = parseFloat(
+        localStorage.getItem('importedTotalPayout') || '0'
+      );
+      
+      if (importedTotalPayout > 0) {
+        setTotalPayout(importedTotalPayout);
+        localStorage.removeItem('importedTotalPayout');
+      }
     } else {
       setRecipients([...recipients, ...newRecipients]);
     }

@@ -21,7 +21,6 @@ import { Button } from "@/components/ui/button";
 import { FileDown, FileUp } from "lucide-react";
 import { exportToPdf, exportToCsv, importFromCsv } from "@/lib/exportUtils";
 import { Recipient } from "@/hooks/useRecipients";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { RecipientType } from "@/components/RecipientRow";
 
@@ -38,7 +37,7 @@ const PayoutHeaderMenu: React.FC<PayoutHeaderMenuProps> = ({
 }) => {
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [isImportDialogOpen, setIsImportDialogOpen] = React.useState(false);
+  const [isImportWarningOpen, setIsImportWarningOpen] = React.useState(false);
   const [pendingImportData, setPendingImportData] = React.useState<Recipient[] | null>(null);
 
   const handleExportPdf = () => {
@@ -74,7 +73,7 @@ const PayoutHeaderMenu: React.FC<PayoutHeaderMenuProps> = ({
         const csvContent = event.target?.result as string;
         if (!csvContent) throw new Error("Failed to read file");
 
-        const importedData = await importFromCsv(csvContent);
+        const { importedData, importedTotalPayout } = await importFromCsv(csvContent);
         
         // Process the imported data to ensure it matches the Recipient interface
         const processedData: Recipient[] = importedData.map(item => {
@@ -102,7 +101,7 @@ const PayoutHeaderMenu: React.FC<PayoutHeaderMenuProps> = ({
         }
 
         setPendingImportData(processedData);
-        setIsImportDialogOpen(true);
+        setIsImportWarningOpen(true);
       } catch (error) {
         console.error('Error importing CSV:', error);
         toast({
@@ -118,14 +117,15 @@ const PayoutHeaderMenu: React.FC<PayoutHeaderMenuProps> = ({
     e.target.value = '';
   };
 
-  const handleImport = (replace: boolean) => {
+  const handleImport = () => {
     if (pendingImportData) {
-      onImport(pendingImportData, replace);
-      setIsImportDialogOpen(false);
+      // Always replace existing data with imported data
+      onImport(pendingImportData, true);
+      setIsImportWarningOpen(false);
       setPendingImportData(null);
       toast({
         title: "Import successful",
-        description: `${pendingImportData.length} recipients ${replace ? "replaced existing data" : "added to your data"}`,
+        description: `${pendingImportData.length} recipients imported`,
       });
     }
   };
@@ -170,40 +170,23 @@ const PayoutHeaderMenu: React.FC<PayoutHeaderMenuProps> = ({
         style={{ display: 'none' }} 
       />
 
-      {/* Import options dialog */}
-      <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Import Options</DialogTitle>
-            <DialogDescription>
-              How would you like to import {pendingImportData?.length || 0} recipients?
-            </DialogDescription>
-          </DialogHeader>
+      {/* Import warning dialog */}
+      <AlertDialog open={isImportWarningOpen} onOpenChange={setIsImportWarningOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Warning: Import will overwrite data</AlertDialogTitle>
+            <AlertDialogDescription>
+              All current recipients and their data will be replaced with the imported data. 
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
           
-          <DialogFooter className="flex sm:justify-between">
-            <Button 
-              variant="outline" 
-              onClick={() => setIsImportDialogOpen(false)}
-            >
-              Cancel
-            </Button>
-            <div className="flex gap-2">
-              <Button 
-                variant="secondary" 
-                onClick={() => handleImport(false)}
-              >
-                Add to existing
-              </Button>
-              <Button 
-                variant="default" 
-                onClick={() => handleImport(true)}
-              >
-                Replace all
-              </Button>
-            </div>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleImport}>Import</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };
