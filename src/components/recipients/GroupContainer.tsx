@@ -22,6 +22,7 @@ interface GroupContainerProps {
   onDrop: (e: React.DragEvent) => void;
   draggedRecipientId: string | null;
   onHover?: (id: string | null) => void;
+  onUpdateGroup?: (id: string, updates: Partial<Group>) => void;
 }
 
 const GroupContainer: React.FC<GroupContainerProps> = ({
@@ -39,7 +40,8 @@ const GroupContainer: React.FC<GroupContainerProps> = ({
   onDragOver,
   onDrop,
   draggedRecipientId,
-  onHover
+  onHover,
+  onUpdateGroup
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(group.name);
@@ -69,6 +71,9 @@ const GroupContainer: React.FC<GroupContainerProps> = ({
     setIsEditing(false);
     if (editedName.trim() !== group.name) {
       console.log(`Group name changed from ${group.name} to ${editedName}`);
+      if (onUpdateGroup) {
+        onUpdateGroup(group.id, { name: editedName.trim() });
+      }
     }
   };
   
