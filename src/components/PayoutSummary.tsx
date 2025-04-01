@@ -215,7 +215,11 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
                     <div className="flex items-center">
                       <div 
                         className="w-3 h-3 rounded-sm mr-2" 
-                        style={{ backgroundColor: recipientColor }}
+                        style={{ 
+                          backgroundColor: hoveredRecipientId === recipient.id 
+                            ? "#000000" 
+                            : recipientColor 
+                        }}
                       />
                       <span>{recipient.name}</span>
                       <span className="text-xs text-gray-500 ml-2">
