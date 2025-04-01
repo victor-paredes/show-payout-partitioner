@@ -7,9 +7,11 @@ import PayoutHeaderMenu from "./payout/PayoutHeaderMenu";
 import { useRecipients, Recipient } from "@/hooks/useRecipients";
 import { usePayoutCalculation } from "@/hooks/usePayoutCalculation";
 import { useToast } from "@/hooks/use-toast";
+import GroupNameModal from "./payout/GroupNameModal";
 
 const PayoutCalculator = () => {
   const { toast } = useToast();
+  const [groupNameModalOpen, setGroupNameModalOpen] = useState(false);
   
   const {
     recipients,
@@ -77,59 +79,7 @@ const PayoutCalculator = () => {
     };
   }, [selectedRecipients, setSelectedRecipients]);
 
-  useEffect(() => {
-    if (totalPayout <= 0) {
-      setRecipients(recipients.map(r => ({ ...r, payout: 0 })));
-      return;
-    }
-
-    // If there are no recipients, all amount is surplus
-    if (recipients.length === 0) {
-      setRemainingAmount(totalPayout);
-      setTotalShares(0);
-      setValuePerShare(0);
-      return;
-    }
-
-    // Calculate fixed amounts total
-    const fixedRecipients = recipients.filter(r => r.type === "$");
-    
-    const fixedAmounts = fixedRecipients.reduce(
-      (sum, r) => sum + (isNaN(r.value) ? 0 : r.value), 
-      0
-    );
-
-    // Calculate percentage amounts
-    const percentageRecipients = recipients.filter(r => r.type === "%");
-    
-    const totalPercentage = percentageRecipients.reduce(
-      (sum, r) => sum + (isNaN(r.value) ? 0 : r.value), 
-      0
-    );
-    
-    // Ensure percentage doesn't exceed 100%
-    const safePercentage = Math.min(totalPercentage, 100);
-    const percentageAmount = (safePercentage / 100) * totalPayout;
-    
-    // Calculate total reserved amount (fixed + percentage)
-    const reservedAmount = fixedAmounts + percentageAmount;
-    
-    // Calculate shares
-    const sharesRecipients = recipients.filter(r => r.type === "shares");
-    
-    const shares = sharesRecipients.reduce(
-      (sum, r) => sum + (isNaN(r.value) ? 0 : r.value), 
-      0
-    );
-
-    // Calculate remaining amount for shares
-    const remaining = Math.max(0, totalPayout - reservedAmount);
-    const perShare = shares > 0 ? remaining / shares : 0;
-
-    setRemainingAmount(remaining);
-    setTotalShares(shares);
-    setValuePerShare(perShare);
-  }, [totalPayout, recipients]);
+  // We can remove the duplicate calculation logic since usePayoutCalculation handles it
 
   const handleRecipientHover = (id: string | null) => {
     setHoveredRecipientId(id);
@@ -176,6 +126,22 @@ const PayoutCalculator = () => {
     return recipients;
   };
 
+  const handleOpenGroupNameModal = () => {
+    if (selectedRecipients.size < 2) {
+      toast({
+        title: "Group Creation Failed",
+        description: "Select at least two recipients to create a group",
+        variant: "destructive",
+      });
+      return;
+    }
+    setGroupNameModalOpen(true);
+  };
+
+  const handleCreateGroup = (groupName: string) => {
+    createGroup(groupName);
+  };
+
   return (
     <div className="space-y-2">
       <PayoutHeaderMenu 
@@ -209,6 +175,7 @@ const PayoutCalculator = () => {
             clearRecipients={clearRecipients}
             createGroup={createGroup}
             ungroupRecipients={ungroupRecipients}
+            onOpenGroupNameModal={handleOpenGroupNameModal}
           />
         </div>
 
@@ -222,6 +189,12 @@ const PayoutCalculator = () => {
           />
         </div>
       </div>
+
+      <GroupNameModal
+        open={groupNameModalOpen}
+        onOpenChange={setGroupNameModalOpen}
+        onCreateGroup={handleCreateGroup}
+      />
     </div>
   );
 };
