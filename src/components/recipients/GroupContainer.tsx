@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Recipient, Group } from "@/hooks/useRecipientsManager"; // Update import
 import RecipientItem from "./RecipientItem";
@@ -178,9 +179,9 @@ const GroupContainer: React.FC<GroupContainerProps> = ({
               onSelect={() => onToggleSelectRecipient(recipient.id)}
               isHighlighted={hoveredRecipientId === recipient.id}
               valuePerShare={valuePerShare}
-              onDragStart={(id) => onDragStart(id, group.id)}
+              onDragStart={() => onDragStart(recipient.id, group.id)}
               isDragging={draggedRecipientId === recipient.id}
-              onHover={onHover ? (id) => onHover(id) : undefined}
+              onHover={onHover}
             />
           ))
         )}
