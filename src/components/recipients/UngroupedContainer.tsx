@@ -15,6 +15,7 @@ interface UngroupedContainerProps {
   onDragOver: (e: React.DragEvent) => void;
   onDrop: (e: React.DragEvent) => void;
   draggedRecipientId: string | null;
+  onHover?: (id: string | null) => void; 
 }
 
 const UngroupedContainer: React.FC<UngroupedContainerProps> = ({
@@ -28,7 +29,8 @@ const UngroupedContainer: React.FC<UngroupedContainerProps> = ({
   onDragStart,
   onDragOver,
   onDrop,
-  draggedRecipientId
+  draggedRecipientId,
+  onHover
 }) => {
   const [isDragOver, setIsDragOver] = useState(false);
   
@@ -84,6 +86,7 @@ const UngroupedContainer: React.FC<UngroupedContainerProps> = ({
               isHighlighted={hoveredRecipientId === recipient.id}
               onDragStart={() => onDragStart(recipient.id, "ungrouped")}
               isDragging={draggedRecipientId === recipient.id}
+              onHover={onHover}
             />
           ))
         ) : (

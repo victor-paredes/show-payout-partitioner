@@ -40,6 +40,7 @@ interface RecipientsListProps {
     ungroupedRecipients: Recipient[];
     recipientsByGroup: { group: Group; recipients: Recipient[] }[];
   };
+  onRecipientHover?: (id: string | null) => void;
 }
 
 const RecipientsList: React.FC<RecipientsListProps> = ({
