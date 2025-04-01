@@ -50,6 +50,17 @@ const UngroupedSection: React.FC<UngroupedSectionProps> = ({
     return null;
   };
 
+  // Calculate an appropriate min-height based on the number of recipients
+  const calculateMinHeight = () => {
+    // Base height for each recipient row + padding
+    const baseRowHeight = 72; // Height of one row in pixels
+    const minRows = 1; // Minimum number of rows to display
+    
+    // Set min-height to accommodate at least minRows or the current number of recipients
+    const minHeight = Math.max(recipients.length, minRows) * baseRowHeight;
+    return `${minHeight}px`;
+  };
+
   return (
     <div className="mb-6">
       <h3 className="text-sm font-medium mb-2 text-gray-600">Ungrouped</h3>
@@ -58,7 +69,8 @@ const UngroupedSection: React.FC<UngroupedSectionProps> = ({
         className="space-y-2 p-2 rounded-md border-2 border-dashed border-gray-200 transition-all hover:border-gray-300"
         style={{ 
           background: activeDroppableId === 'ungrouped' ? 'rgba(0, 0, 0, 0.03)' : 'transparent',
-          minHeight: recipients.length === 0 ? '72px' : 'auto' // Ensure minimum height when empty
+          minHeight: calculateMinHeight(),
+          transition: "min-height 0.15s ease-in-out, background-color 0.15s ease-in-out"
         }}
       >
         <SortableContext 

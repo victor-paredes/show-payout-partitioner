@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -75,11 +76,17 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
     } 
   });
 
+  // Create a consistent height style
+  const rowHeight = 72; // Match this height with the calculation in Group/UngroupedSection
+
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
-    zIndex: isDragging ? 1 : 0,
+    zIndex: isDragging ? 10 : 0, // Higher z-index when dragging
+    height: `${rowHeight}px`, // Fixed height for consistency
+    // Add a placeholder height when dragging to maintain the container size
+    ...(isDragging ? { position: 'relative' } : {}),
   };
   
   useEffect(() => {
@@ -228,7 +235,12 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
               onChange={(e) => onUpdate({ name: e.target.value })}
               className={`w-full text-base font-medium`}
               placeholder="Enter Name"
-              onClick={handleNameInputClick}
+              onClick={(e) => {
+                // Select all text in the input when clicked
+                const target = e.target as HTMLInputElement;
+                target.select();
+                e.stopPropagation(); // Prevent row selection
+              }}
               style={{ width: `${nameWidth}px` }}
             />
           </div>
@@ -251,7 +263,12 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
               currentType === "$" ? "Amount" : 
               "Percent"
             }
-            onClick={handleValueInputClick}
+            onClick={(e) => {
+              // Select all text in the input when clicked
+              const target = e.target as HTMLInputElement;
+              target.select();
+              e.stopPropagation(); // Prevent row selection
+            }}
           />
           
           <Select 

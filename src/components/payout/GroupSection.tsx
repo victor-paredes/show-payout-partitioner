@@ -70,6 +70,17 @@ const GroupSection: React.FC<GroupSectionProps> = ({
     return null;
   };
 
+  // Calculate an appropriate min-height based on the number of recipients
+  const calculateMinHeight = () => {
+    // Base height for each recipient row + padding
+    const baseRowHeight = 72; // Height of one row in pixels
+    const minRows = 1; // Minimum number of rows to display
+    
+    // Set min-height to accommodate at least minRows or the current number of recipients
+    const minHeight = Math.max(recipients.length, minRows) * baseRowHeight;
+    return `${minHeight}px`;
+  };
+
   return (
     <div className="mb-6">
       <h3 className="text-sm font-medium mb-2 text-gray-600 flex items-center justify-between">
@@ -99,7 +110,8 @@ const GroupSection: React.FC<GroupSectionProps> = ({
         style={{ 
           borderColor: group.color + '40', // Add 40 for transparency
           background: activeDroppableId === group.id ? group.color + '10' : 'transparent',
-          minHeight: recipients.length === 0 ? '72px' : 'auto' // Ensure minimum height when empty
+          minHeight: calculateMinHeight(),
+          transition: "min-height 0.15s ease-in-out, background-color 0.15s ease-in-out"
         }}
       >
         <SortableContext 
