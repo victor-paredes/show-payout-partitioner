@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -161,19 +160,21 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
     valueTabIndex = 3 + (rowIndex * 3);
   }
 
+  const selectedClass = isSelected ? "bg-blue-50 border-blue-300" : "";
+
   return (
     <>
       <div 
         ref={setNodeRef} 
         style={style}
-        className={`flex items-center justify-between bg-white rounded-md shadow-sm p-4 gap-4 cursor-pointer transition-colors border hover:border-black ${
-          isSelected ? "bg-blue-50" : ""
+        className={`flex items-center justify-between bg-white rounded-md shadow-sm p-4 gap-4 cursor-pointer transition-colors border ${
+          isSelected ? "bg-blue-50 border-blue-300" : "border-gray-200"
         } ${
           isSelected 
             ? "hover:border-blue-500 hover:bg-blue-100" 
-            : ""
+            : "hover:border-black"
         } ${
-          isHighlighted ? "border-black" : "border"
+          isHighlighted ? "border-black" : ""
         }`}
         onClick={handleRowClick}
         onMouseEnter={handleMouseEnter}
