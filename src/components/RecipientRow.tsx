@@ -37,7 +37,6 @@ interface RecipientRowProps {
   onToggleSelect: () => void;
   isHighlighted?: boolean;
   onRecipientHover?: (id: string | null) => void;
-  "data-recipient-id"?: string;
 }
 
 const RecipientRow: React.FC<RecipientRowProps> = ({
@@ -49,7 +48,6 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
   onToggleSelect,
   isHighlighted,
   onRecipientHover,
-  ...rest
 }) => {
   const [isInputHover, setIsInputHover] = useState(false);
   const [nameWidth, setNameWidth] = useState(150);
@@ -156,8 +154,6 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
         onClick={handleRowClick}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        data-recipient-id={recipient.id}
-        {...rest}
       >
         <Button
           variant="ghost"

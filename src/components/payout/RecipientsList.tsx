@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,14 +27,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-interface SelectionArea {
-  startX: number;
-  startY: number;
-  endX: number;
-  endY: number;
-  isSelecting: boolean;
-}
-
 interface RecipientsListProps {
   recipients: Recipient[];
   recipientCount: string;
@@ -51,11 +42,6 @@ interface RecipientsListProps {
   hoveredRecipientId?: string;
   onRecipientHover?: (id: string | null) => void;
   clearRecipients?: () => void;
-  selectionArea?: SelectionArea;
-  recipientsListRef?: React.RefObject<HTMLDivElement>;
-  onSelectionMouseDown?: (e: React.MouseEvent) => void;
-  onSelectionMouseMove?: (e: React.MouseEvent) => void;
-  onSelectionMouseUp?: () => void;
 }
 
 const RecipientsList = ({
@@ -72,12 +58,7 @@ const RecipientsList = ({
   valuePerShare,
   hoveredRecipientId,
   onRecipientHover,
-  clearRecipients,
-  selectionArea,
-  recipientsListRef,
-  onSelectionMouseDown,
-  onSelectionMouseMove,
-  onSelectionMouseUp
+  clearRecipients
 }: RecipientsListProps) => {
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -92,23 +73,6 @@ const RecipientsList = ({
 
   // Create the title with the correct singular/plural form
   const recipientsTitle = `${recipients.length} ${recipients.length === 1 ? 'Recipient' : 'Recipients'}`;
-
-  // Calculate selection rectangle styles
-  const getSelectionStyles = () => {
-    if (!selectionArea || !selectionArea.isSelecting) return {};
-    
-    const left = Math.min(selectionArea.startX, selectionArea.endX);
-    const top = Math.min(selectionArea.startY, selectionArea.endY);
-    const width = Math.abs(selectionArea.endX - selectionArea.startX);
-    const height = Math.abs(selectionArea.endY - selectionArea.startY);
-    
-    return {
-      left: `${left}px`,
-      top: `${top}px`,
-      width: `${width}px`,
-      height: `${height}px`,
-    };
-  };
 
   return (
     <Card>
@@ -160,14 +124,7 @@ const RecipientsList = ({
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div 
-          className="space-y-0 relative recipients-list-area" 
-          ref={recipientsListRef}
-          onMouseDown={onSelectionMouseDown}
-          onMouseMove={onSelectionMouseMove}
-          onMouseUp={onSelectionMouseUp}
-          onMouseLeave={onSelectionMouseUp}
-        >
+        <div className="space-y-0">
           <DndContext 
             sensors={sensors} 
             collisionDetection={closestCenter}
@@ -188,18 +145,10 @@ const RecipientsList = ({
                   onToggleSelect={() => toggleSelectRecipient(recipient.id)}
                   isHighlighted={hoveredRecipientId === recipient.id}
                   onRecipientHover={onRecipientHover}
-                  data-recipient-id={recipient.id}
                 />
               ))}
             </SortableContext>
           </DndContext>
-          
-          {selectionArea && selectionArea.isSelecting && (
-            <div 
-              className="absolute border-2 border-blue-500 bg-blue-100 bg-opacity-30 rounded pointer-events-none"
-              style={getSelectionStyles()}
-            />
-          )}
         </div>
       </CardContent>
     </Card>
