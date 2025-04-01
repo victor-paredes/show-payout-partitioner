@@ -1,4 +1,3 @@
-
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
 import { getRecipientColor, COLORS } from "./colorUtils";
@@ -219,10 +218,10 @@ export const importFromCsv = async (
         const type = typeIndex !== -1 ? rowData[typeIndex] : 'shares';
         let value = valueIndex !== -1 && rowData[valueIndex] ? parseFloat(rowData[valueIndex]) : 1;
         
-        // Get color if available - be more aggressive about finding the color
+        // Get color if available - improved color extraction
         let color = undefined;
         if (colorIndex !== -1 && colorIndex < rowData.length) {
-          // Make sure to trim and clean up the color value
+          // Clean up the color value
           const rawColor = rowData[colorIndex];
           if (rawColor && rawColor.trim() !== '') {
             color = rawColor.replace(/^["']|["']$/g, '').trim();
@@ -242,28 +241,20 @@ export const importFromCsv = async (
         // Validate value
         if (isNaN(value)) value = 1;
         
-        // Create recipient with direct color property
-        const recipient: {
-          id: string;
-          name: string;
-          value: number;
-          type: "shares" | "$" | "%";
-          payout: number;
-          isFixedAmount: boolean;
-          color?: string;
-        } = {
+        // Create the recipient object with explicit color property
+        const recipient = {
           id: `${idPrefix}-${i}`,
           name,
           value,
           type: type as ("shares" | "$" | "%"),
           payout: 0, // Payout will be calculated later
           isFixedAmount: type === "$",
+          // Only set color if it's valid
+          ...(color ? { color } : {})
         };
         
-        // Only add color if it's valid
         if (color) {
-          recipient.color = color;
-          console.log(`Adding color ${color} to recipient ${recipient.name}`);
+          console.log(`Adding color ${color} to recipient ${name}`);
         }
         
         recipients.push(recipient);

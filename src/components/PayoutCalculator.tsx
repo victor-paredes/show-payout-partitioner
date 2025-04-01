@@ -113,21 +113,16 @@ const PayoutCalculator = () => {
 
   const handleImport = (newRecipients: Recipient[], replace: boolean) => {
     if (replace) {
-      // Make sure to preserve color property from imported recipients
+      console.log("Importing recipients with colors:", 
+        newRecipients.map(r => ({ id: r.id, name: r.name, color: r.color }))
+      );
+      
       setRecipients(newRecipients);
       
-      // Verify that colors were properly applied from the CSV
       const missingColors = newRecipients.filter(r => r.color === undefined || r.color === '').length;
       const totalWithColors = newRecipients.length - missingColors;
       
       console.log(`Import colors summary: ${totalWithColors} of ${newRecipients.length} recipients have custom colors`);
-      
-      if (totalWithColors > 0) {
-        toast({
-          title: "Colors imported",
-          description: `${totalWithColors} of ${newRecipients.length} recipients have custom colors applied`,
-        });
-      }
       
       let highestId = 0;
       newRecipients.forEach(recipient => {
