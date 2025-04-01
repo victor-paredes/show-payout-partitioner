@@ -114,18 +114,16 @@ const RecipientsList = ({
             )}
           </div>
           <div className="flex items-center space-x-2">
-            <div className="flex items-center gap-1">
-              <span className="text-xs font-medium text-muted-foreground">TAB</span>
-              <Button
-                onClick={toggleTabbingDirection}
-                variant="outline"
-                size="sm"
-                className="flex items-center"
-                title={columnWiseTabbing ? "Switch to row-wise tabbing" : "Switch to column-wise tabbing"}
-              >
-                {columnWiseTabbing ? <ArrowDown className="h-4 w-4" /> : <ArrowRight className="h-4 w-4" />}
-              </Button>
-            </div>
+            <Button
+              onClick={toggleTabbingDirection}
+              variant="outline"
+              size="sm"
+              className="flex items-center"
+              title={columnWiseTabbing ? "Switch to row-wise tabbing" : "Switch to column-wise tabbing"}
+            >
+              <span className="mr-1">TAB</span>
+              {columnWiseTabbing ? <ArrowDown className="h-4 w-4" /> : <ArrowRight className="h-4 w-4" />}
+            </Button>
             {recipients.length > 0 && (
               <Button 
                 onClick={handleClearClick} 
