@@ -114,8 +114,8 @@ const RecipientsList = ({
   };
 
   // Get only the non-divider recipients for the title count
-  const recipientCount = recipients.filter(r => !r.isDivider).length;
-  const recipientsTitle = `${recipientCount} ${recipientCount === 1 ? 'Recipient' : 'Recipients'}`;
+  const actualRecipientCount = recipients.filter(r => !r.isDivider).length;
+  const recipientsTitle = `${actualRecipientCount} ${actualRecipientCount === 1 ? 'Recipient' : 'Recipients'}`;
 
   return (
     <Card>

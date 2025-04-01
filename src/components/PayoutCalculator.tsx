@@ -22,7 +22,13 @@ const PayoutCalculator = () => {
     updateRecipient,
     handleDragEnd,
     clearRecipients,
-    setLastUsedId
+    setLastUsedId,
+    dividerModalOpen,
+    setDividerModalOpen,
+    prepareDividerModal,
+    addOrUpdateDivider,
+    editDivider,
+    currentDividerId
   } = useRecipients();
 
   const {
@@ -168,6 +174,12 @@ const PayoutCalculator = () => {
             hoveredRecipientId={hoveredRecipientId || undefined}
             onRecipientHover={handleRecipientHover}
             clearRecipients={clearRecipients}
+            dividerModalOpen={dividerModalOpen}
+            setDividerModalOpen={setDividerModalOpen}
+            prepareDividerModal={prepareDividerModal}
+            addOrUpdateDivider={addOrUpdateDivider}
+            editDivider={editDivider}
+            currentDividerId={currentDividerId}
           />
         </div>
 
