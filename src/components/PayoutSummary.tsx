@@ -20,6 +20,7 @@ interface Recipient {
   isFixedAmount: boolean;
   value: number;
   payout: number;
+  type?: "shares" | "fixed" | "percentage";
 }
 
 interface PayoutSummaryProps {
@@ -59,9 +60,19 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
   const difference = Math.abs(totalPayout - calculatedTotal);
   
   const sortedRecipients = [...recipients].sort((a, b) => {
-    if (a.isFixedAmount !== b.isFixedAmount) {
-      return a.isFixedAmount ? -1 : 1;
+    const typeOrder = {
+      fixed: 0,
+      percentage: 1,
+      shares: 2
+    };
+    
+    const aType = a.type || (a.isFixedAmount ? "fixed" : "shares");
+    const bType = b.type || (b.isFixedAmount ? "fixed" : "shares");
+    
+    if (aType !== bType) {
+      return typeOrder[aType] - typeOrder[bType];
     }
+    
     return b.payout - a.payout;
   });
 
@@ -196,12 +207,21 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
           <div className="border-t pt-4 mt-4">
             <h3 className="font-semibold mb-3">Individual Payouts</h3>
             <div className="space-y-2">
-              {recipients.map((recipient, index) => {
+              {recipients.map((recipient) => {
                 const recipientChartData = chartData.find(item => item.id === recipient.id);
                 const percentage = recipientChartData ? recipientChartData.percentage : "0";
-                const isHighlighted = hoveredRecipientId === recipient.id;
-                const recipientColor = COLORS[chartData.findIndex(item => item.id === recipient.id) % COLORS.length];
-              
+                const recipientColor = COLORS[chartData.findIndex(item => item.id === recipient.id) % COLORS.length] || COLORS[0];
+                const type = recipient.type || (recipient.isFixedAmount ? "fixed" : "shares");
+                
+                let valueDisplay = "";
+                if (type === "fixed") {
+                  valueDisplay = `(Fixed: ${formatCurrency(recipient.value)})`;
+                } else if (type === "percentage") {
+                  valueDisplay = `(${recipient.value}%)`;
+                } else {
+                  valueDisplay = `(${recipient.value}x, ${percentage}%)`;
+                }
+                
                 return (
                   <div 
                     key={recipient.id} 
@@ -224,9 +244,7 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
                       />
                       <span>{recipient.name}</span>
                       <span className="text-xs text-gray-500 ml-2">
-                        {recipient.isFixedAmount 
-                          ? `(Fixed: ${formatCurrency(recipient.value)})` 
-                          : `(${recipient.value}x, ${percentage}%)`}
+                        {valueDisplay}
                       </span>
                     </div>
                     <div className="font-medium">{formatCurrency(recipient.payout)}</div>

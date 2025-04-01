@@ -1,7 +1,9 @@
+
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { DragEndEvent } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
+import { RecipientType } from "@/components/RecipientRow";
 
 export interface Recipient {
   id: string;
@@ -9,12 +11,13 @@ export interface Recipient {
   isFixedAmount: boolean;
   value: number;
   payout: number;
+  type?: RecipientType;
 }
 
 export function useRecipients() {
   const { toast } = useToast();
   const [recipients, setRecipients] = useState<Recipient[]>([
-    { id: "1", name: "Recipient 1", isFixedAmount: false, value: 1, payout: 0 },
+    { id: "1", name: "Recipient 1", isFixedAmount: false, value: 1, payout: 0, type: "shares" },
   ]);
   const [selectedRecipients, setSelectedRecipients] = useState<Set<string>>(new Set());
   const [recipientCount, setRecipientCount] = useState<string>("1");
@@ -32,7 +35,8 @@ export function useRecipients() {
         name: defaultName, 
         isFixedAmount: false, 
         value: 1, 
-        payout: 0
+        payout: 0,
+        type: "shares" as RecipientType
       };
     });
     

@@ -1,12 +1,21 @@
+
 import React, { useState, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { Trash2, GripVertical } from "lucide-react";
 import { formatCurrency } from "@/lib/format";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+export type RecipientType = "shares" | "fixed" | "percentage";
 
 interface Recipient {
   id: string;
@@ -14,6 +23,7 @@ interface Recipient {
   isFixedAmount: boolean;
   value: number;
   payout: number;
+  type?: RecipientType;
 }
 
 interface RecipientRowProps {
@@ -79,6 +89,21 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
     }
   };
 
+  // Handle type selection
+  const handleTypeChange = (value: string) => {
+    const isFixed = value === "fixed";
+    const type = value as RecipientType;
+    
+    onUpdate({ 
+      isFixedAmount: isFixed,
+      type: type
+    });
+  };
+
+  // Determine current type for the select
+  const currentType: RecipientType = recipient.type || 
+    (recipient.isFixedAmount ? "fixed" : "shares");
+
   return (
     <div 
       ref={setNodeRef} 
@@ -136,14 +161,19 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
         onMouseEnter={() => setIsInputHover(true)}
         onMouseLeave={() => setIsInputHover(false)}
       >
-        <Switch
-          id={`fixed-switch-${recipient.id}`}
-          checked={recipient.isFixedAmount}
-          onCheckedChange={(checked) => onUpdate({ isFixedAmount: checked })}
-        />
-        <Label htmlFor={`fixed-switch-${recipient.id}`} className="text-sm text-gray-500 whitespace-nowrap">
-          {recipient.isFixedAmount ? "Fixed $" : "Shares"}
-        </Label>
+        <Select 
+          value={currentType} 
+          onValueChange={handleTypeChange}
+        >
+          <SelectTrigger className="w-28">
+            <SelectValue placeholder="Type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="shares">Shares</SelectItem>
+            <SelectItem value="fixed">Fixed $</SelectItem>
+            <SelectItem value="percentage">Percentage %</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       <div 
@@ -152,15 +182,22 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
         onMouseEnter={() => setIsInputHover(true)}
         onMouseLeave={() => setIsInputHover(false)}
       >
-        {recipient.isFixedAmount && <span className="mr-1">$</span>}
+        {currentType === "fixed" && <span className="mr-1">$</span>}
+        {currentType === "percentage" && <span className="mr-1">%</span>}
         <Input
           type="number"
           min="0"
-          step={recipient.isFixedAmount ? "10" : "0.1"}
+          step={currentType === "fixed" ? "10" : currentType === "percentage" ? "1" : "0.1"}
           value={recipient.value || ""}
           onChange={(e) => onUpdate({ value: parseFloat(e.target.value) || 0 })}
           className={`w-24 text-right ${inputHoverClass}`}
-          placeholder={recipient.isFixedAmount ? "Amount" : "Shares"}
+          placeholder={
+            currentType === "fixed" 
+              ? "Amount" 
+              : currentType === "percentage" 
+                ? "Percent" 
+                : "Shares"
+          }
         />
       </div>
 

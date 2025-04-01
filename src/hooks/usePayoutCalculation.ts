@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Recipient } from "./useRecipients";
 
@@ -16,16 +17,47 @@ export function usePayoutCalculation(recipients: Recipient[]) {
     }
 
     // Calculate fixed amounts total
-    const fixedAmounts = recipients
-      .filter(r => r.isFixedAmount)
-      .reduce((sum, r) => sum + (isNaN(r.value) ? 0 : r.value), 0);
+    const fixedRecipients = recipients.filter(r => {
+      const type = r.type || (r.isFixedAmount ? "fixed" : "shares");
+      return type === "fixed";
+    });
+    
+    const fixedAmounts = fixedRecipients.reduce(
+      (sum, r) => sum + (isNaN(r.value) ? 0 : r.value), 
+      0
+    );
 
-    // Calculate total shares
-    const shares = recipients
-      .filter(r => !r.isFixedAmount)
-      .reduce((sum, r) => sum + (isNaN(r.value) ? 0 : r.value), 0);
+    // Calculate percentage amounts
+    const percentageRecipients = recipients.filter(r => {
+      const type = r.type || (r.isFixedAmount ? "fixed" : "shares");
+      return type === "percentage";
+    });
+    
+    const totalPercentage = percentageRecipients.reduce(
+      (sum, r) => sum + (isNaN(r.value) ? 0 : r.value), 
+      0
+    );
+    
+    // Ensure percentage doesn't exceed 100%
+    const safePercentage = Math.min(totalPercentage, 100);
+    const percentageAmount = (safePercentage / 100) * totalPayout;
+    
+    // Calculate total reserved amount (fixed + percentage)
+    const reservedAmount = fixedAmounts + percentageAmount;
+    
+    // Calculate shares
+    const sharesRecipients = recipients.filter(r => {
+      const type = r.type || (r.isFixedAmount ? "fixed" : "shares");
+      return type === "shares";
+    });
+    
+    const shares = sharesRecipients.reduce(
+      (sum, r) => sum + (isNaN(r.value) ? 0 : r.value), 
+      0
+    );
 
-    const remaining = Math.max(0, totalPayout - fixedAmounts);
+    // Calculate remaining amount for shares
+    const remaining = Math.max(0, totalPayout - reservedAmount);
     const perShare = shares > 0 ? remaining / shares : 0;
 
     setRemainingAmount(remaining);
