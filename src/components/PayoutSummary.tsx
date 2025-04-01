@@ -201,11 +201,15 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
                 const percentage = recipientChartData ? recipientChartData.percentage : "0";
                 const isHighlighted = hoveredRecipientId === recipient.id;
                 const recipientColor = COLORS[chartData.findIndex(item => item.id === recipient.id) % COLORS.length];
-                
+              
                 return (
                   <div 
                     key={recipient.id} 
-                    className={`flex justify-between p-1 rounded ${isHighlighted ? 'bg-gray-100' : ''}`}
+                    className={`flex justify-between p-1 rounded ${
+                      hoveredRecipientId === recipient.id 
+                        ? 'bg-blue-100' 
+                        : ''
+                    }`}
                     onMouseEnter={() => onRecipientHover?.(recipient.id)}
                     onMouseLeave={() => onRecipientHover?.(null)}
                   >
