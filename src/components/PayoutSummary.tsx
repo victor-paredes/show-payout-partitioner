@@ -1,4 +1,3 @@
-
 import React, { useRef, useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/format";
@@ -166,11 +165,34 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
 
   const emptyPieData = [{ name: "empty", value: 1 }];
 
-  // Build a mapping of groups to help with rendering recipients in order
   const groupsById = groupTotals.reduce((acc, { group }) => {
     acc[group.id] = group;
     return acc;
   }, {} as Record<string, Group>);
+
+  const recipientsByGroup: Record<string, Recipient[]> = {};
+  
+  groupTotals.forEach(({ group }) => {
+    recipientsByGroup[group.id] = [];
+  });
+  
+  recipientsByGroup['ungrouped'] = [];
+  
+  recipients.forEach(recipient => {
+    if (recipient.groupId && recipientsByGroup[recipient.groupId]) {
+      recipientsByGroup[recipient.groupId].push(recipient);
+    } else {
+      recipientsByGroup['ungrouped'].push(recipient);
+    }
+  });
+  
+  const groupedRecipientsForDisplay = Object.entries(recipientsByGroup)
+    .filter(([groupId]) => groupId !== 'ungrouped')
+    .map(([groupId, recipients]) => ({
+      groupId,
+      recipients,
+      groupName: groupsById[groupId]?.name || "Unknown Group"
+    }));
 
   return (
     <Card>
@@ -274,73 +296,127 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
             </div>
           )}
           
-          {/* Unified Payouts section - in original recipient order */}
           {recipients.length > 0 && (
             <div className="border-t pt-4 mt-4">
               <h3 className="font-semibold mb-3">Payouts</h3>
-              <div className="space-y-1">
-                {recipients.map((recipient) => {
-                  const percentage = totalPayout > 0 
-                    ? ((recipient.payout / totalPayout) * 100).toFixed(1) 
-                    : "0";
-                  
-                  const recipientColor = getRecipientDisplayColor(recipient);
-                  const type = recipient.type || (recipient.isFixedAmount ? "$" : "shares");
-                  
-                  // Display group name as part of the recipient if it exists
-                  const group = recipient.groupId ? groupsById[recipient.groupId] : null;
-                  
-                  let valueDisplay = "";
-                  if (type === "$") {
-                    valueDisplay = "($)";
-                  } else if (type === "%") {
-                    valueDisplay = "";
-                  } else {
-                    valueDisplay = `(${recipient.value} ${recipient.value === 1 ? 'share' : 'shares'})`;
-                  }
-                  
-                  return (
-                    <div 
-                      key={recipient.id} 
-                      className={`flex justify-between p-1 rounded ${
-                        hoveredRecipientId === recipient.id 
-                          ? 'bg-gray-100' 
-                          : ''
-                      }`}
-                      onMouseEnter={() => onRecipientHover?.(recipient.id)}
-                      onMouseLeave={() => onRecipientHover?.(null)}
-                    >
-                      <div className="flex items-center">
-                        <div 
-                          className={`w-3 h-3 rounded-sm mr-2 ${
-                            hoveredRecipientId === recipient.id 
-                              ? 'ring-1 ring-black' 
-                              : ''
-                          }`}
-                          style={{ backgroundColor: recipientColor }}
-                        />
-                        <span>{recipient.name}</span>
-                        {group && (
-                          <span className="text-xs text-gray-500 ml-1">
-                            ({group.name})
+              
+              {groupedRecipientsForDisplay.map(({ groupId, recipients, groupName }) => (
+                <div key={groupId} className="space-y-1">
+                  <h4 className="text-sm font-medium text-gray-600">{groupName}</h4>
+                  {recipients.map((recipient) => {
+                    const percentage = totalPayout > 0 
+                      ? ((recipient.payout / totalPayout) * 100).toFixed(1) 
+                      : "0";
+                    
+                    const recipientColor = recipient.color || getRecipientColor(recipient.id);
+                    const type = recipient.type || (recipient.isFixedAmount ? "$" : "shares");
+                    
+                    let valueDisplay = "";
+                    if (type === "$") {
+                      valueDisplay = "($)";
+                    } else if (type === "%") {
+                      valueDisplay = "";
+                    } else {
+                      valueDisplay = `(${recipient.value} ${recipient.value === 1 ? 'share' : 'shares'})`;
+                    }
+                    
+                    return (
+                      <div 
+                        key={recipient.id} 
+                        className={`flex justify-between p-1 rounded ${
+                          hoveredRecipientId === recipient.id 
+                            ? 'bg-gray-100' 
+                            : ''
+                        }`}
+                        onMouseEnter={() => onRecipientHover?.(recipient.id)}
+                        onMouseLeave={() => onRecipientHover?.(null)}
+                      >
+                        <div className="flex items-center">
+                          <div 
+                            className={`w-3 h-3 rounded-sm mr-2 ${
+                              hoveredRecipientId === recipient.id 
+                                ? 'ring-1 ring-black' 
+                                : ''
+                            }`}
+                            style={{ backgroundColor: recipientColor }}
+                          />
+                          <span>{recipient.name}</span>
+                          {valueDisplay && (
+                            <span className="text-xs text-gray-500 ml-2">
+                              {valueDisplay}
+                            </span>
+                          )}
+                          <span className={`text-xs text-blue-500 ${type === '%' ? 'ml-2' : 'ml-1'}`}>
+                            {percentage}%
                           </span>
-                        )}
-                        {valueDisplay && (
-                          <span className="text-xs text-gray-500 ml-2">
-                            {valueDisplay}
+                        </div>
+                        <div className="font-medium">
+                          {formatCurrency(recipient.payout)}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
+              
+              {recipientsByGroup['ungrouped'].length > 0 && (
+                <div className="space-y-1">
+                  <h4 className="text-sm font-medium text-gray-600">Ungrouped</h4>
+                  {recipientsByGroup['ungrouped'].map((recipient) => {
+                    const percentage = totalPayout > 0 
+                      ? ((recipient.payout / totalPayout) * 100).toFixed(1) 
+                      : "0";
+                    
+                    const recipientColor = recipient.color || getRecipientColor(recipient.id);
+                    const type = recipient.type || (recipient.isFixedAmount ? "$" : "shares");
+                    
+                    let valueDisplay = "";
+                    if (type === "$") {
+                      valueDisplay = "($)";
+                    } else if (type === "%") {
+                      valueDisplay = "";
+                    } else {
+                      valueDisplay = `(${recipient.value} ${recipient.value === 1 ? 'share' : 'shares'})`;
+                    }
+                    
+                    return (
+                      <div 
+                        key={recipient.id} 
+                        className={`flex justify-between p-1 rounded ${
+                          hoveredRecipientId === recipient.id 
+                            ? 'bg-gray-100' 
+                            : ''
+                        }`}
+                        onMouseEnter={() => onRecipientHover?.(recipient.id)}
+                        onMouseLeave={() => onRecipientHover?.(null)}
+                      >
+                        <div className="flex items-center">
+                          <div 
+                            className={`w-3 h-3 rounded-sm mr-2 ${
+                              hoveredRecipientId === recipient.id 
+                                ? 'ring-1 ring-black' 
+                                : ''
+                            }`}
+                            style={{ backgroundColor: recipientColor }}
+                          />
+                          <span>{recipient.name}</span>
+                          {valueDisplay && (
+                            <span className="text-xs text-gray-500 ml-2">
+                              {valueDisplay}
+                            </span>
+                          )}
+                          <span className={`text-xs text-blue-500 ${type === '%' ? 'ml-2' : 'ml-1'}`}>
+                            {percentage}%
                           </span>
-                        )}
-                        <span className={`text-xs text-blue-500 ${type === '%' ? 'ml-2' : 'ml-1'}`}>
-                          {percentage}%
-                        </span>
+                        </div>
+                        <div className="font-medium">
+                          {formatCurrency(recipient.payout)}
+                        </div>
                       </div>
-                      <div className="font-medium">
-                        {formatCurrency(recipient.payout)}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
 

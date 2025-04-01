@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -219,35 +220,7 @@ const RecipientsList = ({
                 </div>
               ) : (
                 <>
-                  {/* Ungrouped recipients */}
-                  <div className="mb-6">
-                    <h3 className="text-sm font-medium mb-2 text-gray-600">Ungrouped</h3>
-                    <div className="space-y-2">
-                      <SortableContext 
-                        items={groupedRecipients.ungroupedRecipients.map(r => r.id)} 
-                        strategy={verticalListSortingStrategy}
-                      >
-                        {groupedRecipients.ungroupedRecipients.map((recipient, rowIndex) => (
-                          <RecipientRow
-                            key={recipient.id}
-                            recipient={recipient}
-                            onUpdate={(updates) => updateRecipient(recipient.id, updates)}
-                            onRemove={() => removeRecipient(recipient.id)}
-                            valuePerShare={valuePerShare}
-                            isSelected={selectedRecipients.has(recipient.id)}
-                            onToggleSelect={() => toggleSelectRecipient(recipient.id)}
-                            isHighlighted={hoveredRecipientId === recipient.id}
-                            onRecipientHover={onRecipientHover}
-                            columnWiseTabbing={columnWiseTabbing}
-                            rowIndex={rowIndex}
-                            totalRows={groupedRecipients.ungroupedRecipients.length}
-                          />
-                        ))}
-                      </SortableContext>
-                    </div>
-                  </div>
-                  
-                  {/* Grouped recipients */}
+                  {/* Grouped recipients - displayed first */}
                   {groupedRecipients.recipientsByGroup.map(({ group, recipients }) => (
                     <div key={group.id} className="mb-6">
                       <h3 className="text-sm font-medium mb-2 text-gray-600 flex items-center">
@@ -282,6 +255,34 @@ const RecipientsList = ({
                       </div>
                     </div>
                   ))}
+                  
+                  {/* Ungrouped recipients - displayed last */}
+                  <div className="mb-6">
+                    <h3 className="text-sm font-medium mb-2 text-gray-600">Ungrouped</h3>
+                    <div className="space-y-2">
+                      <SortableContext 
+                        items={groupedRecipients.ungroupedRecipients.map(r => r.id)} 
+                        strategy={verticalListSortingStrategy}
+                      >
+                        {groupedRecipients.ungroupedRecipients.map((recipient, rowIndex) => (
+                          <RecipientRow
+                            key={recipient.id}
+                            recipient={recipient}
+                            onUpdate={(updates) => updateRecipient(recipient.id, updates)}
+                            onRemove={() => removeRecipient(recipient.id)}
+                            valuePerShare={valuePerShare}
+                            isSelected={selectedRecipients.has(recipient.id)}
+                            onToggleSelect={() => toggleSelectRecipient(recipient.id)}
+                            isHighlighted={hoveredRecipientId === recipient.id}
+                            onRecipientHover={onRecipientHover}
+                            columnWiseTabbing={columnWiseTabbing}
+                            rowIndex={rowIndex}
+                            totalRows={groupedRecipients.ungroupedRecipients.length}
+                          />
+                        ))}
+                      </SortableContext>
+                    </div>
+                  </div>
                 </>
               )}
             </div>
