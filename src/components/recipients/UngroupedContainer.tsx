@@ -1,7 +1,7 @@
 
-import React, { useState } from "react";
+import React, { useState } from 'react';
+import { Recipient } from "@/hooks/useRecipientsManager"; // Update import
 import RecipientItem from "./RecipientItem";
-import { Recipient } from "@/hooks/useRecipientsManager";
 
 interface UngroupedContainerProps {
   recipients: Recipient[];
@@ -15,7 +15,7 @@ interface UngroupedContainerProps {
   onDragOver: (e: React.DragEvent) => void;
   onDrop: (e: React.DragEvent) => void;
   draggedRecipientId: string | null;
-  onHover?: (id: string | null) => void; 
+  onHover?: (id: string | null) => void;
 }
 
 const UngroupedContainer: React.FC<UngroupedContainerProps> = ({
@@ -45,56 +45,47 @@ const UngroupedContainer: React.FC<UngroupedContainerProps> = ({
   };
   
   const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
     setIsDragOver(false);
     onDrop(e);
   };
 
-  // Calculate minimum height for the container
-  const calculateMinHeight = () => {
-    const baseRowHeight = 72; // Height of one row in pixels
-    const minRows = 1; // Minimum number of rows to display
-    const minHeight = Math.max(recipients.length, minRows) * baseRowHeight;
-    return `${minHeight}px`;
-  };
-
   return (
-    <div className="mb-6">
-      <h3 className="text-sm font-medium mb-2 text-gray-600">Ungrouped</h3>
-      <div 
-        className="space-y-2 p-2 rounded-md border-2 border-dashed border-gray-200 transition-all hover:border-gray-300"
-        style={{ 
-          background: isDragOver ? "rgba(0, 0, 0, 0.05)" : "transparent",
-          minHeight: calculateMinHeight(),
-          transition: "all 0.15s ease-in-out"
-        }}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-        data-group-id="ungrouped"
-      >
-        {recipients.length > 0 ? (
-          recipients.map((recipient) => (
-            <RecipientItem
-              key={recipient.id}
-              recipient={recipient}
-              onUpdate={(updates) => onUpdateRecipient(recipient.id, updates)}
-              onRemove={() => onRemoveRecipient(recipient.id)}
-              valuePerShare={valuePerShare}
-              isSelected={selectedRecipients.has(recipient.id)}
-              onSelect={() => onToggleSelectRecipient(recipient.id)}
-              isHighlighted={hoveredRecipientId === recipient.id}
-              onDragStart={() => onDragStart(recipient.id, "ungrouped")}
-              isDragging={draggedRecipientId === recipient.id}
-              onHover={onHover}
-            />
-          ))
-        ) : (
-          <div className="flex items-center justify-center h-[72px] rounded-md border border-dashed border-gray-300 bg-gray-50 text-gray-400 text-sm">
-            Drop a recipient here
+    <div 
+      className="space-y-2 p-2 rounded-md border-2 border-dashed transition-all"
+      style={{ 
+        borderColor: isDragOver ? '#3b82f6' : '#e5e7eb',
+        background: isDragOver ? '#eff6ff' : 'transparent',
+        minHeight: recipients.length === 0 ? '100px' : 'auto',
+        transition: "all 0.15s ease-in-out"
+      }}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+      data-group-id="ungrouped"
+    >
+      {recipients.length === 0 ? (
+        <div className="h-full flex items-center justify-center">
+          <div className="text-sm text-gray-400 text-center py-6">
+            Drop recipients here
           </div>
-        )}
-      </div>
+        </div>
+      ) : (
+        recipients.map((recipient) => (
+          <RecipientItem
+            key={recipient.id}
+            recipient={recipient}
+            onUpdate={(updates) => onUpdateRecipient(recipient.id, updates)}
+            onRemove={() => onRemoveRecipient(recipient.id)}
+            isSelected={selectedRecipients.has(recipient.id)}
+            onSelect={() => onToggleSelectRecipient(recipient.id)}
+            isHighlighted={hoveredRecipientId === recipient.id}
+            valuePerShare={valuePerShare}
+            onDragStart={() => onDragStart(recipient.id, "ungrouped")}
+            isDragging={draggedRecipientId === recipient.id}
+            onHover={onHover}
+          />
+        ))
+      )}
     </div>
   );
 };
