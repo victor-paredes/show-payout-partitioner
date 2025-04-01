@@ -75,9 +75,8 @@ const PayoutCalculator = () => {
 
     // If there are no recipients, all amount is surplus
     if (recipients.length === 0) {
-      setRemainingAmount(totalPayout);
-      setTotalShares(0);
-      setValuePerShare(0);
+      // We should NOT try to set these values directly as they're calculated in the hook
+      // Just return early as the hook will handle this case
       return;
     }
 
