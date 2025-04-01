@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calculator, Plus, Trash2, Users } from "lucide-react";
+import { Calculator, Plus, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import RecipientRow from "./RecipientRow";
 import PayoutSummary from "./PayoutSummary";
@@ -16,6 +16,7 @@ interface Recipient {
   payout: number;
   isGroup: boolean;
   groupMembers?: string[];
+  groupMemberShares?: number[];
 }
 
 const PayoutCalculator = () => {
@@ -61,10 +62,11 @@ const PayoutCalculator = () => {
         id: newId, 
         name: defaultName, 
         isFixedAmount: false, 
-        value: 1, 
+        value: 0, 
         payout: 0,
         isGroup: true,
-        groupMembers: ["Member 1"]
+        groupMembers: ["Member 1"],
+        groupMemberShares: [1]
       },
     ]);
   };
@@ -102,14 +104,43 @@ const PayoutCalculator = () => {
     );
   };
 
+  const updateGroupMemberShare = (recipientId: string, index: number, share: number) => {
+    setRecipients(
+      recipients.map(recipient => {
+        if (recipient.id === recipientId && recipient.isGroup && recipient.groupMemberShares) {
+          const updatedShares = [...(recipient.groupMemberShares || [])];
+          updatedShares[index] = share;
+          
+          // Calculate group total shares
+          const totalGroupShares = updatedShares.reduce((sum, share) => sum + share, 0);
+          
+          return { 
+            ...recipient, 
+            groupMemberShares: updatedShares,
+            value: totalGroupShares // Update the group's total value to be the sum of member shares
+          };
+        }
+        return recipient;
+      })
+    );
+  };
+
   const addGroupMember = (recipientId: string) => {
     setRecipients(
       recipients.map(recipient => {
         if (recipient.id === recipientId && recipient.isGroup && recipient.groupMembers) {
           const memberCount = recipient.groupMembers.length;
+          const updatedMembers = [...recipient.groupMembers, `Member ${memberCount + 1}`];
+          const updatedShares = [...(recipient.groupMemberShares || []), 1];
+          
+          // Recalculate total group shares
+          const totalGroupShares = updatedShares.reduce((sum, share) => sum + share, 0);
+          
           return { 
             ...recipient, 
-            groupMembers: [...recipient.groupMembers, `Member ${memberCount + 1}`] 
+            groupMembers: updatedMembers,
+            groupMemberShares: updatedShares,
+            value: totalGroupShares
           };
         }
         return recipient;
@@ -133,7 +164,19 @@ const PayoutCalculator = () => {
           
           const updatedMembers = [...recipient.groupMembers];
           updatedMembers.splice(index, 1);
-          return { ...recipient, groupMembers: updatedMembers };
+          
+          const updatedShares = [...(recipient.groupMemberShares || [])];
+          updatedShares.splice(index, 1);
+          
+          // Recalculate total group shares
+          const totalGroupShares = updatedShares.reduce((sum, share) => sum + share, 0);
+          
+          return { 
+            ...recipient, 
+            groupMembers: updatedMembers,
+            groupMemberShares: updatedShares,
+            value: totalGroupShares
+          };
         }
         return recipient;
       })
@@ -237,6 +280,7 @@ const PayoutCalculator = () => {
                 onAddGroupMember={() => addGroupMember(recipient.id)}
                 onRemoveGroupMember={(index) => removeGroupMember(recipient.id, index)}
                 onUpdateGroupMember={(index, name) => updateGroupMember(recipient.id, index, name)}
+                onUpdateGroupMemberShare={(index, share) => updateGroupMemberShare(recipient.id, index, share)}
               />
             ))}
           </div>

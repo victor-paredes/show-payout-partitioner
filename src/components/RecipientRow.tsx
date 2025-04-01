@@ -15,6 +15,7 @@ interface Recipient {
   payout: number;
   isGroup: boolean;
   groupMembers?: string[];
+  groupMemberShares?: number[];
 }
 
 interface RecipientRowProps {
@@ -25,6 +26,7 @@ interface RecipientRowProps {
   onAddGroupMember?: () => void;
   onRemoveGroupMember?: (index: number) => void;
   onUpdateGroupMember?: (index: number, name: string) => void;
+  onUpdateGroupMemberShare?: (index: number, share: number) => void;
 }
 
 const RecipientRow: React.FC<RecipientRowProps> = ({
@@ -35,6 +37,7 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
   onAddGroupMember,
   onRemoveGroupMember,
   onUpdateGroupMember,
+  onUpdateGroupMemberShare,
 }) => {
   return (
     <div className="flex flex-col bg-white rounded-md shadow-sm border p-4 space-y-2">
@@ -54,29 +57,33 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="flex items-center space-x-2">
-            <Switch
-              id={`fixed-switch-${recipient.id}`}
-              checked={recipient.isFixedAmount}
-              onCheckedChange={(checked) => onUpdate({ isFixedAmount: checked })}
-            />
-            <Label htmlFor={`fixed-switch-${recipient.id}`} className="text-sm text-gray-500">
-              {recipient.isFixedAmount ? "Fixed $" : "Shares"}
-            </Label>
-          </div>
+          {!recipient.isGroup && (
+            <>
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id={`fixed-switch-${recipient.id}`}
+                  checked={recipient.isFixedAmount}
+                  onCheckedChange={(checked) => onUpdate({ isFixedAmount: checked })}
+                />
+                <Label htmlFor={`fixed-switch-${recipient.id}`} className="text-sm text-gray-500">
+                  {recipient.isFixedAmount ? "Fixed $" : "Shares"}
+                </Label>
+              </div>
 
-          <div className="flex items-center">
-            {recipient.isFixedAmount && <span className="mr-1">$</span>}
-            <Input
-              type="number"
-              min="0"
-              step={recipient.isFixedAmount ? "10" : "0.1"}
-              value={recipient.value || ""}
-              onChange={(e) => onUpdate({ value: parseFloat(e.target.value) || 0 })}
-              className="w-24 text-right"
-              placeholder={recipient.isFixedAmount ? "Amount" : "Shares"}
-            />
-          </div>
+              <div className="flex items-center">
+                {recipient.isFixedAmount && <span className="mr-1">$</span>}
+                <Input
+                  type="number"
+                  min="0"
+                  step={recipient.isFixedAmount ? "10" : "0.1"}
+                  value={recipient.value || ""}
+                  onChange={(e) => onUpdate({ value: parseFloat(e.target.value) || 0 })}
+                  className="w-24 text-right"
+                  placeholder={recipient.isFixedAmount ? "Amount" : "Shares"}
+                />
+              </div>
+            </>
+          )}
 
           <div className="w-28 text-right">
             <span className="font-medium">
@@ -106,6 +113,17 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
                 className="flex-grow text-sm"
                 placeholder="Member name"
               />
+              <div className="flex items-center">
+                <Input
+                  type="number"
+                  min="0"
+                  step="0.1"
+                  value={recipient.groupMemberShares?.[index] || ""}
+                  onChange={(e) => onUpdateGroupMemberShare && onUpdateGroupMemberShare(index, parseFloat(e.target.value) || 0)}
+                  className="w-20 text-right text-sm"
+                  placeholder="Shares"
+                />
+              </div>
               <Button
                 variant="ghost"
                 size="icon"
