@@ -143,7 +143,56 @@ export const exportToCsv = (
 };
 
 /**
- * Imports recipients data from a CSV string
+ * Validates if the content appears to be a valid CSV file
+ * @param content The CSV string content to validate
+ * @returns boolean indicating if content appears to be valid CSV
+ */
+function validateCsvContent(content: string): boolean {
+  // Check if the content is too large (e.g., over 1MB)
+  if (content.length > 1024 * 1024) {
+    throw new Error("CSV file is too large. Maximum size is 1MB.");
+  }
+  
+  // Basic structure check - should have at least header row and one data row
+  const rows = content.split('\n');
+  if (rows.length < 2) {
+    return false;
+  }
+  
+  // Header row should have several columns
+  const headerCells = parseCSVRow(rows[0]);
+  if (headerCells.length < 3) {
+    return false;
+  }
+  
+  // Check for required column headers
+  const headerNames = headerCells.map(h => h.toLowerCase());
+  if (!headerNames.includes('name')) {
+    return false;
+  }
+  
+  return true;
+}
+
+/**
+ * Sanitizes a string to prevent XSS attacks
+ * @param input The string to sanitize
+ * @returns Sanitized string
+ */
+function sanitizeString(input: string): string {
+  if (!input) return '';
+  
+  // Basic sanitization - replace HTML special chars
+  return input
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/`/g, '&#96;');
+}
+
+/**
+ * Imports recipients data from a CSV string with enhanced security
  * @param csvString The CSV content as a string
  * @returns An array of recipient objects and the total payout if available
  */
@@ -154,6 +203,11 @@ export const importFromCsv = async (
   importedTotalPayout?: number;
 }> => {
   try {
+    // Validate basic CSV structure
+    if (!validateCsvContent(csvString)) {
+      throw new Error("Invalid CSV format. Please check your file.");
+    }
+    
     // Split the CSV into rows
     const rows = csvString
       .split('\n')
@@ -190,7 +244,7 @@ export const importFromCsv = async (
       const rowData = parseCSVRow(rows[i]);
       if (rowData[nameIndex] === '__TOTAL_PAYOUT__' && rowData.length > 2) {
         const payoutValue = parseFloat(rowData[2]);
-        if (!isNaN(payoutValue)) {
+        if (!isNaN(payoutValue) && payoutValue >= 0 && payoutValue <= 1000000000) {
           importedTotalPayout = payoutValue;
         }
         break;
@@ -203,8 +257,10 @@ export const importFromCsv = async (
     // Process data rows (skip header, total and marker rows)
     const recipients = [];
     let colorsImported = 0;
+    let rowCount = 0;
+    const MAX_ROWS = 1000; // Limit number of rows to prevent DoS
     
-    for (let i = 1; i < rows.length; i++) {
+    for (let i = 1; i < rows.length && rowCount < MAX_ROWS; i++) {
       const rowData = parseCSVRow(rows[i]);
       
       // Skip if this appears to be a total row or the marker row
@@ -212,13 +268,32 @@ export const importFromCsv = async (
           rowData[nameIndex] === '__TOTAL_PAYOUT__') continue;
       
       if (rowData.length >= Math.max(nameIndex, typeIndex, valueIndex) + 1) {
-        const name = rowData[nameIndex] || 'Unnamed Recipient';
+        // Sanitize the name - prevent XSS
+        const name = sanitizeString(rowData[nameIndex] || 'Unnamed Recipient');
         
         // Determine recipient type and value
         const type = typeIndex !== -1 ? rowData[typeIndex] : 'shares';
-        let value = valueIndex !== -1 && rowData[valueIndex] ? parseFloat(rowData[valueIndex]) : 1;
         
-        // Get color if available - improved color extraction
+        // Safely parse the value with limits to prevent memory/calculation issues
+        let value = 1;
+        if (valueIndex !== -1 && rowData[valueIndex]) {
+          const parsedValue = parseFloat(rowData[valueIndex]);
+          if (!isNaN(parsedValue)) {
+            // Cap values to reasonable ranges to prevent overflow issues
+            if (type === '$') {
+              // For dollar values, cap at a billion
+              value = Math.min(Math.max(parsedValue, 0), 1000000000);
+            } else if (type === '%') {
+              // For percentages, cap at 100%
+              value = Math.min(Math.max(parsedValue, 0), 100);
+            } else {
+              // For shares, cap at a million
+              value = Math.min(Math.max(parsedValue, 0), 1000000);
+            }
+          }
+        }
+        
+        // Get color if available - improved color extraction with validation
         let color = undefined;
         if (colorIndex !== -1 && colorIndex < rowData.length) {
           // Clean up the color value
@@ -238,9 +313,6 @@ export const importFromCsv = async (
           }
         }
         
-        // Validate value
-        if (isNaN(value)) value = 1;
-        
         // Create the recipient object with explicit color property
         const recipient = {
           id: `${idPrefix}-${i}`,
@@ -258,7 +330,13 @@ export const importFromCsv = async (
         }
         
         recipients.push(recipient);
+        rowCount++;
       }
+    }
+    
+    // If we reached our limit, log a warning
+    if (rowCount >= MAX_ROWS) {
+      console.warn(`CSV import reached the maximum limit of ${MAX_ROWS} rows. Some data may have been truncated.`);
     }
     
     console.log(`Import summary: ${colorsImported} of ${recipients.length} recipients have custom colors`);
