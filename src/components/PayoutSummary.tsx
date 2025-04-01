@@ -1,4 +1,3 @@
-
 import React, { useRef, useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/format";
@@ -264,7 +263,7 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
                         <Cell 
                           key={`cell-${index}`} 
                           fill={entry.color}
-                          fillOpacity={hoveredChartIndex !== -1 && hoveredChartIndex !== index ? 0.4 : 1} 
+                          fillOpacity={hoveredChartIndex !== -1 && hoveredChartIndex !== index ? 0.1 : 1} 
                         />
                       ))}
                     </Pie>
