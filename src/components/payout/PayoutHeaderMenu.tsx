@@ -6,7 +6,7 @@ import {
   HoverCardTrigger 
 } from "@/components/ui/hover-card";
 import { Button } from "@/components/ui/button";
-import { FileDown, FileUp, AlertTriangle } from "lucide-react";
+import { Save, FileUp, AlertTriangle } from "lucide-react"; // Updated import to include Save icon
 import { exportToPdf, exportToCsv, importFromCsv } from "@/lib/exportUtils";
 import { Recipient } from "@/hooks/useRecipients";
 import { useToast } from "@/hooks/use-toast";
@@ -177,7 +177,7 @@ const PayoutHeaderMenu: React.FC<PayoutHeaderMenuProps> = ({
         <HoverCard openDelay={0} closeDelay={100}>
           <HoverCardTrigger asChild>
             <Button variant="outline" size="sm" className="font-medium flex items-center gap-2">
-              <FileDown className="h-4 w-4" />
+              <Save className="h-4 w-4" /> {/* Updated icon to Save */}
               Export
             </Button>
           </HoverCardTrigger>
