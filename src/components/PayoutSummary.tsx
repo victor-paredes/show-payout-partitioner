@@ -1,4 +1,5 @@
-import React, { useRef } from "react";
+
+import React, { useRef, useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/format";
 import { PieChart, Pie, Cell } from "recharts";
@@ -109,6 +110,19 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
   onRecipientHover,
 }) => {
   const summaryRef = useRef<HTMLDivElement>(null);
+  const [isCalculationStable, setIsCalculationStable] = useState<boolean>(false);
+  
+  // Reset calculation stability when recipients or total payout changes
+  useEffect(() => {
+    setIsCalculationStable(false);
+    const timer = setTimeout(() => {
+      setIsCalculationStable(true);
+    }, 100); // Short delay to ensure calculations are complete
+    
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [recipients.length, totalPayout]);
   
   const totalFixedAmount = totalPayout - remainingAmount;
   
@@ -161,7 +175,7 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
       };
     });
     
-  if (hasSurplus) {
+  if (hasSurplus && isCalculationStable) {
     const surplusPercentage = totalPayout > 0 
       ? ((surplus / totalPayout) * 100).toFixed(1) 
       : "0";
@@ -175,7 +189,7 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
     });
   }
   
-  if (hasOverdraw) {
+  if (hasOverdraw && isCalculationStable) {
     const overdrawPercentage = totalPayout > 0 
       ? ((overdraw / totalPayout) * 100).toFixed(1) 
       : "0";
@@ -271,7 +285,7 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
           {chartData.length > 0 && (
             <div className="flex justify-center py-1">
               <div className="w-full" style={{ height: 200 }}>
-                {hasOverdraw ? (
+                {hasOverdraw && isCalculationStable ? (
                   <div className="relative" style={{ height: 200 }}>
                     <PieChart 
                       width={400} 
@@ -292,14 +306,12 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
                         <Cell fill="#FFFFFF" />
                       </Pie>
                     </PieChart>
-                    {hasOverdraw && (
-                      <div 
-                        className="absolute inset-0 flex items-center justify-center"
-                        style={{ pointerEvents: 'none' }}
-                      >
-                        <X size={60} color={OVERDRAW_COLOR} strokeWidth={3} />
-                      </div>
-                    )}
+                    <div 
+                      className="absolute inset-0 flex items-center justify-center"
+                      style={{ pointerEvents: 'none' }}
+                    >
+                      <X size={60} color={OVERDRAW_COLOR} strokeWidth={3} />
+                    </div>
                   </div>
                 ) : (
                   <PieChart 
@@ -332,7 +344,7 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
             </div>
           )}
           
-          {hasSurplus && (
+          {hasSurplus && isCalculationStable && (
             <div className="text-xs bg-green-100 text-green-700 py-1 px-2 rounded-md flex items-center gap-1 mb-2">
               <span>Surplus</span>
               <span className="text-xs text-green-500 ml-2">
@@ -342,7 +354,7 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
             </div>
           )}
           
-          {hasOverdraw && (
+          {hasOverdraw && isCalculationStable && (
             <div className="text-xs bg-red-100 text-red-700 py-1 px-2 rounded-md flex items-center gap-1 mb-2">
               <span>Overdraw</span>
               <span className="text-xs text-red-500 ml-2">
