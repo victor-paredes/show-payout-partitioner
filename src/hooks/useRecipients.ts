@@ -1,9 +1,10 @@
+
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { DragEndEvent } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
 import { RecipientType } from "@/components/RecipientRow";
-import { COLORS } from "@/lib/colorUtils";  // Import the COLORS constant
+import { COLORS } from "@/lib/colorUtils";
 
 export interface Recipient {
   id: string;
@@ -12,6 +13,7 @@ export interface Recipient {
   value: number;
   payout: number;
   type?: RecipientType;
+  color?: string;
 }
 
 export function useRecipients() {

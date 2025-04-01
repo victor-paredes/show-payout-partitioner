@@ -4,6 +4,7 @@ import { formatCurrency } from "@/lib/format";
 import { PieChart, Pie, Cell } from "recharts";
 import { X } from "lucide-react";
 import { RecipientType } from "@/components/RecipientRow";
+import { getRecipientColor } from "@/lib/colorUtils";
 
 interface Recipient {
   id: string;
@@ -12,6 +13,7 @@ interface Recipient {
   value: number;
   payout: number;
   type?: RecipientType;
+  color?: string;
 }
 
 interface PayoutSummaryProps {
@@ -115,11 +117,8 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
     return b.payout - a.payout;
   });
 
-  const getRecipientColor = (recipientId: string) => {
-    const hashCode = Array.from(recipientId).reduce(
-      (acc, char) => acc + char.charCodeAt(0), 0
-    );
-    return COLORS[hashCode % COLORS.length];
+  const getRecipientDisplayColor = (recipient: Recipient) => {
+    return recipient.color || getRecipientColor(recipient.id);
   };
 
   const chartData = sortedRecipients
@@ -134,7 +133,7 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
         value: recipient.payout,
         percentage: percentage,
         id: recipient.id,
-        color: getRecipientColor(recipient.id)
+        color: getRecipientDisplayColor(recipient)
       };
     });
     
@@ -301,7 +300,7 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
                   ? ((recipient.payout / totalPayout) * 100).toFixed(1) 
                   : "0";
                 
-                const recipientColor = getRecipientColor(recipient.id);
+                const recipientColor = getRecipientDisplayColor(recipient);
                 const type = recipient.type || (recipient.isFixedAmount ? "$" : "shares");
                 
                 let valueDisplay = "";
