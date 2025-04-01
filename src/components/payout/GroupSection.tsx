@@ -1,12 +1,13 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Recipient, Group } from "@/hooks/useRecipientsManager";
 import RecipientItem from "../recipients/RecipientItem";
 import { Button } from "@/components/ui/button";
-import { Trash2, Plus, ChevronDown, ChevronRight } from "lucide-react";
+import { Trash2, Plus, ChevronDown, ChevronRight, Edit } from "lucide-react";
 import { formatCurrency } from "@/lib/format";
+import { Input } from "@/components/ui/input";
 
 interface GroupSectionProps {
   group: Group;
@@ -41,6 +42,9 @@ const GroupSection: React.FC<GroupSectionProps> = ({
   activeDroppableId,
   dragSourceId,
 }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [groupName, setGroupName] = useState(group.name);
+
   const {
     attributes,
     listeners,
@@ -66,6 +70,28 @@ const GroupSection: React.FC<GroupSectionProps> = ({
   // Calculate group total amount
   const groupTotal = recipients.reduce((sum, r) => sum + r.payout, 0);
 
+  // Handle group name editing
+  const handleEditClick = () => {
+    setIsEditing(true);
+    setGroupName(group.name);
+  };
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setGroupName(e.target.value);
+  };
+
+  const handleNameSave = () => {
+    // Here you would update the group name in your state
+    console.log(`Updating group ${group.id} name to: ${groupName}`);
+    // You would need to add a call to a function to update the group
+    setIsEditing(false);
+  };
+
+  const handleNameCancel = () => {
+    setGroupName(group.name);
+    setIsEditing(false);
+  };
+
   return (
     <div
       ref={setNodeRef}
@@ -77,36 +103,81 @@ const GroupSection: React.FC<GroupSectionProps> = ({
       }`}
     >
       <div className="p-3 flex items-center justify-between bg-gray-50 rounded-t-lg border-b">
-        <div className="flex items-center">
-          <h3 className="font-medium">{group.name}</h3>
-          <div className="text-xs text-gray-500 ml-2">
-            {recipients.length} {recipients.length === 1 ? 'recipient' : 'recipients'}
-          </div>
-          {groupTotal > 0 && (
-            <div className="text-xs text-blue-500 ml-2">
-              {formatCurrency(groupTotal)}
+        <div className="flex items-center flex-grow">
+          {isEditing ? (
+            <div className="flex items-center gap-2 flex-grow">
+              <Input 
+                value={groupName}
+                onChange={handleNameChange}
+                className="h-8 py-1"
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleNameSave();
+                  if (e.key === 'Escape') handleNameCancel();
+                }}
+              />
+              <Button
+                onClick={handleNameSave}
+                variant="ghost"
+                size="sm"
+                className="h-8 px-2"
+              >
+                Save
+              </Button>
+              <Button
+                onClick={handleNameCancel}
+                variant="ghost"
+                size="sm"
+                className="h-8 px-2"
+              >
+                Cancel
+              </Button>
             </div>
+          ) : (
+            <>
+              <h3 className="font-medium">{group.name}</h3>
+              <div className="text-xs text-gray-500 ml-2">
+                {recipients.length} {recipients.length === 1 ? 'recipient' : 'recipients'}
+              </div>
+              {groupTotal > 0 && (
+                <div className="text-xs text-blue-500 ml-2">
+                  {formatCurrency(groupTotal)}
+                </div>
+              )}
+            </>
           )}
         </div>
 
         <div className="flex items-center space-x-2">
-          <Button
-            onClick={() => addRecipients(group.id)}
-            variant="ghost"
-            size="sm"
-            className="text-gray-500 hover:text-gray-700"
-          >
-            <Plus className="h-4 w-4 mr-1" />
-            Add
-          </Button>
-          <Button
-            onClick={() => removeGroup(group.id)}
-            variant="ghost"
-            size="sm"
-            className="text-gray-500 hover:text-red-500"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
+          {!isEditing && (
+            <>
+              <Button
+                onClick={handleEditClick}
+                variant="ghost"
+                size="sm"
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <Edit className="h-4 w-4" />
+              </Button>
+              <Button
+                onClick={() => addRecipients(group.id)}
+                variant="ghost"
+                size="sm"
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <Plus className="h-4 w-4 mr-1" />
+                Add
+              </Button>
+              <Button
+                onClick={() => removeGroup(group.id)}
+                variant="ghost"
+                size="sm"
+                className="text-gray-500 hover:text-red-500"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </>
+          )}
         </div>
       </div>
 
