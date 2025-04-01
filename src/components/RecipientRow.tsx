@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Trash2, GripVertical } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Trash2, GripVertical, ChevronDown, Square } from "lucide-react";
 import { formatCurrency } from "@/lib/format";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -162,12 +163,8 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
         onMouseLeave={() => setIsInputHover(false)}
       >
         <div 
-          className={`w-4 h-4 rounded-sm transition-colors ${
-            isHighlighted ? 'bg-black' : ''
-          }`}
-          style={{ 
-            backgroundColor: isHighlighted ? 'black' : recipientColor 
-          }}
+          className="w-4 h-4 rounded-sm" 
+          style={{ backgroundColor: recipientColor }}
         />
         <div className="relative inline-block">
           <span 
