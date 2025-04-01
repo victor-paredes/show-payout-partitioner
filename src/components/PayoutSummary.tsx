@@ -1,4 +1,3 @@
-
 import React, { useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/format";
@@ -167,7 +166,7 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
               <div className="w-full" style={{ height: 200 }}>  {/* Reduced height from 250 to 200 */}
                 <PieChart 
                   width={400} 
-                  height={200}  {/* Reduced height to match div */}
+                  height={200}
                   style={{ margin: '0 auto', width: 'auto' }}
                 >
                   <Pie
