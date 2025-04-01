@@ -294,7 +294,6 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
             <h3 className="font-semibold mb-3">Individual Payouts</h3>
             <div className="space-y-1">
               {recipients.map((recipient) => {
-                // Find the percentage for this recipient from chart data
                 const percentage = totalPayout > 0 
                   ? ((recipient.payout / totalPayout) * 100).toFixed(1) 
                   : "0";
@@ -309,7 +308,7 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
                 } else if (type === "%") {
                   valueDisplay = `(${recipient.value}%)`;
                 } else {
-                  valueDisplay = `(${recipient.value}x)`;
+                  valueDisplay = `(${recipient.value} ${recipient.value === 1 ? 'share' : 'shares'})`;
                 }
                 
                 return (
