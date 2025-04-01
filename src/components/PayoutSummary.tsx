@@ -1,4 +1,3 @@
-
 import React, { useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/format";
@@ -163,20 +162,16 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
       </CardHeader>
       <CardContent>
         <div className="space-y-4" ref={summaryRef}>
-          <div className="grid grid-cols-2 gap-2 text-sm">
-            <div className="font-medium">Total Payout:</div>
-            <div className="text-right">{formatCurrency(totalPayout)}</div>
-            
-            <div className="font-medium">Fixed Amounts:</div>
-            <div className="text-right">{formatCurrency(totalFixedAmount)}</div>
-            
-            <div className="font-medium">Amount for Shares:</div>
-            <div className="text-right">{formatCurrency(remainingAmount)}</div>
+          <div className="text-center mb-4">
+            <h2 className="text-3xl font-bold text-blue-900">
+              {formatCurrency(totalPayout)}
+            </h2>
+            <p className="text-sm text-gray-600">Total Payout</p>
           </div>
 
           {chartData.length > 0 && (
-            <div className="flex justify-center py-1">  {/* Reduced to py-1 */}
-              <div className="w-full" style={{ height: 200 }}>  {/* Reduced height from 250 to 200 */}
+            <div className="flex justify-center py-1">
+              <div className="w-full" style={{ height: 200 }}>
                 <PieChart 
                   width={400} 
                   height={200}
