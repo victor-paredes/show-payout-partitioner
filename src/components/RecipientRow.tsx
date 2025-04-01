@@ -1,10 +1,10 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Trash2, GripVertical } from "lucide-react";
+import { Trash2, GripVertical, CheckCircle } from "lucide-react";
 import { formatCurrency } from "@/lib/format";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -34,6 +34,8 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
   isSelected,
   onToggleSelect,
 }) => {
+  const [isHovering, setIsHovering] = useState(false);
+  
   const {
     attributes,
     listeners,
@@ -54,12 +56,14 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
     <div 
       ref={setNodeRef} 
       style={style}
-      className={`flex flex-col bg-white rounded-md shadow-sm border p-4 space-y-2 cursor-pointer ${
+      className={`flex flex-col bg-white rounded-md shadow-sm border p-4 space-y-2 cursor-pointer transition-colors ${
         isSelected ? "bg-blue-50 border-blue-300" : ""
-      }`}
+      } ${isHovering && !isSelected ? "bg-gray-50" : ""}`}
       onClick={onToggleSelect}
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={() => setIsHovering(false)}
     >
-      <div className="flex flex-col md:flex-row items-start md:items-center gap-3">
+      <div className="flex flex-col md:flex-row items-start md:items-center gap-3 relative">
         <Button
           variant="ghost"
           size="icon"
@@ -71,17 +75,23 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
           <GripVertical className="h-4 w-4" />
         </Button>
 
-        <div className="flex-grow min-w-[150px]">
+        {isHovering && !isSelected && (
+          <div className="absolute right-12 top-2 md:top-1/2 md:-translate-y-1/2 text-gray-400">
+            <CheckCircle className="h-5 w-5" />
+          </div>
+        )}
+
+        <div className="flex-grow min-w-0 max-w-[250px]">
           <Input
             value={recipient.name}
             onChange={(e) => onUpdate({ name: e.target.value })}
-            className="border-none p-0 h-auto text-base font-medium focus-visible:ring-0"
-            placeholder="Recipient name"
+            className="border-none p-0 h-auto text-base font-medium focus-visible:ring-0 w-full"
+            placeholder="Enter Name"
             onClick={(e) => e.stopPropagation()} // Prevent selection toggle when editing
           />
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 ml-auto">
           <div className="flex items-center space-x-2" onClick={(e) => e.stopPropagation()}>
             <Switch
               id={`fixed-switch-${recipient.id}`}
