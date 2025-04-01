@@ -46,7 +46,7 @@ export function useRecipients() {
       }
     });
     
-    const newRecipients = Array.from({ length: count }, (_, index) => {
+    const newRecipients: Recipient[] = Array.from({ length: count }, (_, index) => {
       const newId = (nextId + index).toString();
       const defaultName = `Recipient ${currentRecipientCount + index + 1}`;
       
@@ -97,7 +97,7 @@ export function useRecipients() {
     };
     
     // Insert the divider after the specified recipient
-    const newItems = [...items];
+    const newItems: PayoutItem[] = [...items];
     newItems.splice(recipientIndex + 1, 0, newDivider);
     
     setItems(newItems);
