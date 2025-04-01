@@ -1,4 +1,3 @@
-
 import React, { useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/format";
@@ -33,42 +32,69 @@ interface PayoutSummaryProps {
   onRecipientHover?: (id: string | null) => void;
 }
 
+// Enhanced saturated color palette with 50 unique colors
 const COLORS = [
-  // Original colors
-  "#8B5CF6", // Vivid Purple
-  "#D946EF", // Magenta Pink
-  "#F97316", // Bright Orange
-  "#0EA5E9", // Ocean Blue
-  "#10B981", // Emerald Green
-  "#EF4444", // Red
-  "#FACC15", // Yellow
-  "#6366F1", // Indigo
-  "#EC4899", // Pink
-  "#14B8A6", // Teal
+  // Bold Primary Colors
+  "#FF0000", // Red
+  "#00FF00", // Lime
+  "#0000FF", // Blue
+  "#FFFF00", // Yellow
+  "#FF00FF", // Magenta
+  "#00FFFF", // Cyan
   
-  // Additional colors - Set 1
-  "#3B82F6", // Blue
-  "#22C55E", // Green
-  "#F59E0B", // Amber
-  "#64748B", // Slate
-  "#A855F7", // Purple
-  "#F43F5E", // Rose
-  "#06B6D4", // Cyan
-  "#84CC16", // Lime
-  "#8B5CF6", // Purple (slightly different shade)
-  "#FB7185", // Light Red
+  // Vivid Secondary Colors
+  "#FF8000", // Orange
+  "#8000FF", // Violet
+  "#0080FF", // Azure
+  "#FF0080", // Rose
+  "#00FF80", // Spring Green
+  "#80FF00", // Chartreuse
   
-  // Additional colors - Set 2
-  "#4ADE80", // Lighter Green
-  "#A78BFA", // Lavender
-  "#FB923C", // Light Orange
-  "#38BDF8", // Sky Blue
-  "#2DD4BF", // Teal
-  "#FBBF24", // Yellow
-  "#818CF8", // Indigo
-  "#C084FC", // Purple
-  "#34D399", // Emerald
-  "#F472B6", // Pink
+  // Saturated Tertiary Colors
+  "#FF4000", // Vermilion
+  "#FF0040", // Crimson
+  "#4000FF", // Indigo
+  "#00FF40", // Harlequin
+  "#40FF00", // Bright Green
+  "#0040FF", // Ultramarine
+  "#8000C0", // Purple
+  "#C00080", // Ruby
+  "#C08000", // Amber
+  "#00C080", // Jade
+  "#80C000", // Olive
+  "#0080C0", // Cerulean
+  
+  // Additional Bright Colors
+  "#FF6000", // Dark Orange
+  "#FF0060", // Folly
+  "#6000FF", // Electric Indigo
+  "#00FF60", // Malachite
+  "#60FF00", // Bright Yellow-Green
+  "#0060FF", // Bright Blue
+  
+  // More Vibrant Colors
+  "#FF3000", // Ferrari Red
+  "#FF0030", // Raspberry
+  "#3000FF", // Ultramarine Blue
+  "#00FF30", // Neon Green
+  "#30FF00", // Acid Green
+  "#0030FF", // Cobalt Blue
+  
+  // Extra Colors to Reach 50
+  "#FF1000", // Bright Red
+  "#FF0010", // Crimson Glory
+  "#1000FF", // Electric Purple
+  "#00FF10", // Bright Green
+  "#10FF00", // Spring Bud
+  "#0010FF", // Medium Blue
+  "#FA5252", // Flamingo
+  "#20C997", // Jungle Green
+  "#7950F2", // Medium Purple
+  "#FCC419", // Sunglow
+  "#FF922B", // Dark Orange
+  "#4C6EF5", // Cornflower Blue
+  "#BE4BDB", // Medium Orchid
+  "#15AABF"  // Cerulean
 ];
 
 // Light grey for surplus
