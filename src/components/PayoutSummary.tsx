@@ -154,14 +154,14 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
           <div className="border-t pt-4 mt-4">
             <h3 className="font-semibold mb-3">Individual Payouts</h3>
             <div className="space-y-2">
-              {sortedRecipients.map((recipient) => (
+              {recipients.map((recipient) => (
                 <div key={recipient.id} className="flex justify-between">
                   <div className="flex items-center">
                     <span>{recipient.name}</span>
                     <span className="text-xs text-gray-500 ml-2">
                       {recipient.isFixedAmount 
                         ? `(Fixed: ${formatCurrency(recipient.value)})` 
-                        : `(${recipient.value} shares)`}
+                        : `(${recipient.value}x)`}
                     </span>
                   </div>
                   <div className="font-medium">{formatCurrency(recipient.payout)}</div>
