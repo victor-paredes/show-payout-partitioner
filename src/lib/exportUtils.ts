@@ -1,3 +1,4 @@
+
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
 import { getRecipientColor, COLORS } from "./colorUtils";
@@ -176,6 +177,14 @@ export const importFromCsv = async (
       throw new Error("CSV must contain a 'Name' column");
     }
     
+    // Log column indices for debugging
+    console.log("Column indices:", { 
+      nameIndex, 
+      typeIndex, 
+      valueIndex, 
+      colorIndex 
+    });
+    
     // Look for total payout marker
     let importedTotalPayout: number | undefined = undefined;
     for (let i = 1; i < rows.length; i++) {
@@ -210,11 +219,13 @@ export const importFromCsv = async (
         
         // Get color if available
         let color = undefined;
-        if (colorIndex !== -1 && rowData[colorIndex]) {
+        if (colorIndex !== -1 && colorIndex < rowData.length && rowData[colorIndex]) {
           // Make sure the color string is properly formatted (remove quotes, trim, etc.)
           color = rowData[colorIndex].replace(/^["']|["']$/g, '').trim();
           
-          // Validate it's a proper color format (hex code)
+          console.log(`Row ${i} - Found color: "${color}"`);
+          
+          // Validate it's a proper color format (hex code or named color)
           if (!/^#[0-9A-F]{6}$/i.test(color) && !COLORS.includes(color)) {
             console.warn(`Invalid color format: ${color}, using generated color instead`);
             color = undefined;
@@ -245,6 +256,7 @@ export const importFromCsv = async (
         // Only add color if it's valid
         if (color) {
           recipient.color = color;
+          console.log(`Adding color ${color} to recipient ${recipient.name}`);
         }
         
         recipients.push(recipient);
