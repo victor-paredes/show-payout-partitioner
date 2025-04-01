@@ -254,9 +254,9 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
             </div>
           )}
           
-          <div className="border-t pt-4 mt-4">
-            <h3 className="font-semibold mb-3">Individual Payouts</h3>
-            {recipients.length > 0 ? (
+          {recipients.length > 0 && (
+            <div className="border-t pt-4 mt-4">
+              <h3 className="font-semibold mb-3">Individual Payouts</h3>
               <div className="space-y-1">
                 {recipients.map((recipient) => {
                   const percentage = totalPayout > 0 
@@ -312,12 +312,14 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
                   );
                 })}
               </div>
-            ) : (
-              <div className="text-center py-3 text-gray-500 italic">
-                No recipients added yet. All funds remain as surplus.
-              </div>
-            )}
-          </div>
+            </div>
+          )}
+
+          {recipients.length === 0 && (
+            <div className="border-t pt-4 mt-4 text-center text-gray-500 italic">
+              No recipients added. Click "Add Recipient" to get started.
+            </div>
+          )}
 
           {!hasSurplus && !hasOverdraw && Math.abs(difference) > 0.01 && (
             <div className="text-xs text-amber-600 italic mt-4">
