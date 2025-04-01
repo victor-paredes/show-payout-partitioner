@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -58,10 +57,8 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
     zIndex: isDragging ? 1 : 0,
   };
   
-  // Update name width based on content
   useEffect(() => {
     if (nameRef.current) {
-      // Get the content width plus some padding
       const newWidth = Math.max(150, nameRef.current.scrollWidth + 20);
       setNameWidth(newWidth);
     }
@@ -86,13 +83,11 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
     <div 
       ref={setNodeRef} 
       style={style}
-      className={`flex items-center bg-white rounded-md shadow-sm p-4 gap-4 cursor-pointer transition-colors ${
+      className={`flex items-center bg-white rounded-md shadow-sm p-4 gap-4 cursor-pointer transition-colors border hover:border-black ${
         isSelected ? "bg-blue-50" : ""
       } ${
-        !isInputHover 
-          ? isSelected 
-            ? "hover:border-blue-500 hover:bg-blue-100" 
-            : ""
+        isSelected 
+          ? "hover:border-blue-500 hover:bg-blue-100" 
           : ""
       } ${
         isHighlighted ? "border-black" : "border"
@@ -101,19 +96,17 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      {/* Drag Handle */}
       <Button
         variant="ghost"
         size="icon"
         className="cursor-grab text-gray-400 hover:text-gray-600"
         {...attributes}
         {...listeners}
-        onClick={(e) => e.stopPropagation()} // Prevent selection toggle when dragging
+        onClick={(e) => e.stopPropagation()}
       >
         <GripVertical className="h-4 w-4" />
       </Button>
       
-      {/* Name Input */}
       <div 
         className="flex-1"
         onMouseEnter={() => setIsInputHover(true)}
@@ -131,13 +124,12 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
             onChange={(e) => onUpdate({ name: e.target.value })}
             className={`border-none p-0 h-auto text-base font-medium focus-visible:ring-0 ${inputHoverClass}`}
             placeholder="Enter Name"
-            onClick={(e) => e.stopPropagation()} // Prevent selection toggle when editing
+            onClick={(e) => e.stopPropagation()}
             style={{ width: `${nameWidth}px` }}
           />
         </div>
       </div>
 
-      {/* Fixed/Shares Switch */}
       <div 
         className="flex items-center space-x-2" 
         onClick={(e) => e.stopPropagation()}
@@ -154,7 +146,6 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
         </Label>
       </div>
 
-      {/* Value Input */}
       <div 
         className="flex items-center" 
         onClick={(e) => e.stopPropagation()}
@@ -173,14 +164,12 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
         />
       </div>
 
-      {/* Payout Display */}
       <div className="w-28 text-right">
         <span className="font-medium">
           {formatCurrency(recipient.payout)}
         </span>
       </div>
 
-      {/* Delete Button */}
       <Button
         variant="ghost"
         size="icon"
