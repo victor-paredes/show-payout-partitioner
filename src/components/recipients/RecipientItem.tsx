@@ -87,8 +87,8 @@ const RecipientItem: React.FC<RecipientItemProps> = ({
 
   const recipientColor = recipient.color || getRecipientColor(recipient.id);
 
-  // Determine the border class based on highlight state
-  const borderClass = isHighlighted 
+  // Updated border class logic to include hover state
+  const borderClass = isHighlighted || onHover 
     ? "border-black" 
     : isSelected 
       ? "border-blue-300 hover:border-blue-500" 
@@ -220,3 +220,4 @@ const RecipientItem: React.FC<RecipientItemProps> = ({
 };
 
 export default RecipientItem;
+

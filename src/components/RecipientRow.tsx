@@ -153,7 +153,7 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
     valueTabIndex = 3 + (rowIndex * 3);
   }
 
-  const borderClass = isHighlighted 
+  const borderClass = isHighlighted || onRecipientHover 
     ? "border-black" 
     : isSelected 
       ? "border-blue-300 hover:border-blue-500" 
