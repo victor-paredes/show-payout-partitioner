@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { Recipient, Group } from "@/hooks/useRecipientsManager"; // Update import
+import { Recipient, Group } from "@/hooks/useRecipientsManager";
 import RecipientItem from "./RecipientItem";
 import { Button } from "@/components/ui/button";
 import { Trash2, Edit2, Check, X } from "lucide-react";
@@ -45,22 +44,6 @@ const GroupContainer: React.FC<GroupContainerProps> = ({
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(group.name);
-  const [isDragOver, setIsDragOver] = useState(false);
-  
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragOver(true);
-    onDragOver(e);
-  };
-  
-  const handleDragLeave = () => {
-    setIsDragOver(false);
-  };
-  
-  const handleDrop = (e: React.DragEvent) => {
-    setIsDragOver(false);
-    onDrop(e);
-  };
   
   const handleEditStart = () => {
     setIsEditing(true);
@@ -68,20 +51,17 @@ const GroupContainer: React.FC<GroupContainerProps> = ({
   };
   
   const handleEditSave = () => {
-    setIsEditing(false);
-    if (editedName.trim() !== group.name) {
-      console.log(`Group name changed from ${group.name} to ${editedName}`);
-      if (onUpdateGroup) {
-        onUpdateGroup(group.id, { name: editedName.trim() });
-      }
+    if (onUpdateGroup && editedName.trim() !== group.name) {
+      onUpdateGroup(group.id, { name: editedName.trim() });
     }
+    setIsEditing(false);
   };
   
   const handleEditCancel = () => {
     setIsEditing(false);
     setEditedName(group.name);
   };
-  
+
   const calculateMinHeight = () => {
     return recipients.length === 0 ? '100px' : 'auto';
   };
@@ -96,6 +76,10 @@ const GroupContainer: React.FC<GroupContainerProps> = ({
               onChange={(e) => setEditedName(e.target.value)}
               className="h-7 py-1 text-sm"
               autoFocus
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleEditSave();
+                if (e.key === 'Escape') handleEditCancel();
+              }}
             />
             <Button 
               variant="ghost" 

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -196,7 +195,7 @@ const RecipientsList: React.FC<RecipientsListProps> = ({
         />
       ))}
       
-      {/* Ungrouped Container */}
+      {/* Ensure Ungrouped section is always rendered */}
       <div>
         <h3 className="text-sm font-medium mb-2 text-gray-600">Ungrouped</h3>
         <UngroupedContainer
