@@ -1,3 +1,4 @@
+
 import React, { useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/format";
@@ -45,6 +46,9 @@ const COLORS = [
   "#14B8A6", // Teal
 ];
 
+// Light grey for surplus
+const SURPLUS_COLOR = "#E5E7EB";
+
 const PayoutSummary: React.FC<PayoutSummaryProps> = ({
   totalPayout,
   recipients,
@@ -57,6 +61,10 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
   const totalFixedAmount = totalPayout - remainingAmount;
   
   const calculatedTotal = recipients.reduce((total, r) => total + r.payout, 0);
+  
+  // Calculate surplus as the difference between total payout and what's been allocated
+  const surplus = totalPayout - calculatedTotal;
+  const hasSurplus = surplus > 0.01; // Only show surplus if it's greater than 1 cent
   
   const difference = Math.abs(totalPayout - calculatedTotal);
   
@@ -91,6 +99,20 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
         id: recipient.id,
       };
     });
+    
+  // Add surplus to chart data if it exists
+  if (hasSurplus) {
+    const surplusPercentage = totalPayout > 0 
+      ? ((surplus / totalPayout) * 100).toFixed(1) 
+      : "0";
+      
+    chartData.push({
+      name: "Surplus",
+      value: surplus,
+      percentage: surplusPercentage,
+      id: "surplus"
+    });
+  }
 
   const hoveredChartIndex = hoveredRecipientId
     ? chartData.findIndex(item => item.id === hoveredRecipientId)
@@ -158,7 +180,7 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
               PDF
             </DropdownMenuItem>
           </DropdownMenuContent>
-        </DropdownMenu>
+          </DropdownMenu>
       </CardHeader>
       <CardContent>
         <div className="space-y-4" ref={summaryRef}>
@@ -189,12 +211,19 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
                     onMouseEnter={(_, index) => handleChartHover(index)}
                     onMouseLeave={() => handleChartHover(null)}
                   >
-                    {chartData.map((entry, index) => (
-                      <Cell 
-                        key={`cell-${index}`} 
-                        fill={hoveredChartIndex === index ? "#000000" : COLORS[index % COLORS.length]} 
-                      />
-                    ))}
+                    {chartData.map((entry, index) => {
+                      // Use light grey color for surplus
+                      const color = entry.id === "surplus" 
+                        ? SURPLUS_COLOR 
+                        : COLORS[index % COLORS.length];
+                        
+                      return (
+                        <Cell 
+                          key={`cell-${index}`} 
+                          fill={hoveredChartIndex === index ? "#000000" : color} 
+                        />
+                      );
+                    })}
                   </Pie>
                 </PieChart>
               </div>
@@ -204,6 +233,35 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
           <div className="border-t pt-4 mt-4">
             <h3 className="font-semibold mb-3">Individual Payouts</h3>
             <div className="space-y-2">
+              {/* Show surplus if it exists */}
+              {hasSurplus && (
+                <div 
+                  className={`flex justify-between p-1 rounded ${
+                    hoveredRecipientId === "surplus" 
+                      ? 'bg-blue-100' 
+                      : ''
+                  }`}
+                  onMouseEnter={() => onRecipientHover?.("surplus")}
+                  onMouseLeave={() => onRecipientHover?.(null)}
+                >
+                  <div className="flex items-center">
+                    <div 
+                      className="w-3 h-3 rounded-sm mr-2" 
+                      style={{ 
+                        backgroundColor: hoveredRecipientId === "surplus" 
+                          ? "#000000" 
+                          : SURPLUS_COLOR 
+                      }}
+                    />
+                    <span>Surplus</span>
+                    <span className="text-xs text-gray-500 ml-2">
+                      ({((surplus / totalPayout) * 100).toFixed(1)}%)
+                    </span>
+                  </div>
+                  <div className="font-medium">{formatCurrency(surplus)}</div>
+                </div>
+              )}
+              
               {recipients.map((recipient) => {
                 const recipientChartData = chartData.find(item => item.id === recipient.id);
                 const percentage = recipientChartData ? recipientChartData.percentage : "0";
@@ -244,14 +302,18 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
                         {valueDisplay}
                       </span>
                     </div>
-                    <div className="font-medium">{formatCurrency(recipient.payout)}</div>
+                    <div className="font-medium">
+                      {recipient.type === "$" ? formatCurrency(recipient.payout) : 
+                       recipient.type === "%" ? `${recipient.payout.toFixed(2)}%` : 
+                       formatCurrency(recipient.payout)}
+                    </div>
                   </div>
                 );
               })}
             </div>
           </div>
 
-          {difference > 0.01 && (
+          {!hasSurplus && difference > 0.01 && (
             <div className="text-xs text-amber-600 italic mt-4">
               Note: There is a small rounding difference of {formatCurrency(difference)}
             </div>
