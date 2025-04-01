@@ -32,69 +32,69 @@ interface PayoutSummaryProps {
   onRecipientHover?: (id: string | null) => void;
 }
 
-// Enhanced darker color palette with 50 unique colors
+// Balanced color palette with 50 unique colors
 const COLORS = [
-  // Dark Primary Colors
-  "#8B0000", // Dark Red
-  "#006400", // Dark Green
-  "#00008B", // Dark Blue
-  "#808000", // Olive
-  "#800080", // Purple
-  "#008080", // Teal
+  // Soft but saturated primary colors
+  "#8B5CF6", // Vivid Purple
+  "#0EA5E9", // Ocean Blue
+  "#10B981", // Emerald Green
+  "#F97316", // Bright Orange
+  "#D946EF", // Magenta Pink
+  "#6366F1", // Indigo
   
-  // Deep Secondary Colors
-  "#A0522D", // Sienna
-  "#4B0082", // Indigo
-  "#4682B4", // Steel Blue
-  "#8B008B", // Dark Magenta
-  "#2E8B57", // Sea Green
-  "#6B8E23", // Olive Drab
+  // Deeper secondary colors
+  "#7C3AED", // Deep Purple
+  "#2563EB", // Blue
+  "#059669", // Green
+  "#D97706", // Amber
+  "#DB2777", // Pink
+  "#4F46E5", // Indigo
   
-  // Rich Tertiary Colors
-  "#B22222", // Firebrick
-  "#8B4513", // Saddle Brown
-  "#483D8B", // Dark Slate Blue
-  "#2F4F4F", // Dark Slate Gray
-  "#556B2F", // Dark Olive Green
-  "#800000", // Maroon
-  "#708090", // Slate Gray
-  "#4B0082", // Indigo
-  "#2E8B57", // Sea Green
-  "#8B4513", // Saddle Brown
-  "#483D8B", // Dark Slate Blue
-  "#556B2F", // Dark Olive Green
+  // Rich tertiary colors
+  "#9333EA", // Purple
+  "#1D4ED8", // Dark Blue
+  "#047857", // Emerald
+  "#B45309", // Bronze
+  "#BE185D", // Dark Pink
+  "#5B21B6", // Deep Purple
   
-  // Deeper Accent Colors
-  "#CD5C5C", // Indian Red
-  "#8B0000", // Dark Red
-  "#6B4423", // Dark Brown
-  "#4B0082", // Indigo
-  "#2E8B57", // Sea Green
-  "#800080", // Purple
+  // Muted vibrant colors
+  "#7E22CE", // Dark Purple
+  "#1E40AF", // Navy Blue
+  "#065F46", // Deep Green
+  "#A16207", // Gold
+  "#9D174D", // Raspberry
+  "#6D28D9", // Purple
   
-  // Muted Vibrant Colors
-  "#9ACD32", // Yellow Green
-  "#BC8F8F", // Rosy Brown
-  "#696969", // Dim Gray
-  "#CD853F", // Peru
-  "#5D3754", // Dark Purple
-  "#2F4F4F", // Dark Slate Gray
+  // Accent colors
+  "#A855F7", // Lavender
+  "#3B82F6", // Bright Blue
+  "#22C55E", // Lime Green
+  "#F59E0B", // Sunflower
+  "#EC4899", // Hot Pink
+  "#8B5CF6", // Purple
   
-  // Additional Darker Hues
-  "#7B68EE", // Medium Slate Blue
-  "#6A5ACD", // Slate Blue
-  "#48D1CC", // Medium Turquoise
-  "#3CB371", // Medium Sea Green
-  "#8FBC8F", // Dark Sea Green
-  "#9370DB", // Medium Purple
-  "#7B68EE", // Medium Slate Blue
-  "#6495ED", // Cornflower Blue
-  "#5F9EA0", // Cadet Blue
-  "#4682B4", // Steel Blue
-  "#708090", // Slate Gray
-  "#BA55D3", // Medium Orchid
-  "#7B68EE", // Medium Slate Blue
-  "#4169E1"  // Royal Blue
+  // Additional balanced hues
+  "#7E22CE", // Dark Purple
+  "#1E3A8A", // Dark Navy
+  "#166534", // Forest Green
+  "#B45309", // Dark Orange
+  "#9D174D", // Maroon
+  "#6D28D9", // Deep Purple
+  "#4338CA", // Intense Blue
+  "#14B8A6", // Teal
+  "#CA8A04", // Mustard
+  "#BE123C", // Crimson
+  "#7E22CE", // Purple
+  "#0F766E", // Deep Teal
+  "#A16207", // Dark Gold
+  "#BE185D", // Deep Pink
+  "#5B21B6", // Indigo
+  "#4338CA", // Royal Blue
+  "#15803D", // Dark Green
+  "#A21CAF", // Plum
+  "#C026D3", // Magenta
+  "#4F46E5"  // Periwinkle
 ];
 
 // Light grey for surplus
