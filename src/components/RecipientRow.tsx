@@ -185,7 +185,7 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
     <div 
       ref={setNodeRef} 
       style={style}
-      className={`flex items-center bg-white rounded-md shadow-sm p-4 gap-4 cursor-pointer transition-colors border hover:border-black ${
+      className={`flex items-center justify-between bg-white rounded-md shadow-sm p-4 gap-4 cursor-pointer transition-colors border hover:border-black ${
         isSelected ? "bg-blue-50" : ""
       } ${
         isSelected 
