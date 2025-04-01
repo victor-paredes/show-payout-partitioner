@@ -1,9 +1,11 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, Trash2, X } from "lucide-react";
 import RecipientRow from "../RecipientRow";
 import { Recipient } from "@/hooks/useRecipients";
+import ConfirmationModal from "@/components/ConfirmationModal";
 import {
   DndContext,
   closestCenter,
@@ -60,6 +62,8 @@ const RecipientsList = ({
   onRecipientHover,
   clearRecipients
 }: RecipientsListProps) => {
+  const [confirmClearOpen, setConfirmClearOpen] = useState(false);
+  
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -69,6 +73,17 @@ const RecipientsList = ({
 
   const clearAllSelections = () => {
     setSelectedRecipients(new Set());
+  };
+
+  const handleClearClick = () => {
+    setConfirmClearOpen(true);
+  };
+
+  const handleConfirmClear = () => {
+    if (clearRecipients) {
+      clearRecipients();
+    }
+    setConfirmClearOpen(false);
   };
 
   // Create the title with the correct singular/plural form
@@ -97,7 +112,7 @@ const RecipientsList = ({
           <div className="flex items-center space-x-2">
             {recipients.length > 1 && (
               <Button 
-                onClick={clearRecipients} 
+                onClick={handleClearClick} 
                 variant="outline" 
                 size="sm" 
                 className="flex items-center mr-2"
@@ -151,6 +166,16 @@ const RecipientsList = ({
           </DndContext>
         </div>
       </CardContent>
+      
+      <ConfirmationModal
+        open={confirmClearOpen}
+        onOpenChange={setConfirmClearOpen}
+        title="Clear Recipients"
+        description="Are you sure you want to clear all recipients? This action cannot be undone."
+        confirmLabel="Yes, clear all"
+        cancelLabel="Cancel"
+        onConfirm={handleConfirmClear}
+      />
     </Card>
   );
 };
