@@ -1,10 +1,9 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Trash2, GripVertical } from "lucide-react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { getNextColor } from "@/lib/colorUtils";
 import RecipientColorSwatch from "./recipient/RecipientColorSwatch";
 import RecipientName from "./recipient/RecipientName";
 import RecipientTypeSelector from "./recipient/RecipientTypeSelector";
@@ -20,6 +19,7 @@ interface Recipient {
   value: number;
   payout: number;
   type?: RecipientType;
+  color?: string;
 }
 
 interface RecipientRowProps {
@@ -45,13 +45,6 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
 }) => {
   const [isInputHover, setIsInputHover] = useState(false);
   const [isDraggingInput, setIsDraggingInput] = useState(false);
-  const [recipientColor, setRecipientColor] = useState("");
-  
-  // Set the color when the component mounts
-  useEffect(() => {
-    // Use the next color in sequence
-    setRecipientColor(getNextColor());
-  }, []);
   
   const {
     attributes,
@@ -134,7 +127,7 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
         onMouseLeave={() => setIsInputHover(false)}
       >
         <RecipientColorSwatch
-          color={recipientColor}
+          color={recipient.color || "#CCCCCC"}
           isHighlighted={isHighlighted}
         />
         <RecipientName

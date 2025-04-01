@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { FileDown, X } from "lucide-react";
 import { exportToPdf } from "@/lib/exportUtils";
 import { RecipientType } from "@/components/RecipientRow";
-import { getRecipientColor, SURPLUS_COLOR, OVERDRAW_COLOR } from "@/lib/colorUtils";
+import { SURPLUS_COLOR, OVERDRAW_COLOR } from "@/lib/colorUtils";
 
 interface Recipient {
   id: string;
@@ -23,6 +23,7 @@ interface Recipient {
   value: number;
   payout: number;
   type?: RecipientType;
+  color?: string;
 }
 
 interface PayoutSummaryProps {
@@ -94,7 +95,7 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
         value: recipient.payout,
         percentage: percentage,
         id: recipient.id,
-        color: getRecipientColor(recipient.id)
+        color: recipient.color || "#CCCCCC"
       };
     });
     
@@ -295,7 +296,7 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
                   ? ((recipient.payout / totalPayout) * 100).toFixed(1) 
                   : "0";
                 
-                const recipientColor = getRecipientColor(recipient.id);
+                const recipientColor = recipient.color || "#CCCCCC";
                 const type = recipient.type || (recipient.isFixedAmount ? "$" : "shares");
                 
                 let valueDisplay = "";

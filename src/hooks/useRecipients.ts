@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { DragEndEvent } from "@dnd-kit/core";
@@ -13,6 +12,7 @@ export interface Recipient {
   value: number;
   payout: number;
   type?: RecipientType;
+  color?: string;
 }
 
 export function useRecipients() {
@@ -24,7 +24,8 @@ export function useRecipients() {
       isFixedAmount: false, 
       value: 1, 
       payout: 0, 
-      type: "shares" 
+      type: "shares",
+      color: getNextColor() 
     },
   ]);
   const [selectedRecipients, setSelectedRecipients] = useState<Set<string>>(new Set());
@@ -47,7 +48,8 @@ export function useRecipients() {
         isFixedAmount: false, 
         value: 1, 
         payout: 0,
-        type: "shares" as RecipientType
+        type: "shares" as RecipientType,
+        color: getNextColor()
       };
     });
     
@@ -127,14 +129,15 @@ export function useRecipients() {
     // Reset the color index to start from the beginning
     resetColorIndex();
     
-    // Reset the first recipient to default values
+    // Reset the first recipient to default values with a new color
     const firstRecipient = {
       ...recipients[0],
       name: "Recipient 1",
       isFixedAmount: false,
       value: 1,
       payout: 0,
-      type: "shares" as RecipientType
+      type: "shares" as RecipientType,
+      color: getNextColor()
     };
     
     setRecipients([firstRecipient]);
