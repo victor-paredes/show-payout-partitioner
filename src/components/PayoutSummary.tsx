@@ -1,3 +1,4 @@
+
 import React, { useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/format";
@@ -62,10 +63,12 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
   const calculatedTotal = recipients.reduce((total, r) => total + r.payout, 0);
   
   // Calculate surplus as the difference between total payout and what's been allocated
-  const surplus = totalPayout - calculatedTotal;
-  const hasSurplus = surplus > 0.01; // Only show surplus if it's greater than 1 cent
+  const difference = calculatedTotal - totalPayout;
+  const hasSurplus = difference < -0.01; // Only show surplus if it's greater than 1 cent
+  const hasOverdraw = difference > 0.01; // Only show overdraw if it's greater than 1 cent
   
-  const difference = Math.abs(totalPayout - calculatedTotal);
+  const surplus = hasSurplus ? Math.abs(difference) : 0;
+  const overdraw = hasOverdraw ? difference : 0;
   
   const sortedRecipients = [...recipients].sort((a, b) => {
     const typeOrder = {
@@ -110,6 +113,20 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
       value: surplus,
       percentage: surplusPercentage,
       id: "surplus"
+    });
+  }
+  
+  // Add overdraw to chart data if it exists
+  if (hasOverdraw) {
+    const overdrawPercentage = totalPayout > 0 
+      ? ((overdraw / totalPayout) * 100).toFixed(1) 
+      : "0";
+      
+    chartData.push({
+      name: "Overdraw",
+      value: overdraw,
+      percentage: overdrawPercentage,
+      id: "overdraw"
     });
   }
 
@@ -211,8 +228,8 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
                     onMouseLeave={() => handleChartHover(null)}
                   >
                     {chartData.map((entry, index) => {
-                      // Use light grey color for surplus
-                      const color = entry.id === "surplus" 
+                      // Use light grey color for surplus or overdraw
+                      const color = entry.id === "surplus" || entry.id === "overdraw"
                         ? SURPLUS_COLOR 
                         : COLORS[index % COLORS.length];
                         
@@ -255,6 +272,34 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
                   </span>
                 </div>
                 <div className="font-medium">{formatCurrency(surplus)}</div>
+              </div>
+            )}
+            
+            {hasOverdraw && (
+              <div 
+                className={`flex justify-between p-1 rounded mb-3 border border-gray-200 ${
+                  hoveredRecipientId === "overdraw" 
+                    ? 'bg-blue-100' 
+                    : ''
+                }`}
+                onMouseEnter={() => onRecipientHover?.("overdraw")}
+                onMouseLeave={() => onRecipientHover?.(null)}
+              >
+                <div className="flex items-center">
+                  <div 
+                    className="w-3 h-3 rounded-sm mr-2" 
+                    style={{ 
+                      backgroundColor: hoveredRecipientId === "overdraw" 
+                        ? "#000000" 
+                        : SURPLUS_COLOR 
+                    }}
+                  />
+                  <span>Overdraw</span>
+                  <span className="text-xs text-gray-500 ml-2">
+                    ({((overdraw / totalPayout) * 100).toFixed(1)}%)
+                  </span>
+                </div>
+                <div className="font-medium">{formatCurrency(overdraw)}</div>
               </div>
             )}
 
@@ -311,9 +356,9 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
             </div>
           </div>
 
-          {!hasSurplus && difference > 0.01 && (
+          {!hasSurplus && !hasOverdraw && Math.abs(difference) > 0.01 && (
             <div className="text-xs text-amber-600 italic mt-4">
-              Note: There is a small rounding difference of {formatCurrency(difference)}
+              Note: There is a small rounding difference of {formatCurrency(Math.abs(difference))}
             </div>
           )}
         </div>
