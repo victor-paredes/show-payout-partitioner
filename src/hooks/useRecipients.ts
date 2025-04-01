@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { DragEndEvent } from "@dnd-kit/core";
@@ -14,6 +13,8 @@ export interface Recipient {
   payout: number;
   type?: RecipientType;
   color?: string;
+  isDivider?: boolean;
+  dividerText?: string;
 }
 
 export function useRecipients() {
@@ -31,15 +32,17 @@ export function useRecipients() {
   const [selectedRecipients, setSelectedRecipients] = useState<Set<string>>(new Set());
   const [recipientCount, setRecipientCount] = useState<string>("1");
   const [lastUsedId, setLastUsedId] = useState<number>(1);
+  const [dividerModalOpen, setDividerModalOpen] = useState(false);
+  const [dividerPosition, setDividerPosition] = useState<"before" | "after" | null>(null);
+  const [currentDividerId, setCurrentDividerId] = useState<string | null>(null);
+  const [adjacentRecipientId, setAdjacentRecipientId] = useState<string | null>(null);
 
   const addRecipients = () => {
     const currentRecipientCount = recipients.length;
     const count = parseInt(recipientCount);
     
-    // Calculate the next available ID by analyzing existing IDs
     let nextId = lastUsedId + 1;
     
-    // Find any numeric IDs in the current recipients list
     recipients.forEach(recipient => {
       const idNum = parseInt(recipient.id);
       if (!isNaN(idNum) && idNum >= nextId) {
@@ -48,7 +51,6 @@ export function useRecipients() {
     });
     
     const newRecipients = Array.from({ length: count }, (_, index) => {
-      // Generate a truly unique ID by using timestamp + random number
       const newId = (nextId + index).toString();
       const defaultName = `Recipient ${currentRecipientCount + index + 1}`;
       
@@ -67,13 +69,12 @@ export function useRecipients() {
       ...newRecipients,
     ]);
     
-    // Update the last used ID
     setLastUsedId(nextId + count - 1);
     setRecipientCount("1");
   };
 
   const removeRecipient = (id: string) => {
-    if (recipients.length === 1) {
+    if (recipients.length === 1 && !recipients[0].isDivider) {
       toast({
         title: "Cannot remove",
         description: "You need at least one recipient",
@@ -92,6 +93,10 @@ export function useRecipients() {
   };
 
   const toggleSelectRecipient = (id: string) => {
+    if (recipients.find(r => r.id === id)?.isDivider) {
+      return;
+    }
+    
     const newSelectedRecipients = new Set(selectedRecipients);
     if (newSelectedRecipients.has(id)) {
       newSelectedRecipients.delete(id);
@@ -137,7 +142,6 @@ export function useRecipients() {
       return;
     }
     
-    // Reset the first recipient to default values
     const firstRecipient = {
       ...recipients[0],
       name: "Recipient 1",
@@ -150,7 +154,60 @@ export function useRecipients() {
     setRecipients([firstRecipient]);
     setSelectedRecipients(new Set());
     setRecipientCount("1");
-    setLastUsedId(1); // Reset the last used ID counter
+    setLastUsedId(1);
+  };
+
+  const prepareDividerModal = (position: "before" | "after", recipientId: string) => {
+    setDividerPosition(position);
+    setAdjacentRecipientId(recipientId);
+    setCurrentDividerId(null);
+    setDividerModalOpen(true);
+  };
+
+  const editDivider = (dividerId: string) => {
+    const divider = recipients.find(r => r.id === dividerId);
+    if (divider && divider.isDivider) {
+      setCurrentDividerId(dividerId);
+      setDividerModalOpen(true);
+    }
+  };
+
+  const addOrUpdateDivider = (text: string) => {
+    if (currentDividerId) {
+      setRecipients(
+        recipients.map(recipient => 
+          recipient.id === currentDividerId 
+            ? { ...recipient, dividerText: text } 
+            : recipient
+        )
+      );
+      return;
+    }
+
+    if (!adjacentRecipientId || dividerPosition === null) {
+      return;
+    }
+
+    const dividerId = `divider-${Date.now()}`;
+    
+    const dividerItem: Recipient = {
+      id: dividerId,
+      name: "",
+      isFixedAmount: false,
+      value: 0,
+      payout: 0,
+      isDivider: true,
+      dividerText: text
+    };
+    
+    const recipientIndex = recipients.findIndex(r => r.id === adjacentRecipientId);
+    if (recipientIndex === -1) return;
+    
+    const newRecipients = [...recipients];
+    const insertIndex = dividerPosition === "after" ? recipientIndex + 1 : recipientIndex;
+    newRecipients.splice(insertIndex, 0, dividerItem);
+    
+    setRecipients(newRecipients);
   };
 
   return {
@@ -166,6 +223,12 @@ export function useRecipients() {
     updateRecipient,
     handleDragEnd,
     clearRecipients,
-    setLastUsedId, // Expose this to allow updating after import
+    setLastUsedId,
+    dividerModalOpen,
+    setDividerModalOpen,
+    prepareDividerModal,
+    addOrUpdateDivider,
+    editDivider,
+    currentDividerId
   };
 }
