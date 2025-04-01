@@ -197,7 +197,7 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
         </CardHeader>
         <CardContent>
           <p className="text-center text-gray-500 italic">
-            Enter a total show payout amount to see the distribution
+            Enter a total payout amount to see the distribution
           </p>
         </CardContent>
       </Card>
@@ -295,8 +295,12 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
             <h3 className="font-semibold mb-3">Individual Payouts</h3>
             <div className="space-y-1">
               {recipients.map((recipient) => {
+                // Find the percentage for this recipient from chart data
+                const percentage = totalPayout > 0 
+                  ? ((recipient.payout / totalPayout) * 100).toFixed(1) 
+                  : "0";
+                
                 const recipientChartData = chartData.find(item => item.id === recipient.id);
-                const percentage = recipientChartData ? recipientChartData.percentage : "0";
                 const recipientColor = COLORS[chartData.findIndex(item => item.id === recipient.id) % COLORS.length] || COLORS[0];
                 const type = recipient.type || (recipient.isFixedAmount ? "$" : "shares");
                 
@@ -306,7 +310,7 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
                 } else if (type === "%") {
                   valueDisplay = `(${recipient.value}%)`;
                 } else {
-                  valueDisplay = `(${recipient.value}x, ${percentage}%)`;
+                  valueDisplay = `(${recipient.value}x)`;
                 }
                 
                 return (
@@ -333,10 +337,13 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
                       <span className="text-xs text-gray-500 ml-2">
                         {valueDisplay}
                       </span>
+                      <span className="text-xs text-blue-500 ml-1">
+                        {percentage}%
+                      </span>
                     </div>
                     <div className="font-medium">
-                      {recipient.type === "$" ? formatCurrency(recipient.payout) : 
-                       recipient.type === "%" ? `${recipient.payout.toFixed(2)}%` : 
+                      {type === "$" ? formatCurrency(recipient.payout) : 
+                       type === "%" ? `${recipient.value}%` : 
                        formatCurrency(recipient.payout)}
                     </div>
                   </div>
