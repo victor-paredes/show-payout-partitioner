@@ -31,6 +31,9 @@ export function useRecipients() {
   const [recipientCount, setRecipientCount] = useState<string>("1");
 
   const addRecipients = () => {
+    // Don't reset color index when adding recipients
+    // We want colors to continue in sequence
+    
     const currentRecipientCount = recipients.length;
     const count = parseInt(recipientCount);
     
