@@ -8,6 +8,14 @@ import { useRecipients, Recipient } from "@/hooks/useRecipients";
 import { usePayoutCalculation } from "@/hooks/usePayoutCalculation";
 import { RecipientType } from "@/components/RecipientRow";
 
+interface SelectionArea {
+  startX: number;
+  startY: number;
+  endX: number;
+  endY: number;
+  isSelecting: boolean;
+}
+
 const PayoutCalculator = () => {
   const {
     recipients,
@@ -47,8 +55,18 @@ const PayoutCalculator = () => {
   }, []);
 
   const [hoveredRecipientId, setHoveredRecipientId] = useState<string | null>(null);
+  
+  // Selection area state
+  const [selectionArea, setSelectionArea] = useState<SelectionArea>({
+    startX: 0,
+    startY: 0,
+    endX: 0,
+    endY: 0,
+    isSelecting: false
+  });
 
   const calculatorRef = useRef<HTMLDivElement>(null);
+  const recipientsListRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -106,6 +124,91 @@ const PayoutCalculator = () => {
      recipients.map(r => r.isFixedAmount).join(','), 
      recipients.map(r => r.value).join(','),
      valuePerShare]);
+
+  // Handle selection area mouse events
+  const handleSelectionMouseDown = (e: React.MouseEvent) => {
+    // Only start selection if clicking on the recipients list background, not on a recipient
+    if (
+      recipientsListRef.current && 
+      e.target === e.currentTarget ||
+      (e.target as HTMLElement).classList.contains('recipients-list-area')
+    ) {
+      const { left, top } = recipientsListRef.current.getBoundingClientRect();
+      const startX = e.clientX - left;
+      const startY = e.clientY - top;
+      
+      setSelectionArea({
+        startX,
+        startY,
+        endX: startX,
+        endY: startY,
+        isSelecting: true
+      });
+      
+      // Clear existing selections when starting a new drag (unless Shift is held)
+      if (!e.shiftKey) {
+        setSelectedRecipients(new Set());
+      }
+    }
+  };
+
+  const handleSelectionMouseMove = (e: React.MouseEvent) => {
+    if (selectionArea.isSelecting && recipientsListRef.current) {
+      const { left, top } = recipientsListRef.current.getBoundingClientRect();
+      
+      setSelectionArea({
+        ...selectionArea,
+        endX: e.clientX - left,
+        endY: e.clientY - top
+      });
+      
+      // Get all recipient elements
+      const recipientElements = recipientsListRef.current.querySelectorAll('[data-recipient-id]');
+      
+      // Calculate the selection rectangle
+      const selRect = {
+        left: Math.min(selectionArea.startX, selectionArea.endX),
+        top: Math.min(selectionArea.startY, selectionArea.endY),
+        right: Math.max(selectionArea.startX, selectionArea.endX),
+        bottom: Math.max(selectionArea.startY, selectionArea.endY)
+      };
+      
+      // Check each recipient to see if it intersects with the selection
+      const newSelectedRecipients = new Set(e.shiftKey ? Array.from(selectedRecipients) : []);
+      
+      recipientElements.forEach((element) => {
+        const recipientId = element.getAttribute('data-recipient-id');
+        if (!recipientId) return;
+        
+        const rect = element.getBoundingClientRect();
+        const recipientRect = {
+          left: rect.left - left,
+          top: rect.top - top,
+          right: rect.right - left,
+          bottom: rect.bottom - top
+        };
+        
+        // Check if the rectangles intersect
+        if (
+          recipientRect.left < selRect.right &&
+          recipientRect.right > selRect.left &&
+          recipientRect.top < selRect.bottom &&
+          recipientRect.bottom > selRect.top
+        ) {
+          newSelectedRecipients.add(recipientId);
+        }
+      });
+      
+      setSelectedRecipients(newSelectedRecipients);
+    }
+  };
+
+  const handleSelectionMouseUp = () => {
+    setSelectionArea({
+      ...selectionArea,
+      isSelecting: false
+    });
+  };
 
   const handleRecipientHover = (id: string | null) => {
     setHoveredRecipientId(id);
@@ -168,6 +271,11 @@ const PayoutCalculator = () => {
             hoveredRecipientId={hoveredRecipientId || undefined}
             onRecipientHover={handleRecipientHover}
             clearRecipients={clearRecipients}
+            selectionArea={selectionArea}
+            recipientsListRef={recipientsListRef}
+            onSelectionMouseDown={handleSelectionMouseDown}
+            onSelectionMouseMove={handleSelectionMouseMove}
+            onSelectionMouseUp={handleSelectionMouseUp}
           />
         </div>
 
