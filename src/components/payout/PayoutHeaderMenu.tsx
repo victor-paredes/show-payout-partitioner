@@ -1,4 +1,3 @@
-
 import React, { useRef } from "react";
 import { 
   Menubar, 
@@ -76,9 +75,7 @@ const PayoutHeaderMenu: React.FC<PayoutHeaderMenuProps> = ({
 
         const { importedData, importedTotalPayout } = await importFromCsv(csvContent);
         
-        // Process the imported data to ensure it matches the Recipient interface
         const processedData: Recipient[] = importedData.map(item => {
-          // Determine the type and isFixedAmount properties
           const type = item.type as RecipientType || "shares";
           const isFixedAmount = type === "$";
           
@@ -115,18 +112,15 @@ const PayoutHeaderMenu: React.FC<PayoutHeaderMenuProps> = ({
     };
     
     reader.readAsText(file);
-    // Reset the file input so the same file can be selected again
     e.target.value = '';
   };
 
   const handleImport = () => {
     if (pendingImportData) {
-      // Store the total payout in localStorage if available
       if (pendingTotalPayout !== null) {
         localStorage.setItem('importedTotalPayout', pendingTotalPayout.toString());
       }
       
-      // Always replace existing data with imported data
       onImport(pendingImportData, true);
       setIsImportWarningOpen(false);
       setPendingImportData(null);
@@ -169,7 +163,6 @@ const PayoutHeaderMenu: React.FC<PayoutHeaderMenuProps> = ({
         </MenubarMenu>
       </Menubar>
 
-      {/* Hidden file input for import */}
       <input 
         type="file" 
         ref={fileInputRef} 
@@ -178,7 +171,6 @@ const PayoutHeaderMenu: React.FC<PayoutHeaderMenuProps> = ({
         style={{ display: 'none' }} 
       />
 
-      {/* Import warning dialog */}
       <AlertDialog open={isImportWarningOpen} onOpenChange={setIsImportWarningOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>

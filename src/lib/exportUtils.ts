@@ -1,6 +1,6 @@
-
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
+import { getRecipientColor } from "./colorUtils";
 
 /**
  * Exports an HTML element to a PDF file and triggers download
@@ -87,7 +87,7 @@ export const exportToCsv = (
     const fileName = prompt("Enter a name for your CSV file", defaultFileName) || defaultFileName;
     
     // Create CSV header row
-    const headers = ['Name', 'Type', 'Value', 'Payout ($)', 'Percentage (%)'];
+    const headers = ['Name', 'Type', 'Value', 'Payout ($)', 'Percentage (%)', 'Color'];
     
     // Create CSV content
     let csvContent = headers.join(',') + '\n';
@@ -98,6 +98,7 @@ export const exportToCsv = (
       const percentage = totalPayout > 0 
         ? ((recipient.payout / totalPayout) * 100).toFixed(2) 
         : '0';
+      const color = getRecipientColor(recipient.id);
       
       // Format the row data and handle special characters
       const row = [
@@ -105,14 +106,15 @@ export const exportToCsv = (
         `"${type}"`,
         recipient.value.toString(),
         recipient.payout.toFixed(2),
-        percentage
+        percentage,
+        `"${color}"`
       ];
       
       csvContent += row.join(',') + '\n';
     });
     
     // Add total row
-    csvContent += `"Total",,,"${totalPayout.toFixed(2)}","100.00"\n`;
+    csvContent += `"Total",,,"${totalPayout.toFixed(2)}","100.00",\n`;
     
     // Add a special marker row with the total payout for import purposes
     csvContent += `"__TOTAL_PAYOUT__",,"${totalPayout.toFixed(2)}",,\n`;
@@ -146,7 +148,7 @@ export const exportToCsv = (
 export const importFromCsv = async (
   csvString: string
 ): Promise<{
-  importedData: Array<{id: string; name: string; value: number; type?: string; payout: number}>;
+  importedData: Array<{id: string; name: string; value: number; type?: string; payout: number; color?: string}>;
   importedTotalPayout?: number;
 }> => {
   try {
@@ -166,6 +168,7 @@ export const importFromCsv = async (
     const nameIndex = headers.findIndex(h => h.toLowerCase() === 'name');
     const typeIndex = headers.findIndex(h => h.toLowerCase() === 'type');
     const valueIndex = headers.findIndex(h => h.toLowerCase() === 'value');
+    const colorIndex = headers.findIndex(h => h.toLowerCase() === 'color');
     
     if (nameIndex === -1) {
       throw new Error("CSV must contain a 'Name' column");
@@ -184,6 +187,9 @@ export const importFromCsv = async (
       }
     }
     
+    // Generate a seed for new IDs to prevent color collisions with previously imported data
+    const idSeed = Math.random().toString(36).substr(2, 3);
+    
     // Process data rows (skip header, total and marker rows)
     const recipients = [];
     for (let i = 1; i < rows.length; i++) {
@@ -200,17 +206,32 @@ export const importFromCsv = async (
         const type = typeIndex !== -1 ? rowData[typeIndex] : 'shares';
         let value = valueIndex !== -1 && rowData[valueIndex] ? parseFloat(rowData[valueIndex]) : 1;
         
+        // Get color if available
+        const color = colorIndex !== -1 && rowData[colorIndex] ? rowData[colorIndex] : undefined;
+        
         // Validate value
         if (isNaN(value)) value = 1;
         
+        // Create the recipient with a deterministic ID based on the original color
+        // If color exists, we create an ID that will generate the same color
+        let id;
+        if (color) {
+          // Find an ID that would produce this color
+          id = generateIdForColor(color, idSeed + i);
+        } else {
+          // Generate a random ID
+          id = idSeed + Math.random().toString(36).substr(2, 6);
+        }
+        
         // Create the recipient
         recipients.push({
-          id: Math.random().toString(36).substr(2, 9), // Generate a random ID
+          id,
           name,
           value,
           type: type as ("shares" | "$" | "%"),
           payout: 0, // Payout will be calculated later
-          isFixedAmount: type === "$"
+          isFixedAmount: type === "$",
+          color
         });
       }
     }
@@ -221,6 +242,44 @@ export const importFromCsv = async (
     throw error;
   }
 };
+
+/**
+ * Generates an ID that, when used with getRecipientColor, will produce the desired color
+ * @param targetColor The color we want to generate
+ * @param seed A seed to make the generation more deterministic
+ * @returns An ID string that will produce the target color
+ */
+function generateIdForColor(targetColor: string, seed: string): string {
+  // Import the COLORS array from colorUtils
+  const { COLORS } = require('./colorUtils');
+  
+  // Find the index of the target color in the COLORS array
+  const colorIndex = COLORS.indexOf(targetColor);
+  
+  if (colorIndex === -1) {
+    // If the color isn't in our standard palette, just return a random ID
+    return seed + Math.random().toString(36).substr(2, 6);
+  }
+  
+  // Create a deterministic ID that will hash to the desired color index
+  // We'll use a simple approach of creating an ID with a charCode sum that,
+  // when modded by COLORS.length, equals colorIndex
+  let id = seed;
+  
+  // Calculate the current hash
+  let currentHash = Array.from(id).reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  let currentIndex = currentHash % COLORS.length;
+  
+  // Calculate how many to add to get to our target
+  let toAdd = (colorIndex - currentIndex + COLORS.length) % COLORS.length;
+  
+  // Add a character with the right charCode to get us to the target index
+  if (toAdd > 0) {
+    id += String.fromCharCode(toAdd);
+  }
+  
+  return id;
+}
 
 /**
  * Parse a CSV row handling quoted values
