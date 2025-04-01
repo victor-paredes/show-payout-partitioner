@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/format";
 import { PieChart, Pie, Cell, Legend, Tooltip } from "recharts";
@@ -37,6 +37,9 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
   recipients,
   remainingAmount,
 }) => {
+  // Track which segment is currently being hovered
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  
   const totalFixedAmount = totalPayout - remainingAmount;
   
   const calculatedTotal = recipients.reduce((total, r) => total + r.payout, 0);
@@ -64,14 +67,19 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
       };
     });
 
-  // Custom renderer for the legend with percentages
+  // Custom renderer for the legend with percentages and hover effect
   const renderCustomizedLegend = (props: any) => {
     const { payload } = props;
     
     return (
       <div className="flex flex-wrap justify-center gap-4 text-sm mt-2">
         {payload.map((entry: any, index: number) => (
-          <div key={`legend-${index}`} className="flex items-center">
+          <div 
+            key={`legend-${index}`} 
+            className="flex items-center cursor-pointer"
+            onMouseEnter={() => setHoveredIndex(index)}
+            onMouseLeave={() => setHoveredIndex(null)}
+          >
             <div 
               className="h-3 w-3 mr-2 rounded-sm" 
               style={{ backgroundColor: entry.color }}
@@ -131,7 +139,10 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
                     isAnimationActive={false}
                   >
                     {chartData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      <Cell 
+                        key={`cell-${index}`} 
+                        fill={hoveredIndex === index ? "#000000e6" : COLORS[index % COLORS.length]} 
+                      />
                     ))}
                   </Pie>
                   <Legend content={renderCustomizedLegend} />
