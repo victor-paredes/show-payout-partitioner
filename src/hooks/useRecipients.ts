@@ -1,0 +1,120 @@
+import { useState, useEffect } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { DragEndEvent } from "@dnd-kit/core";
+import { arrayMove } from "@dnd-kit/sortable";
+
+export interface Recipient {
+  id: string;
+  name: string;
+  isFixedAmount: boolean;
+  value: number;
+  payout: number;
+}
+
+export function useRecipients() {
+  const { toast } = useToast();
+  const [recipients, setRecipients] = useState<Recipient[]>([
+    { id: "1", name: "Recipient 1", isFixedAmount: false, value: 1, payout: 0 },
+  ]);
+  const [selectedRecipients, setSelectedRecipients] = useState<Set<string>>(new Set());
+  const [recipientCount, setRecipientCount] = useState<string>("1");
+
+  const addRecipients = () => {
+    const currentRecipientCount = recipients.length;
+    const count = parseInt(recipientCount);
+    
+    const newRecipients = Array.from({ length: count }, (_, index) => {
+      const newId = (Math.max(0, ...recipients.map(r => parseInt(r.id))) + index + 1).toString();
+      const defaultName = `Recipient ${currentRecipientCount + index + 1}`;
+      
+      return { 
+        id: newId, 
+        name: defaultName, 
+        isFixedAmount: false, 
+        value: 1, 
+        payout: 0
+      };
+    });
+    
+    setRecipients([
+      ...recipients,
+      ...newRecipients,
+    ]);
+  };
+
+  const removeRecipient = (id: string) => {
+    if (recipients.length === 1) {
+      toast({
+        title: "Cannot remove",
+        description: "You need at least one recipient",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Remove from selections if selected
+    if (selectedRecipients.has(id)) {
+      const newSelectedRecipients = new Set(selectedRecipients);
+      newSelectedRecipients.delete(id);
+      setSelectedRecipients(newSelectedRecipients);
+    }
+    
+    setRecipients(recipients.filter(recipient => recipient.id !== id));
+  };
+
+  const toggleSelectRecipient = (id: string) => {
+    const newSelectedRecipients = new Set(selectedRecipients);
+    if (newSelectedRecipients.has(id)) {
+      newSelectedRecipients.delete(id);
+    } else {
+      newSelectedRecipients.add(id);
+    }
+    setSelectedRecipients(newSelectedRecipients);
+  };
+
+  const updateRecipient = (id: string, updates: Partial<Recipient>) => {
+    // If the recipient is selected, apply the same update to all selected recipients
+    if (selectedRecipients.has(id) && selectedRecipients.size > 1) {
+      const updatedRecipients = recipients.map(recipient => {
+        if (selectedRecipients.has(recipient.id)) {
+          return { ...recipient, ...updates };
+        }
+        return recipient;
+      });
+      setRecipients(updatedRecipients);
+    } else {
+      // Otherwise, just update this one recipient
+      setRecipients(
+        recipients.map(recipient => 
+          recipient.id === id ? { ...recipient, ...updates } : recipient
+        )
+      );
+    }
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    
+    if (over && active.id !== over.id) {
+      setRecipients((items) => {
+        const oldIndex = items.findIndex(item => item.id === active.id);
+        const newIndex = items.findIndex(item => item.id === over.id);
+        
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
+  };
+
+  return {
+    recipients,
+    setRecipients,
+    selectedRecipients,
+    recipientCount,
+    setRecipientCount,
+    addRecipients,
+    removeRecipient,
+    toggleSelectRecipient,
+    updateRecipient,
+    handleDragEnd,
+  };
+}
