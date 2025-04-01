@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect, CSSProperties } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -75,20 +76,23 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
     } 
   });
 
-  const rowHeight = 72;
+  // Create a consistent height style
+  const rowHeight = 72; // Match this height with the calculation in Group/UngroupedSection
 
+  // Fix the TypeScript error by specifying the position as a proper Position type
   const style: CSSProperties = {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
-    zIndex: isDragging ? 10 : 0,
-    height: `${rowHeight}px`,
+    zIndex: isDragging ? 10 : 0, // Higher z-index when dragging
+    height: `${rowHeight}px`, // Fixed height for consistency
   };
-
+  
+  // Add position property only when dragging
   if (isDragging) {
-    style.position = 'relative';
+    style.position = 'relative'; // This is now typed correctly
   }
-
+  
   useEffect(() => {
     if (nameRef.current) {
       const newWidth = Math.max(150, nameRef.current.scrollWidth + 20);
@@ -124,6 +128,8 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
     (recipient.isFixedAmount ? "$" : "shares");
     
   const handleRowClick = (e: React.MouseEvent) => {
+    // Don't check isDraggingInput anymore - this prevents double-click issues
+    // Just check if the click happened on an interactive element
     const target = e.target as HTMLElement;
     const isInteractiveElement = 
       target.tagName === 'INPUT' || 
@@ -137,28 +143,29 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
     }
   };
 
+  // Use custom color if available, otherwise use the generated color
   const recipientColor = recipient.color || getRecipientColor(recipient.id);
 
+  // Calculate tab indexes based on tabbing direction
   let nameTabIndex: number;
   let typeTabIndex: number;
   let valueTabIndex: number;
 
   if (columnWiseTabbing && totalRows && totalRows > 0) {
+    // For column-wise tabbing, we go down columns: all names first, then all types, then all values
     nameTabIndex = 1 + rowIndex;
     typeTabIndex = 1 + totalRows + rowIndex;
     valueTabIndex = 1 + (2 * totalRows) + rowIndex;
   } else {
+    // For row-wise tabbing (default), we go across each row before moving to the next
     nameTabIndex = 1 + (rowIndex * 3);
     typeTabIndex = 2 + (rowIndex * 3);
     valueTabIndex = 3 + (rowIndex * 3);
   }
 
-  const borderClass = onRecipientHover 
-    ? "border-black" 
-    : isSelected 
-      ? "border-blue-800" 
-      : "border-gray-200 hover:border-black";
+  const selectedClass = isSelected ? "bg-blue-50 border-blue-300" : "";
 
+  // Disable inputs when dragging
   const disabledClass = isDragging ? "pointer-events-none" : "";
 
   return (
@@ -168,9 +175,11 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
         style={style}
         className={`flex items-center justify-between bg-white rounded-md shadow-sm p-4 gap-4 cursor-pointer transition-colors border ${
           isSelected 
-            ? "bg-blue-50 border-blue-300 hover:bg-blue-50" 
-            : "border-gray-200"
-        } ${borderClass} ${
+            ? "bg-blue-50 border-blue-300 hover:bg-blue-50 hover:border-blue-500" 
+            : "border-gray-200 hover:border-black"
+        } ${
+          isHighlighted ? "border-black" : ""
+        } ${
           isDragging ? "cursor-grabbing" : ""
         }`}
         onClick={handleRowClick}
@@ -224,9 +233,10 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
               placeholder="Enter Name"
               disabled={isDragging}
               onClick={(e) => {
+                // Select all text in the input when clicked
                 const target = e.target as HTMLInputElement;
                 target.select();
-                e.stopPropagation();
+                e.stopPropagation(); // Prevent row selection
               }}
               style={{ width: `${nameWidth}px` }}
             />
@@ -252,9 +262,10 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
             }
             disabled={isDragging}
             onClick={(e) => {
+              // Select all text in the input when clicked
               const target = e.target as HTMLInputElement;
               target.select();
-              e.stopPropagation();
+              e.stopPropagation(); // Prevent row selection
             }}
           />
           

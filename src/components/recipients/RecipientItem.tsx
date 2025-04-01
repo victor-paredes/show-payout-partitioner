@@ -2,7 +2,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Trash2, GripVertical } from "lucide-react";
+import { Trash2, GripVertical, Palette } from "lucide-react";
+import { formatCurrency } from "@/lib/format";
 import { getRecipientColor } from "@/lib/colorUtils";
 import ColorPickerModal from "../ColorPickerModal";
 import {
@@ -24,7 +25,6 @@ interface RecipientItemProps {
   valuePerShare: number;
   onDragStart: () => void;
   isDragging: boolean;
-  onHover?: (id: string | null) => void;
 }
 
 const RecipientItem: React.FC<RecipientItemProps> = ({
@@ -36,8 +36,7 @@ const RecipientItem: React.FC<RecipientItemProps> = ({
   isHighlighted,
   valuePerShare,
   onDragStart,
-  isDragging,
-  onHover
+  isDragging
 }) => {
   const [nameWidth, setNameWidth] = useState(150);
   const nameRef = useRef<HTMLSpanElement>(null);
@@ -51,11 +50,7 @@ const RecipientItem: React.FC<RecipientItemProps> = ({
   }, [recipient.name]);
 
   const handleTypeChange = (value: string) => {
-    const newType = value as RecipientType;
-    onUpdate({ 
-      type: newType,
-      isFixedAmount: newType === "$"
-    });
+    onUpdate({ type: value as RecipientType });
   };
 
   const handleClick = (e: React.MouseEvent) => {
@@ -72,25 +67,8 @@ const RecipientItem: React.FC<RecipientItemProps> = ({
     }
   };
 
-  const handleMouseEnter = () => {
-    if (onHover) {
-      onHover(recipient.id);
-    }
-  };
-
-  const handleMouseLeave = () => {
-    if (onHover) {
-      onHover(null);
-    }
-  };
-
+  // Use custom color if available, otherwise use the generated color
   const recipientColor = recipient.color || getRecipientColor(recipient.id);
-
-  const borderClass = onHover 
-    ? "border-black" 
-    : isSelected 
-      ? "border-blue-800" 
-      : "border-gray-200 hover:border-black";
 
   return (
     <>
@@ -99,14 +77,14 @@ const RecipientItem: React.FC<RecipientItemProps> = ({
         onDragStart={onDragStart}
         className={`flex items-center justify-between bg-white rounded-md shadow-sm p-4 gap-4 cursor-pointer transition-colors border ${
           isSelected 
-            ? "bg-blue-50 border-blue-300 hover:bg-blue-50" 
-            : "border-gray-200"
-        } ${borderClass} ${
+            ? "bg-blue-50 border-blue-300 hover:bg-blue-50 hover:border-blue-500" 
+            : "border-gray-200 hover:border-black"
+        } ${
+          isHighlighted ? "border-black" : ""
+        } ${
           isDragging ? "opacity-50" : ""
         }`}
         onClick={handleClick}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
       >
         <div className="flex items-center">
           <Button

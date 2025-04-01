@@ -1,19 +1,18 @@
 
-import React, { useState } from "react";
-import { useSortable } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import { Recipient, Group } from "@/hooks/useRecipientsManager";
-import RecipientItem from "../recipients/RecipientItem";
+import React from "react";
 import { Button } from "@/components/ui/button";
-import { Trash2, Plus, ChevronDown, ChevronRight, Edit } from "lucide-react";
-import { formatCurrency } from "@/lib/format";
-import { Input } from "@/components/ui/input";
+import { Plus, Trash2 } from "lucide-react";
+import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { useDroppable } from "@dnd-kit/core";
+import RecipientRow from "../RecipientRow";
+import { Recipient, Group } from "@/hooks/useRecipients";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface GroupSectionProps {
   group: Group;
   recipients: Recipient[];
-  addRecipients: (groupId?: string) => void;
   removeGroup: (id: string) => void;
+  addRecipients: (groupId: string) => void;
   updateRecipient: (id: string, updates: Partial<Recipient>) => void;
   removeRecipient: (id: string) => void;
   selectedRecipients: Set<string>;
@@ -29,8 +28,8 @@ interface GroupSectionProps {
 const GroupSection: React.FC<GroupSectionProps> = ({
   group,
   recipients,
-  addRecipients,
   removeGroup,
+  addRecipients,
   updateRecipient,
   removeRecipient,
   selectedRecipients,
@@ -40,170 +39,135 @@ const GroupSection: React.FC<GroupSectionProps> = ({
   onRecipientHover,
   columnWiseTabbing,
   activeDroppableId,
-  dragSourceId,
+  dragSourceId
 }) => {
-  const [isEditing, setIsEditing] = useState(false);
-  const [groupName, setGroupName] = useState(group.name);
-
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transition,
-    transform,
-    isDragging,
-  } = useSortable({
-    id: group.id,
-    data: {
-      type: "droppable",
-      accepts: ["recipient"],
-    }
+  const { setNodeRef, isOver } = useDroppable({
+    id: group.id
   });
 
-  const style = {
-    transition,
-    transform: CSS.Transform.toString(transform),
+  const getTooltipType = () => {
+    if (!dragSourceId || activeDroppableId !== group.id) return null;
+    
+    if (dragSourceId === 'ungrouped') {
+      return 'add';
+    } 
+    else if (dragSourceId !== group.id) {
+      return 'move';
+    }
+    
+    return null;
   };
 
-  const isHighlighted = activeDroppableId === group.id && dragSourceId !== group.id;
+  const tooltipType = getTooltipType();
+  const shouldShowTooltip = tooltipType !== null;
 
-  // Calculate group total amount
-  const groupTotal = recipients.reduce((sum, r) => sum + r.payout, 0);
+  // Ensure we always have a valid array of sortable items, even if empty
+  const sortableItems = recipients.map(r => r.id);
 
-  // Handle group name editing
-  const handleEditClick = () => {
-    setIsEditing(true);
-    setGroupName(group.name);
-  };
-
-  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setGroupName(e.target.value);
-  };
-
-  const handleNameSave = () => {
-    // Here you would update the group name in your state
-    console.log(`Updating group ${group.id} name to: ${groupName}`);
-    // You would need to add a call to a function to update the group
-    setIsEditing(false);
-  };
-
-  const handleNameCancel = () => {
-    setGroupName(group.name);
-    setIsEditing(false);
+  const calculateMinHeight = () => {
+    const baseRowHeight = 72;
+    const minRows = 1;
+    const minHeight = Math.max(recipients.length, minRows) * baseRowHeight;
+    return `${minHeight}px`;
   };
 
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      {...attributes}
-      {...listeners}
-      className={`border rounded-lg mb-4 space-y-2 transition-colors ${
-        isHighlighted ? "bg-gray-100 ring-2 ring-blue-500 ring-inset" : "bg-white"
-      }`}
-    >
-      <div className="p-3 flex items-center justify-between bg-gray-50 rounded-t-lg border-b">
-        <div className="flex items-center flex-grow">
-          {isEditing ? (
-            <div className="flex items-center gap-2 flex-grow">
-              <Input 
-                value={groupName}
-                onChange={handleNameChange}
-                className="h-8 py-1"
-                autoFocus
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleNameSave();
-                  if (e.key === 'Escape') handleNameCancel();
-                }}
-              />
-              <Button
-                onClick={handleNameSave}
-                variant="ghost"
-                size="sm"
-                className="h-8 px-2"
-              >
-                Save
-              </Button>
-              <Button
-                onClick={handleNameCancel}
-                variant="ghost"
-                size="sm"
-                className="h-8 px-2"
-              >
-                Cancel
-              </Button>
-            </div>
-          ) : (
-            <>
-              <h3 className="font-medium">{group.name}</h3>
-              <div className="text-xs text-gray-500 ml-2">
-                {recipients.length} {recipients.length === 1 ? 'recipient' : 'recipients'}
-              </div>
-              {groupTotal > 0 && (
-                <div className="text-xs text-blue-500 ml-2">
-                  {formatCurrency(groupTotal)}
+    <div className="mb-6">
+      <h3 className="text-sm font-medium mb-2 text-gray-600 flex items-center justify-between">
+        <div className="flex items-center">
+          <div 
+            className="h-2 w-2 rounded-full mr-2"
+            style={{ backgroundColor: group.color }}
+          ></div>
+          {group.name}
+          <span className="text-xs ml-2 text-gray-500">
+            ({recipients.length} recipient{recipients.length !== 1 ? 's' : ''})
+          </span>
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-6 w-6 p-0 hover:text-red-500"
+          onClick={() => removeGroup(group.id)}
+        >
+          <Trash2 className="h-3 w-3" />
+        </Button>
+      </h3>
+      
+      <TooltipProvider>
+        <Tooltip open={shouldShowTooltip}>
+          <TooltipTrigger asChild>
+            <div 
+              ref={setNodeRef}
+              className="space-y-2 p-2 rounded-md border-2 border-dashed border-gray-200 transition-all hover:border-gray-300"
+              style={{ 
+                borderColor: group.color + '40',
+                background: isOver ? group.color + '20' : 
+                            activeDroppableId === group.id ? group.color + '10' : 'transparent',
+                minHeight: calculateMinHeight(),
+                transition: "all 0.15s ease-in-out"
+              }}
+              data-droppable-id={group.id}
+            >
+              {recipients.length > 0 ? (
+                <SortableContext 
+                  items={sortableItems}
+                  strategy={verticalListSortingStrategy}
+                >
+                  {recipients.map((recipient, rowIndex) => (
+                    <RecipientRow
+                      key={recipient.id}
+                      recipient={recipient}
+                      onUpdate={(updates) => updateRecipient(recipient.id, updates)}
+                      onRemove={() => removeRecipient(recipient.id)}
+                      valuePerShare={valuePerShare}
+                      isSelected={selectedRecipients.has(recipient.id)}
+                      onToggleSelect={() => toggleSelectRecipient(recipient.id)}
+                      isHighlighted={hoveredRecipientId === recipient.id}
+                      onRecipientHover={onRecipientHover}
+                      columnWiseTabbing={columnWiseTabbing}
+                      rowIndex={rowIndex}
+                      totalRows={recipients.length}
+                    />
+                  ))}
+                </SortableContext>
+              ) : (
+                <div className="flex items-center justify-center h-[72px] rounded-md border border-dashed border-gray-300 bg-gray-50 text-gray-400 text-sm">
+                  Drop a recipient here
                 </div>
               )}
-            </>
-          )}
-        </div>
-
-        <div className="flex items-center space-x-2">
-          {!isEditing && (
-            <>
+              
               <Button
-                onClick={handleEditClick}
                 variant="ghost"
                 size="sm"
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <Edit className="h-4 w-4" />
-              </Button>
-              <Button
+                className="w-full text-xs h-6 justify-start"
                 onClick={() => addRecipients(group.id)}
-                variant="ghost"
-                size="sm"
-                className="text-gray-500 hover:text-gray-700"
               >
-                <Plus className="h-4 w-4 mr-1" />
-                Add
+                <Plus className="h-3 w-3 mr-1" />
+                Add Recipients
               </Button>
-              <Button
-                onClick={() => removeGroup(group.id)}
-                variant="ghost"
-                size="sm"
-                className="text-gray-500 hover:text-red-500"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </>
+            </div>
+          </TooltipTrigger>
+          {shouldShowTooltip && (
+            <TooltipContent 
+              side="top" 
+              className={
+                tooltipType === 'add' 
+                  ? "bg-green-50 border-green-200 text-green-600" 
+                  : "bg-blue-50 border-blue-200 text-blue-600"
+              }
+              sideOffset={5}
+              avoidCollisions={false}
+              sticky="always"
+              hideWhenDetached={false}
+            >
+              <span className="text-sm font-medium">
+                {tooltipType === 'add' ? '+ Add to Group' : '+ Move to Group'}
+              </span>
+            </TooltipContent>
           )}
-        </div>
-      </div>
-
-      <div className="p-3 space-y-2">
-        {recipients.length === 0 ? (
-          <div className="text-center py-6 text-gray-500 italic">
-            Drop recipients here or click "Add"
-          </div>
-        ) : (
-          recipients.map((recipient, index) => (
-            <RecipientItem
-              key={recipient.id}
-              recipient={recipient}
-              onUpdate={(updates) => updateRecipient(recipient.id, updates)}
-              onRemove={() => removeRecipient(recipient.id)}
-              isSelected={selectedRecipients.has(recipient.id)}
-              onSelect={() => toggleSelectRecipient(recipient.id)}
-              isHighlighted={hoveredRecipientId === recipient.id}
-              valuePerShare={valuePerShare}
-              onDragStart={() => {}}
-              isDragging={false}
-              onHover={onRecipientHover}
-            />
-          ))
-        )}
-      </div>
+        </Tooltip>
+      </TooltipProvider>
     </div>
   );
 };

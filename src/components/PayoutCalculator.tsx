@@ -3,11 +3,10 @@ import { useEffect, useState } from "react";
 import TotalPayoutInput from "./payout/TotalPayoutInput";
 import PayoutSummary from "./PayoutSummary";
 import PayoutHeaderMenu from "./payout/PayoutHeaderMenu";
-import { useRecipientsManager, Recipient as ManagerRecipient, Group } from "@/hooks/useRecipientsManager";
+import { useRecipientsManager, Recipient, Group } from "@/hooks/useRecipientsManager";
 import { usePayoutCalculation } from "@/hooks/usePayoutCalculation";
 import { useToast } from "@/hooks/use-toast";
 import RecipientsList from "./recipients/RecipientsList";
-import { Recipient as RecipientType } from "@/hooks/useRecipients";
 
 const PayoutCalculator = () => {
   const { toast } = useToast();
@@ -37,14 +36,13 @@ const PayoutCalculator = () => {
     handleDragEnd
   } = useRecipientsManager();
 
-  // Create a type-safe wrapper for the payoutCalculation hook
   const {
     totalPayout,
     setTotalPayout,
     remainingAmount,
     totalShares,
     valuePerShare
-  } = usePayoutCalculation(recipients as unknown as RecipientType[]);
+  } = usePayoutCalculation(recipients);
   
   const groupedRecipients = getGroupedRecipients();
   const groupTotals = getGroupTotals();
@@ -70,13 +68,6 @@ const PayoutCalculator = () => {
   useEffect(() => {
     if (totalPayout <= 0) {
       setRecipients(recipients.map(r => ({ ...r, payout: 0 })));
-      return;
-    }
-
-    // If there are no recipients, all amount is surplus
-    if (recipients.length === 0) {
-      // We should NOT try to set these values directly as they're calculated in the hook
-      // Just return early as the hook will handle this case
       return;
     }
 
@@ -108,19 +99,12 @@ const PayoutCalculator = () => {
   };
 
   // Handle importing recipients
-  const handleImport = (newRecipients: any[], replace: boolean, newGroups?: any[]) => {
-    // Convert incoming recipients to our internal type with proper isFixedAmount
-    const convertedRecipients: ManagerRecipient[] = newRecipients.map(r => ({
-      ...r,
-      isFixedAmount: r.type === "$" || r.isFixedAmount === true,
-      type: r.type || (r.isFixedAmount ? "$" : "shares")
-    }));
-    
+  const handleImport = (newRecipients: Recipient[], replace: boolean, newGroups?: Group[]) => {
     if (replace) {
-      setRecipients(convertedRecipients);
+      setRecipients(newRecipients);
       
       if (newGroups && newGroups.length > 0) {
-        setGroups(newGroups as Group[]);
+        setGroups(newGroups);
       } else {
         setGroups([]);
       }
@@ -134,7 +118,7 @@ const PayoutCalculator = () => {
         localStorage.removeItem('importedTotalPayout');
       }
     } else {
-      setRecipients([...recipients, ...convertedRecipients]);
+      setRecipients([...recipients, ...newRecipients]);
     }
   };
 
@@ -142,7 +126,7 @@ const PayoutCalculator = () => {
     <div className="space-y-2">
       <PayoutHeaderMenu 
         totalPayout={totalPayout} 
-        recipients={recipients as unknown as RecipientType[]}
+        recipients={recipients}
         groups={groups}
         onImport={handleImport}
       />
@@ -176,14 +160,13 @@ const PayoutCalculator = () => {
             handleDragStart={handleDragStart}
             handleDragEnd={handleDragEnd}
             groupedRecipients={groupedRecipients}
-            onRecipientHover={handleRecipientHover}
           />
         </div>
 
         <div className="md:sticky md:top-4 h-fit">
           <PayoutSummary
             totalPayout={totalPayout}
-            recipients={recipients as unknown as RecipientType[]}
+            recipients={recipients}
             remainingAmount={remainingAmount}
             hoveredRecipientId={hoveredRecipientId || undefined}
             onRecipientHover={handleRecipientHover}
