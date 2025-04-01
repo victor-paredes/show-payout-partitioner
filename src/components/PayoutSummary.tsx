@@ -1,3 +1,4 @@
+
 import React, { useRef, useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/format";
@@ -24,7 +25,8 @@ interface PayoutSummaryProps {
   onRecipientHover?: (id: string | null) => void;
 }
 
-const SURPLUS_COLOR = "#E5E7EB";
+// Updated surplus color to match the light green in the surplus tag background
+const SURPLUS_COLOR = "#ecfdf5"; // Light green matching bg-green-100
 const OVERDRAW_COLOR = "#EF4444";
 
 const PayoutSummary: React.FC<PayoutSummaryProps> = ({
