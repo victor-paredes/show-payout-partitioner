@@ -57,7 +57,8 @@ const UngroupedSection: React.FC<UngroupedSectionProps> = ({
         ref={setNodeRef}
         className="space-y-2 p-2 rounded-md border-2 border-dashed border-gray-200 transition-all hover:border-gray-300"
         style={{ 
-          background: activeDroppableId === 'ungrouped' ? 'rgba(0, 0, 0, 0.03)' : 'transparent'
+          background: activeDroppableId === 'ungrouped' ? 'rgba(0, 0, 0, 0.03)' : 'transparent',
+          minHeight: recipients.length === 0 ? '72px' : 'auto' // Ensure minimum height when empty
         }}
       >
         <SortableContext 

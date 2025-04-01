@@ -98,7 +98,8 @@ const GroupSection: React.FC<GroupSectionProps> = ({
         className="space-y-2 p-2 rounded-md border-2 border-dashed border-gray-200 transition-all hover:border-gray-300"
         style={{ 
           borderColor: group.color + '40', // Add 40 for transparency
-          background: activeDroppableId === group.id ? group.color + '10' : 'transparent'
+          background: activeDroppableId === group.id ? group.color + '10' : 'transparent',
+          minHeight: recipients.length === 0 ? '72px' : 'auto' // Ensure minimum height when empty
         }}
       >
         <SortableContext 
