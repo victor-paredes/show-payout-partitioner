@@ -87,7 +87,12 @@ const RecipientsList = ({
   const [dragSourceId, setDragSourceId] = useState<string | null>(null);
   
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+      // Adding activation constraints to make it easier to drop on empty areas
+      activationConstraint: {
+        distance: 5, // Minimum drag distance in pixels before activation
+      }
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })

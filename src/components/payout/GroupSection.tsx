@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2 } from "lucide-react";
@@ -45,15 +44,12 @@ const GroupSection: React.FC<GroupSectionProps> = ({
     id: group.id
   });
 
-  // Determine the tooltip message based on drag source and drop target
   const getTooltipType = () => {
     if (!dragSourceId || activeDroppableId !== group.id) return null;
     
-    // Add to Group: Show when dragging from ungrouped to this group
     if (dragSourceId === 'ungrouped') {
       return 'add';
     } 
-    // Moving between groups: Show when dragging from a different group to this group
     else if (dragSourceId !== group.id) {
       return 'move';
     }
@@ -64,13 +60,9 @@ const GroupSection: React.FC<GroupSectionProps> = ({
   const tooltipType = getTooltipType();
   const shouldShowTooltip = tooltipType !== null;
 
-  // Calculate an appropriate min-height based on the number of recipients
   const calculateMinHeight = () => {
-    // Base height for each recipient row + padding
-    const baseRowHeight = 72; // Height of one row in pixels
-    const minRows = 1; // Minimum number of rows to display
-    
-    // Set min-height to accommodate at least minRows or the current number of recipients
+    const baseRowHeight = 72;
+    const minRows = 1;
     const minHeight = Math.max(recipients.length, minRows) * baseRowHeight;
     return `${minHeight}px`;
   };
@@ -105,7 +97,7 @@ const GroupSection: React.FC<GroupSectionProps> = ({
               ref={setNodeRef}
               className="space-y-2 p-2 rounded-md border-2 border-dashed border-gray-200 transition-all hover:border-gray-300"
               style={{ 
-                borderColor: group.color + '40', // Add 40 for transparency
+                borderColor: group.color + '40',
                 background: activeDroppableId === group.id ? group.color + '10' : 'transparent',
                 minHeight: calculateMinHeight(),
                 transition: "min-height 0.15s ease-in-out, background-color 0.15s ease-in-out"
@@ -153,7 +145,6 @@ const GroupSection: React.FC<GroupSectionProps> = ({
                   : "bg-blue-50 border-blue-200 text-blue-600"
               }
               sideOffset={5}
-              // Make the tooltip follow cursor position
               avoidCollisions={false}
               sticky="always"
               hideWhenDetached={false}
