@@ -23,30 +23,37 @@ export const exportToPdf = async (element: HTMLElement, defaultFileName: string)
     // Get dimensions
     const imgData = canvas.toDataURL('image/png');
     
-    // Create PDF - use the correct aspect ratio to ensure content fits properly
-    const pdf = new jsPDF('p', 'mm', 'a4');
+    // Create PDF - use US Letter size (8.5x11 inches)
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'in',
+      format: 'letter' // 8.5x11 inches
+    });
+    
+    // Get PDF dimensions in inches
     const pdfWidth = pdf.internal.pageSize.getWidth();
     const pdfHeight = pdf.internal.pageSize.getHeight();
     
     // Calculate the ratio to fit content within the PDF page
     // Use margins to ensure content isn't right at the edge
-    const margin = 10; // 10mm margin
+    const margin = 0.75; // 0.75 inch margins
     const maxWidth = pdfWidth - (margin * 2);
     const maxHeight = pdfHeight - (margin * 2);
     
     // Calculate aspect ratio to maintain proportions
     const aspectRatio = canvas.width / canvas.height;
     
-    // Determine dimensions that maintain aspect ratio and fit within margins
+    // Determine dimensions that maintain aspect ratio but make the content
+    // take up less space on the page (about 70% of available space)
     let imgWidth, imgHeight;
     
     if (aspectRatio > maxWidth / maxHeight) {
       // Width is the limiting factor
-      imgWidth = maxWidth;
+      imgWidth = maxWidth * 0.7; // Use 70% of available width
       imgHeight = imgWidth / aspectRatio;
     } else {
       // Height is the limiting factor
-      imgHeight = maxHeight;
+      imgHeight = maxHeight * 0.7; // Use 70% of available height
       imgWidth = imgHeight * aspectRatio;
     }
     
