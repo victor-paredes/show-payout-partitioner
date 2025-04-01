@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { Recipient, Group } from "@/hooks/useRecipientsManager";
-import RecipientItem from "./RecipientItem";
+
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Trash2, Edit2, Check, X } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { Plus, Trash2 } from "lucide-react";
+import RecipientItem from "./RecipientItem";
+import { Group, Recipient } from "@/hooks/useRecipientsManager";
 
 interface GroupContainerProps {
   group: Group;
@@ -12,7 +12,7 @@ interface GroupContainerProps {
   valuePerShare: number;
   hoveredRecipientId?: string;
   onRemoveGroup: (id: string) => void;
-  onAddRecipients: (groupId?: string) => void;
+  onAddRecipients: (groupId: string) => void;
   onUpdateRecipient: (id: string, updates: Partial<Recipient>) => void;
   onRemoveRecipient: (id: string) => void;
   onToggleSelectRecipient: (id: string) => void;
@@ -21,7 +21,6 @@ interface GroupContainerProps {
   onDrop: (e: React.DragEvent) => void;
   draggedRecipientId: string | null;
   onHover?: (id: string | null) => void;
-  onUpdateGroup?: (id: string, updates: Partial<Group>) => void;
 }
 
 const GroupContainer: React.FC<GroupContainerProps> = ({
@@ -39,102 +38,62 @@ const GroupContainer: React.FC<GroupContainerProps> = ({
   onDragOver,
   onDrop,
   draggedRecipientId,
-  onHover,
-  onUpdateGroup
+  onHover
 }) => {
-  const [isEditing, setIsEditing] = useState(false);
-  const [editedName, setEditedName] = useState(group.name);
+  const [isDragOver, setIsDragOver] = useState(false);
   
-  const handleEditStart = () => {
-    setIsEditing(true);
-    setEditedName(group.name);
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(true);
+    onDragOver(e);
   };
   
-  const handleEditSave = () => {
-    if (onUpdateGroup && editedName.trim() !== group.name) {
-      onUpdateGroup(group.id, { name: editedName.trim() });
-    }
-    setIsEditing(false);
+  const handleDragLeave = () => {
+    setIsDragOver(false);
   };
   
-  const handleEditCancel = () => {
-    setIsEditing(false);
-    setEditedName(group.name);
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    onDrop(e);
   };
 
+  // Calculate minimum height for the container
   const calculateMinHeight = () => {
-    return recipients.length === 0 ? '100px' : 'auto';
+    const baseRowHeight = 72; // Height of one row in pixels
+    const minRows = 1; // Minimum number of rows to display
+    const minHeight = Math.max(recipients.length, minRows) * baseRowHeight;
+    return `${minHeight}px`;
   };
 
   return (
     <div className="mb-6">
       <h3 className="text-sm font-medium mb-2 text-gray-600 flex items-center justify-between">
-        {isEditing ? (
-          <div className="flex items-center gap-1 flex-1">
-            <Input 
-              value={editedName}
-              onChange={(e) => setEditedName(e.target.value)}
-              className="h-7 py-1 text-sm"
-              autoFocus
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') handleEditSave();
-                if (e.key === 'Escape') handleEditCancel();
-              }}
-            />
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="h-7 w-7" 
-              onClick={handleEditSave}
-            >
-              <Check className="h-4 w-4 text-green-600" />
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="h-7 w-7" 
-              onClick={handleEditCancel}
-            >
-              <X className="h-4 w-4 text-red-600" />
-            </Button>
-          </div>
-        ) : (
-          <div className="flex items-center">
-            {group.name}
-            <span className="text-xs ml-2 text-gray-500">
-              ({recipients.length} recipient{recipients.length !== 1 ? 's' : ''})
-            </span>
-          </div>
-        )}
-        <div className="flex items-center gap-1">
-          {!isEditing && (
-            <>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="h-6 w-6" 
-                onClick={handleEditStart}
-              >
-                <Edit2 className="h-3 w-3 text-gray-500" />
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="h-6 w-6" 
-                onClick={() => onRemoveGroup(group.id)}
-              >
-                <Trash2 className="h-3 w-3 text-gray-500" />
-              </Button>
-            </>
-          )}
+        <div className="flex items-center">
+          <div 
+            className="h-2 w-2 rounded-full mr-2"
+            style={{ backgroundColor: group.color }}
+          ></div>
+          {group.name}
+          <span className="text-xs ml-2 text-gray-500">
+            ({recipients.length} recipient{recipients.length !== 1 ? 's' : ''})
+          </span>
         </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-6 w-6 p-0 hover:text-red-500"
+          onClick={() => onRemoveGroup(group.id)}
+        >
+          <Trash2 className="h-3 w-3" />
+        </Button>
       </h3>
       
       <div 
         className="space-y-2 p-2 rounded-md border-2 border-dashed transition-all"
         style={{ 
-          borderColor: isDragOver ? '#3b82f6' : '#e5e7eb',
-          background: isDragOver ? '#eff6ff' : 'transparent',
+          borderColor: isDragOver ? group.color : group.color + '40',
+          background: isDragOver ? group.color + '20' : 'transparent',
           minHeight: calculateMinHeight(),
           transition: "all 0.15s ease-in-out"
         }}
@@ -143,37 +102,37 @@ const GroupContainer: React.FC<GroupContainerProps> = ({
         onDrop={handleDrop}
         data-group-id={group.id}
       >
-        {recipients.length === 0 ? (
-          <div className="h-full flex items-center justify-center">
-            <div className="text-sm text-gray-400 text-center py-6">
-              <p>Drop recipients here</p>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onAddRecipients(group.id)}
-                className="mt-2"
-              >
-                Add Recipient
-              </Button>
-            </div>
-          </div>
-        ) : (
+        {recipients.length > 0 ? (
           recipients.map((recipient) => (
             <RecipientItem
               key={recipient.id}
               recipient={recipient}
               onUpdate={(updates) => onUpdateRecipient(recipient.id, updates)}
               onRemove={() => onRemoveRecipient(recipient.id)}
+              valuePerShare={valuePerShare}
               isSelected={selectedRecipients.has(recipient.id)}
               onSelect={() => onToggleSelectRecipient(recipient.id)}
               isHighlighted={hoveredRecipientId === recipient.id}
-              valuePerShare={valuePerShare}
               onDragStart={() => onDragStart(recipient.id, group.id)}
               isDragging={draggedRecipientId === recipient.id}
               onHover={onHover}
             />
           ))
+        ) : (
+          <div className="flex items-center justify-center h-[72px] rounded-md border border-dashed border-gray-300 bg-gray-50 text-gray-400 text-sm">
+            Drop a recipient here
+          </div>
         )}
+        
+        <Button
+          variant="ghost"
+          size="sm"
+          className="w-full text-xs h-6 justify-start"
+          onClick={() => onAddRecipients(group.id)}
+        >
+          <Plus className="h-3 w-3 mr-1" />
+          Add Recipients
+        </Button>
       </div>
     </div>
   );

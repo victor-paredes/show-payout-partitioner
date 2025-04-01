@@ -5,7 +5,18 @@ import { PieChart, Pie, Cell } from "recharts";
 import { ChartPie, X, ChevronRight, ChevronDown } from "lucide-react";
 import { RecipientType } from "@/components/RecipientRow";
 import { getRecipientColor, SURPLUS_COLOR, OVERDRAW_COLOR } from "@/lib/colorUtils";
-import { Group } from "@/hooks/useRecipientsManager";
+import { Group } from "@/hooks/useRecipients";
+
+interface Recipient {
+  id: string;
+  name: string;
+  isFixedAmount: boolean;
+  value: number;
+  payout: number;
+  type?: RecipientType;
+  color?: string;
+  groupId?: string;
+}
 
 interface GroupTotal {
   group: Group;
@@ -17,17 +28,6 @@ interface GroupTotal {
   percentCount: number;
   sharesCount: number;
   recipientCount: number;
-}
-
-interface Recipient {
-  id: string;
-  name: string;
-  isFixedAmount: boolean;
-  value: number;
-  payout: number;
-  type?: RecipientType;
-  color?: string;
-  groupId?: string;
 }
 
 interface PayoutSummaryProps {
