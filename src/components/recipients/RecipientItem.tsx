@@ -87,6 +87,13 @@ const RecipientItem: React.FC<RecipientItemProps> = ({
 
   const recipientColor = recipient.color || getRecipientColor(recipient.id);
 
+  // Determine the border class based on highlight state
+  const borderClass = isHighlighted 
+    ? "border-black" 
+    : isSelected 
+      ? "border-blue-300 hover:border-blue-500" 
+      : "border-gray-200 hover:border-black";
+
   return (
     <>
       <div 
@@ -94,11 +101,9 @@ const RecipientItem: React.FC<RecipientItemProps> = ({
         onDragStart={onDragStart}
         className={`flex items-center justify-between bg-white rounded-md shadow-sm p-4 gap-4 cursor-pointer transition-colors border ${
           isSelected 
-            ? "bg-blue-50 border-blue-300 hover:bg-blue-50 hover:border-blue-500" 
-            : "border-gray-200 hover:border-black"
-        } ${
-          isHighlighted ? "border-black" : ""
-        } ${
+            ? "bg-blue-50 border-blue-300 hover:bg-blue-50" 
+            : "border-gray-200"
+        } ${borderClass} ${
           isDragging ? "opacity-50" : ""
         }`}
         onClick={handleClick}

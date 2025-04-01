@@ -163,7 +163,12 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
     valueTabIndex = 3 + (rowIndex * 3);
   }
 
-  const selectedClass = isSelected ? "bg-blue-50 border-blue-300" : "";
+  // Determine the border class based on highlight state
+  const borderClass = isHighlighted 
+    ? "border-black" 
+    : isSelected 
+      ? "border-blue-300 hover:border-blue-500" 
+      : "border-gray-200 hover:border-black";
 
   // Disable inputs when dragging
   const disabledClass = isDragging ? "pointer-events-none" : "";
@@ -175,11 +180,9 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
         style={style}
         className={`flex items-center justify-between bg-white rounded-md shadow-sm p-4 gap-4 cursor-pointer transition-colors border ${
           isSelected 
-            ? "bg-blue-50 border-blue-300 hover:bg-blue-50 hover:border-blue-500" 
-            : "border-gray-200 hover:border-black"
-        } ${
-          isHighlighted ? "border-black" : ""
-        } ${
+            ? "bg-blue-50 border-blue-300 hover:bg-blue-50" 
+            : "border-gray-200"
+        } ${borderClass} ${
           isDragging ? "cursor-grabbing" : ""
         }`}
         onClick={handleRowClick}
