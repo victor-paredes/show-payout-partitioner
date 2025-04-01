@@ -27,6 +27,8 @@ interface Recipient {
   payout: number;
   type?: RecipientType;
   color?: string;
+  groupId?: string;
+  groupName?: string;
 }
 
 interface RecipientRowProps {
@@ -161,19 +163,25 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
     valueTabIndex = 3 + (rowIndex * 3);
   }
 
+  // Determine if recipient is part of a group
+  const isGrouped = Boolean(recipient.groupId);
+
   return (
     <>
       <div 
         ref={setNodeRef} 
         style={style}
-        className={`flex items-center justify-between bg-white rounded-md shadow-sm p-4 gap-4 cursor-pointer transition-colors border hover:border-black ${
+        className={`flex items-center justify-between ${
+          isGrouped ? "rounded-md shadow-sm p-4 gap-4 cursor-pointer transition-colors border-2 border-[#9b87f5]" : 
+          "bg-white rounded-md shadow-sm p-4 gap-4 cursor-pointer transition-colors border hover:border-black"
+        } ${
           isSelected ? "bg-blue-50" : ""
         } ${
           isSelected 
             ? "hover:border-blue-500 hover:bg-blue-100" 
             : ""
         } ${
-          isHighlighted ? "border-black" : "border"
+          isHighlighted ? (isGrouped ? "border-[#9b87f5] ring-1 ring-black" : "border-black") : ""
         }`}
         onClick={handleRowClick}
         onMouseEnter={handleMouseEnter}
@@ -276,6 +284,12 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
              formatCurrency(recipient.payout)}
           </span>
         </div>
+
+        {isGrouped && (
+          <div className="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded-full">
+            {recipient.groupName}
+          </div>
+        )}
 
         <Button
           variant="ghost"

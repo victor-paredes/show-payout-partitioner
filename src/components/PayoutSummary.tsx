@@ -1,3 +1,4 @@
+
 import React, { useRef, useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/format";
@@ -30,6 +31,7 @@ interface PayoutSummaryProps {
 const SURPLUS_COLOR = "#E5E7EB";
 const OVERDRAW_COLOR = "#EF4444";
 const GROUP_ARC_COLOR = "#9b87f5"; // Primary purple for the connecting arc
+const GROUP_BORDER_COLOR = "#9b87f5"; // Matching color for group borders
 
 type ChartDataItem = {
   name: string;
@@ -131,14 +133,10 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
     });
     
   if (hasSurplus && isCalculationStable) {
-    const surplusPercentage = totalPayout > 0 
-      ? ((surplus / totalPayout) * 100).toFixed(1) 
-      : "0";
-      
     chartData.push({
       name: "Surplus",
       value: surplus,
-      percentage: surplusPercentage,
+      percentage: totalPayout > 0 ? ((surplus / totalPayout) * 100).toFixed(1) : "0",
       id: "surplus",
       color: SURPLUS_COLOR,
       groupId: undefined,
@@ -147,17 +145,13 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
   }
   
   if (hasOverdraw && isCalculationStable) {
-    const overdrawPercentage = totalPayout > 0 
-      ? ((overdraw / totalPayout) * 100).toFixed(1) 
-      : "0";
-      
     chartData.push({
       name: "Overdraw",
       value: overdraw,
-      percentage: overdrawPercentage,
+      percentage: totalPayout > 0 ? ((overdraw / totalPayout) * 100).toFixed(1) : "0",
       id: "overdraw",
       color: OVERDRAW_COLOR,
-      groupId: undefined,
+      groupId: undefined, 
       groupName: undefined
     });
   }
@@ -278,21 +272,6 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
     return arcs;
   };
 
-  if (totalPayout <= 0) {
-    return (
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle>Payout Summary</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-center text-gray-500 italic">
-            Enter a total payout amount to see the distribution
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
-
   const handleAnimationStart = (data?: any) => {
     if (data && data.sectors) {
       data.sectors.forEach((sector: any, i: number) => {
@@ -310,6 +289,21 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
   };
 
   const emptyPieData = [{ name: "empty", value: 1 }];
+
+  if (totalPayout <= 0) {
+    return (
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle>Payout Summary</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-center text-gray-500 italic">
+            Enter a total payout amount to see the distribution
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
@@ -428,26 +422,28 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
                 return (
                   <div 
                     key={groupId}
-                    className="mb-3 border border-gray-200 rounded-md overflow-hidden"
+                    className={`mb-3 border-2 border-[${GROUP_BORDER_COLOR}] rounded-md overflow-hidden ${
+                      isGroupHovered ? 'ring-1 ring-black' : ''
+                    }`}
                   >
-                    <div className="bg-gray-100 px-2 py-1 flex justify-between items-center">
+                    <div className="bg-purple-100 px-2 py-1 flex justify-between items-center">
                       <div className="flex items-center">
-                        <span className="text-sm font-medium">{groupTotal.name}</span>
-                        <span className="text-xs text-gray-500 ml-2">
+                        <span className="text-sm font-medium text-purple-800">{groupTotal.name}</span>
+                        <span className="text-xs text-purple-600 ml-2">
                           {groupTotal.shares > 0 ? 
                             `(${groupTotal.shares} ${groupTotal.shares === 1 ? 'share' : 'shares'})` : 
                             ''}
                         </span>
-                        <span className="text-xs text-blue-500 ml-2">
+                        <span className="text-xs text-purple-600 ml-2">
                           {percentage}%
                         </span>
                       </div>
-                      <div className="font-medium text-sm">
+                      <div className="font-medium text-sm text-purple-800">
                         {formatCurrency(groupTotal.payout)}
                       </div>
                     </div>
                     
-                    <div className="pl-3">
+                    <div className="pl-3 bg-purple-50">
                       {groupMembers.map((recipient) => {
                         const percentage = totalPayout > 0 
                           ? ((recipient.payout / totalPayout) * 100).toFixed(1) 
@@ -470,7 +466,7 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
                             key={recipient.id} 
                             className={`flex justify-between p-1 rounded ${
                               hoveredRecipientId === recipient.id 
-                                ? 'bg-gray-100' 
+                                ? 'bg-purple-100' 
                                 : ''
                             }`}
                             onMouseEnter={() => onRecipientHover?.(recipient.id)}
@@ -491,7 +487,7 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
                                   {valueDisplay}
                                 </span>
                               )}
-                              <span className={`text-xs text-blue-500 ${type === '%' ? 'ml-2' : 'ml-1'}`}>
+                              <span className={`text-xs text-purple-500 ${type === '%' ? 'ml-2' : 'ml-1'}`}>
                                 {percentage}%
                               </span>
                             </div>
