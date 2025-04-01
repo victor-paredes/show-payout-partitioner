@@ -83,29 +83,12 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
     }
     setExpandedGroups(newExpandedGroups);
   };
-  
-  const sortedRecipients = [...recipients].sort((a, b) => {
-    const typeOrder = {
-      "$": 0,
-      "%": 1,
-      "shares": 2
-    };
-    
-    const aType = a.type || (a.isFixedAmount ? "$" : "shares");
-    const bType = b.type || (b.isFixedAmount ? "$" : "shares");
-    
-    if (aType !== bType) {
-      return typeOrder[aType] - typeOrder[bType];
-    }
-    
-    return b.payout - a.payout;
-  });
 
   const getRecipientDisplayColor = (recipient: Recipient) => {
     return recipient.color || getRecipientColor(recipient.id);
   };
 
-  const chartData = sortedRecipients
+  const chartData = recipients
     .filter(recipient => recipient.payout > 0)
     .map((recipient) => {
       const percentage = totalPayout > 0 
@@ -183,15 +166,11 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
 
   const emptyPieData = [{ name: "empty", value: 1 }];
 
-  // Group recipient ids by their groupId
-  const recipientsByGroup = recipients.reduce((groups, recipient) => {
-    const groupId = recipient.groupId || 'ungrouped';
-    if (!groups[groupId]) {
-      groups[groupId] = [];
-    }
-    groups[groupId].push(recipient.id);
-    return groups;
-  }, {} as Record<string, string[]>);
+  // Build a mapping of groups to help with rendering recipients in order
+  const groupsById = groupTotals.reduce((acc, { group }) => {
+    acc[group.id] = group;
+    return acc;
+  }, {} as Record<string, Group>);
 
   return (
     <Card>
@@ -295,75 +274,10 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
             </div>
           )}
           
-          {/* Group totals section */}
-          {groupTotals.length > 0 && (
-            <div className="border-t pt-4 mt-4">
-              <h3 className="font-semibold mb-3">Group Totals</h3>
-              <div className="space-y-1">
-                {groupTotals.map((groupTotal) => {
-                  const isExpanded = expandedGroups.has(groupTotal.group.id);
-                  const percentage = totalPayout > 0 
-                    ? ((groupTotal.totalPayout / totalPayout) * 100).toFixed(1) 
-                    : "0";
-                    
-                  return (
-                    <div key={groupTotal.group.id} className="space-y-1">
-                      <div 
-                        className="flex justify-between p-1 rounded cursor-pointer hover:bg-gray-50"
-                        onClick={() => toggleGroupExpanded(groupTotal.group.id)}
-                      >
-                        <div className="flex items-center">
-                          {isExpanded ? (
-                            <ChevronDown className="h-3 w-3 mr-1 text-gray-500" />
-                          ) : (
-                            <ChevronRight className="h-3 w-3 mr-1 text-gray-500" />
-                          )}
-                          <div 
-                            className="w-3 h-3 rounded-sm mr-2"
-                            style={{ backgroundColor: groupTotal.group.color }}
-                          />
-                          <span>{groupTotal.group.name}</span>
-                          <span className="text-xs text-blue-500 ml-2">
-                            {percentage}%
-                          </span>
-                        </div>
-                        <div className="font-medium">
-                          {formatCurrency(groupTotal.totalPayout)}
-                        </div>
-                      </div>
-                      
-                      {isExpanded && (
-                        <div className="pl-6 text-xs space-y-1">
-                          {groupTotal.dollarCount > 0 && (
-                            <div className="flex justify-between text-gray-600">
-                              <span>Fixed amounts ({groupTotal.dollarCount})</span>
-                              <span>{formatCurrency(groupTotal.dollarTotal)}</span>
-                            </div>
-                          )}
-                          {groupTotal.percentCount > 0 && (
-                            <div className="flex justify-between text-gray-600">
-                              <span>Percentage based ({groupTotal.percentCount})</span>
-                              <span>{formatCurrency(groupTotal.percentTotal)}</span>
-                            </div>
-                          )}
-                          {groupTotal.sharesCount > 0 && (
-                            <div className="flex justify-between text-gray-600">
-                              <span>Shares based ({groupTotal.sharesCount})</span>
-                              <span>{formatCurrency(groupTotal.sharesTotal)}</span>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-          
+          {/* Unified Payouts section - in original recipient order */}
           {recipients.length > 0 && (
             <div className="border-t pt-4 mt-4">
-              <h3 className="font-semibold mb-3">Individual Payouts</h3>
+              <h3 className="font-semibold mb-3">Payouts</h3>
               <div className="space-y-1">
                 {recipients.map((recipient) => {
                   const percentage = totalPayout > 0 
@@ -372,6 +286,9 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
                   
                   const recipientColor = getRecipientDisplayColor(recipient);
                   const type = recipient.type || (recipient.isFixedAmount ? "$" : "shares");
+                  
+                  // Display group name as part of the recipient if it exists
+                  const group = recipient.groupId ? groupsById[recipient.groupId] : null;
                   
                   let valueDisplay = "";
                   if (type === "$") {
@@ -403,6 +320,11 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
                           style={{ backgroundColor: recipientColor }}
                         />
                         <span>{recipient.name}</span>
+                        {group && (
+                          <span className="text-xs text-gray-500 ml-1">
+                            ({group.name})
+                          </span>
+                        )}
                         {valueDisplay && (
                           <span className="text-xs text-gray-500 ml-2">
                             {valueDisplay}
