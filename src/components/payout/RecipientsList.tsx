@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Trash2, X } from "lucide-react"; // Add X to the import
+import { Plus, Trash2, X } from "lucide-react";
 import RecipientRow from "../RecipientRow";
 import { Recipient } from "@/hooks/useRecipients";
 import {
@@ -71,12 +71,15 @@ const RecipientsList = ({
     setSelectedRecipients(new Set());
   };
 
+  // Create the title with the correct singular/plural form
+  const recipientsTitle = `${recipients.length} ${recipients.length === 1 ? 'Recipient' : 'Recipients'}`;
+
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span>Recipients</span>
+            <span>{recipientsTitle}</span>
             {selectedRecipients.size > 1 && (
               <div className="text-xs bg-blue-100 text-blue-700 py-1 px-2 rounded-md flex items-center gap-1">
                 <span>Editing Multiple</span>
