@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +25,7 @@ interface RecipientItemProps {
   valuePerShare: number;
   onDragStart: () => void;
   isDragging: boolean;
+  onHover?: (id: string | null) => void;
 }
 
 const RecipientItem: React.FC<RecipientItemProps> = ({
@@ -35,7 +37,8 @@ const RecipientItem: React.FC<RecipientItemProps> = ({
   isHighlighted,
   valuePerShare,
   onDragStart,
-  isDragging
+  isDragging,
+  onHover
 }) => {
   const [nameWidth, setNameWidth] = useState(150);
   const nameRef = useRef<HTMLSpanElement>(null);
@@ -70,6 +73,18 @@ const RecipientItem: React.FC<RecipientItemProps> = ({
     }
   };
 
+  const handleMouseEnter = () => {
+    if (onHover) {
+      onHover(recipient.id);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (onHover) {
+      onHover(null);
+    }
+  };
+
   const recipientColor = recipient.color || getRecipientColor(recipient.id);
 
   return (
@@ -87,6 +102,8 @@ const RecipientItem: React.FC<RecipientItemProps> = ({
           isDragging ? "opacity-50" : ""
         }`}
         onClick={handleClick}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
       >
         <div className="flex items-center">
           <Button

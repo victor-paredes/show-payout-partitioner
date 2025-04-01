@@ -176,6 +176,7 @@ const PayoutCalculator = () => {
             handleDragStart={handleDragStart}
             handleDragEnd={handleDragEnd}
             groupedRecipients={groupedRecipients}
+            onRecipientHover={handleRecipientHover}
           />
         </div>
 
