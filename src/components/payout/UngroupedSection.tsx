@@ -33,6 +33,7 @@ const UngroupedSection: React.FC<UngroupedSectionProps> = ({
   activeDroppableId,
   dragSourceId
 }) => {
+  // Create a droppable with a fixed id that doesn't change
   const { setNodeRef, isOver } = useDroppable({
     id: 'ungrouped'
   });
@@ -53,6 +54,11 @@ const UngroupedSection: React.FC<UngroupedSectionProps> = ({
     return `${minHeight}px`;
   };
 
+  // Ensure we always have a valid array of sortable items, even if empty
+  const sortableItems = recipients.length > 0 
+    ? recipients.map(r => r.id) 
+    : [];
+
   return (
     <div className="mb-6">
       <h3 className="text-sm font-medium mb-2 text-gray-600">Ungrouped</h3>
@@ -67,10 +73,11 @@ const UngroupedSection: React.FC<UngroupedSectionProps> = ({
                 minHeight: calculateMinHeight(),
                 transition: "min-height 0.15s ease-in-out, background-color 0.15s ease-in-out"
               }}
-              data-droppable-id="ungrouped" // Add a data attribute for easier debugging
+              data-droppable-id="ungrouped" 
             >
+              {/* Always provide a stable context for sorting, even with a single item */}
               <SortableContext 
-                items={recipients.map(r => r.id)} 
+                items={sortableItems} 
                 strategy={verticalListSortingStrategy}
               >
                 {recipients.length > 0 ? (

@@ -61,6 +61,11 @@ const GroupSection: React.FC<GroupSectionProps> = ({
   const tooltipType = getTooltipType();
   const shouldShowTooltip = tooltipType !== null;
 
+  // Ensure we always have a valid array of sortable items, even if empty
+  const sortableItems = recipients.length > 0 
+    ? recipients.map(r => r.id) 
+    : [];
+
   const calculateMinHeight = () => {
     const baseRowHeight = 72;
     const minRows = 1;
@@ -103,10 +108,11 @@ const GroupSection: React.FC<GroupSectionProps> = ({
                 minHeight: calculateMinHeight(),
                 transition: "min-height 0.15s ease-in-out, background-color 0.15s ease-in-out"
               }}
-              data-droppable-id={group.id} // Add a data attribute for easier debugging
+              data-droppable-id={group.id}
             >
+              {/* Always provide a stable context for sorting, even with a single item */}
               <SortableContext 
-                items={recipients.map(r => r.id)} 
+                items={sortableItems}
                 strategy={verticalListSortingStrategy}
               >
                 {recipients.length > 0 ? (

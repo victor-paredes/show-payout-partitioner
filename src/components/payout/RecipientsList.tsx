@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, Trash2, X, ArrowRight, ArrowDown, Users } from "lucide-react";
@@ -89,10 +89,10 @@ const RecipientsList = ({
   
   const sensors = useSensors(
     useSensor(PointerSensor, {
-      // Enhanced activation constraints to improve first item drag experience
+      // Enhanced activation constraints for all items, including the first one
       activationConstraint: {
-        distance: 2, // Even lower distance to make dragging start more easily
-        tolerance: 10, // Increased tolerance for better sensitivity
+        distance: 1, // Even lower distance to make dragging start more easily
+        tolerance: 15, // Increased tolerance for better sensitivity
         delay: 0,  // No delay
       }
     }),
@@ -101,19 +101,37 @@ const RecipientsList = ({
     })
   );
 
+  // Debug log when recipients change - helps identify issues with the first recipient
+  useEffect(() => {
+    if (recipients.length === 1) {
+      console.log("Only one recipient:", recipients[0]);
+    }
+  }, [recipients]);
+
   const handleDragStart = (event: DragStartEvent) => {
     const { active } = event;
-    setActiveDragId(active.id as string);
+    // Ensure active.id is always treated as a string
+    const activeId = active.id.toString();
+    
+    setActiveDragId(activeId);
     
     // Determine the source group
-    const draggedRecipient = recipients.find(r => r.id === active.id);
+    const draggedRecipient = recipients.find(r => r.id === activeId);
     setDragSourceId(draggedRecipient?.groupId || 'ungrouped');
+    
+    // Debug log
+    console.log(`Drag started: ${activeId} from ${draggedRecipient?.groupId || 'ungrouped'}`);
   };
 
   const handleDragOver = (event: DragOverEvent) => {
     const { over } = event;
     if (over) {
-      setActiveDroppableId(over.id as string);
+      // Ensure over.id is always treated as a string
+      const overId = over.id.toString();
+      setActiveDroppableId(overId);
+      
+      // Debug log
+      console.log(`Dragging over: ${overId}`);
     } else {
       setActiveDroppableId(null);
     }
@@ -121,6 +139,9 @@ const RecipientsList = ({
 
   // Renamed to onDragEnd to avoid name conflict with the prop
   const onDragEnd = (event: DragEndEvent) => {
+    // Debug log
+    console.log(`Drag ended: ${activeDragId} -> ${activeDroppableId}`);
+    
     setActiveDragId(null);
     setActiveDroppableId(null);
     setDragSourceId(null);
