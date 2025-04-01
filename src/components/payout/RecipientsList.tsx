@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -182,7 +183,7 @@ const RecipientsList = ({
           <div className="flex items-center space-x-2">
             {selectedRecipients.size > 1 && (
               <Button
-                onClick={() => setGroupNameModalOpen(true)}
+                onClick={onOpenGroupNameModal}
                 variant="outline"
                 size="sm"
                 className="flex items-center"
@@ -244,42 +245,45 @@ const RecipientsList = ({
                 items={recipients.map(r => r.id)} 
                 strategy={verticalListSortingStrategy}
               >
-                {recipientsWithGroupData.map(({ recipient, isFirstInGroup, isLastInGroup, groupName }, rowIndex) => (
-                  <React.Fragment key={recipient.id}>
-                    {isFirstInGroup && groupName && (
-                      <div className="flex items-center justify-between mt-4 mb-2 px-4">
-                        <div className="text-sm font-medium text-gray-500 flex items-center">
-                          <Users className="h-3 w-3 mr-1 text-gray-400" />
-                          {groupName}
+                {recipientsWithGroupData.map(({ recipient, isFirstInGroup, isLastInGroup, groupName }, rowIndex) => {
+                  // Use a key for the wrapper div instead of a Fragment with data attributes
+                  return (
+                    <div key={recipient.id}>
+                      {isFirstInGroup && groupName && (
+                        <div className="flex items-center justify-between mt-4 mb-2 px-4">
+                          <div className="text-sm font-medium text-gray-500 flex items-center">
+                            <Users className="h-3 w-3 mr-1 text-gray-400" />
+                            {groupName}
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 text-xs text-gray-500"
+                            onClick={() => ungroupRecipients(recipient.groupId!)}
+                          >
+                            Ungroup
+                          </Button>
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-6 text-xs text-gray-500"
-                          onClick={() => ungroupRecipients(recipient.groupId!)}
-                        >
-                          Ungroup
-                        </Button>
-                      </div>
-                    )}
-                    <RecipientRow
-                      recipient={recipient}
-                      onUpdate={(updates) => updateRecipient(recipient.id, updates)}
-                      onRemove={() => removeRecipient(recipient.id)}
-                      valuePerShare={valuePerShare}
-                      isSelected={selectedRecipients.has(recipient.id)}
-                      onToggleSelect={() => toggleSelectRecipient(recipient.id)}
-                      isHighlighted={hoveredRecipientId === recipient.id}
-                      onRecipientHover={onRecipientHover}
-                      columnWiseTabbing={columnWiseTabbing}
-                      rowIndex={rowIndex}
-                      totalRows={recipients.length}
-                      isInGroup={!!recipient.groupId}
-                      isFirstInGroup={isFirstInGroup}
-                      isLastInGroup={isLastInGroup}
-                    />
-                  </React.Fragment>
-                ))}
+                      )}
+                      <RecipientRow
+                        recipient={recipient}
+                        onUpdate={(updates) => updateRecipient(recipient.id, updates)}
+                        onRemove={() => removeRecipient(recipient.id)}
+                        valuePerShare={valuePerShare}
+                        isSelected={selectedRecipients.has(recipient.id)}
+                        onToggleSelect={() => toggleSelectRecipient(recipient.id)}
+                        isHighlighted={hoveredRecipientId === recipient.id}
+                        onRecipientHover={onRecipientHover}
+                        columnWiseTabbing={columnWiseTabbing}
+                        rowIndex={rowIndex}
+                        totalRows={recipients.length}
+                        isInGroup={!!recipient.groupId}
+                        isFirstInGroup={isFirstInGroup}
+                        isLastInGroup={isLastInGroup}
+                      />
+                    </div>
+                  );
+                })}
               </SortableContext>
             </DndContext>
           )}

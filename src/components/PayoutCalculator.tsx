@@ -79,8 +79,6 @@ const PayoutCalculator = () => {
     };
   }, [selectedRecipients, setSelectedRecipients]);
 
-  // We can remove the duplicate calculation logic since usePayoutCalculation handles it
-
   const handleRecipientHover = (id: string | null) => {
     setHoveredRecipientId(id);
   };
