@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Recipient } from "./useRecipients";
 
@@ -17,10 +16,7 @@ export function usePayoutCalculation(recipients: Recipient[]) {
     }
 
     // Calculate fixed amounts total
-    const fixedRecipients = recipients.filter(r => {
-      const type = r.type || (r.isFixedAmount ? "fixed" : "shares");
-      return type === "fixed";
-    });
+    const fixedRecipients = recipients.filter(r => r.type === "$");
     
     const fixedAmounts = fixedRecipients.reduce(
       (sum, r) => sum + (isNaN(r.value) ? 0 : r.value), 
@@ -28,10 +24,7 @@ export function usePayoutCalculation(recipients: Recipient[]) {
     );
 
     // Calculate percentage amounts
-    const percentageRecipients = recipients.filter(r => {
-      const type = r.type || (r.isFixedAmount ? "fixed" : "shares");
-      return type === "percentage";
-    });
+    const percentageRecipients = recipients.filter(r => r.type === "%");
     
     const totalPercentage = percentageRecipients.reduce(
       (sum, r) => sum + (isNaN(r.value) ? 0 : r.value), 
@@ -46,10 +39,7 @@ export function usePayoutCalculation(recipients: Recipient[]) {
     const reservedAmount = fixedAmounts + percentageAmount;
     
     // Calculate shares
-    const sharesRecipients = recipients.filter(r => {
-      const type = r.type || (r.isFixedAmount ? "fixed" : "shares");
-      return type === "shares";
-    });
+    const sharesRecipients = recipients.filter(r => r.type === "shares");
     
     const shares = sharesRecipients.reduce(
       (sum, r) => sum + (isNaN(r.value) ? 0 : r.value), 

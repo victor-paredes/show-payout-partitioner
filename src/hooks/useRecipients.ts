@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { DragEndEvent } from "@dnd-kit/core";
@@ -17,7 +16,14 @@ export interface Recipient {
 export function useRecipients() {
   const { toast } = useToast();
   const [recipients, setRecipients] = useState<Recipient[]>([
-    { id: "1", name: "Recipient 1", isFixedAmount: false, value: 1, payout: 0, type: "shares" },
+    { 
+      id: "1", 
+      name: "Recipient 1", 
+      isFixedAmount: false, 
+      value: 1, 
+      payout: 0, 
+      type: "shares" 
+    },
   ]);
   const [selectedRecipients, setSelectedRecipients] = useState<Set<string>>(new Set());
   const [recipientCount, setRecipientCount] = useState<string>("1");

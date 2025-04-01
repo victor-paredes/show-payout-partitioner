@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -15,7 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-export type RecipientType = "shares" | "fixed" | "percentage";
+export type RecipientType = "shares" | "$" | "%";
 
 interface Recipient {
   id: string;
@@ -91,18 +90,17 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
 
   // Handle type selection
   const handleTypeChange = (value: string) => {
-    const isFixed = value === "fixed";
     const type = value as RecipientType;
     
     onUpdate({ 
-      isFixedAmount: isFixed,
+      isFixedAmount: type === "$",
       type: type
     });
   };
 
   // Determine current type for the select
   const currentType: RecipientType = recipient.type || 
-    (recipient.isFixedAmount ? "fixed" : "shares");
+    (recipient.isFixedAmount ? "$" : "shares");
 
   return (
     <div 
@@ -170,8 +168,8 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="shares">Shares</SelectItem>
-            <SelectItem value="fixed">Fixed $</SelectItem>
-            <SelectItem value="percentage">Percentage %</SelectItem>
+            <SelectItem value="$">$</SelectItem>
+            <SelectItem value="%">%</SelectItem>
           </SelectContent>
         </Select>
       </div>
