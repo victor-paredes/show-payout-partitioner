@@ -1,20 +1,15 @@
-import React, { useState, useRef, useEffect } from "react";
-import { Input } from "@/components/ui/input";
+
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Trash2, GripVertical, ChevronDown, Square } from "lucide-react";
-import { formatCurrency } from "@/lib/format";
+import { Trash2, GripVertical } from "lucide-react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { getRecipientColor } from "@/lib/colorUtils";
-import {
-  Select,
-  SelectContent,
-  SelectContentNonPortal,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import RecipientColorSwatch from "./recipient/RecipientColorSwatch";
+import RecipientName from "./recipient/RecipientName";
+import RecipientTypeSelector from "./recipient/RecipientTypeSelector";
+import RecipientValueInput from "./recipient/RecipientValueInput";
+import RecipientPayout from "./recipient/RecipientPayout";
 
 export type RecipientType = "shares" | "$" | "%";
 
@@ -49,8 +44,6 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
   onRecipientHover,
 }) => {
   const [isInputHover, setIsInputHover] = useState(false);
-  const [nameWidth, setNameWidth] = useState(150);
-  const nameRef = useRef<HTMLSpanElement>(null);
   const [isDraggingInput, setIsDraggingInput] = useState(false);
   
   const {
@@ -69,15 +62,6 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
     zIndex: isDragging ? 1 : 0,
   };
   
-  useEffect(() => {
-    if (nameRef.current) {
-      const newWidth = Math.max(150, nameRef.current.scrollWidth + 20);
-      setNameWidth(newWidth);
-    }
-  }, [recipient.name]);
-
-  const inputHoverClass = "hover:outline hover:outline-2 hover:outline-black";
-
   const handleMouseEnter = () => {
     setIsInputHover(false);
     if (onRecipientHover) {
@@ -91,9 +75,7 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
     }
   };
 
-  const handleTypeChange = (value: string) => {
-    const type = value as RecipientType;
-    
+  const handleTypeChange = (type: RecipientType) => {
     onUpdate({ 
       isFixedAmount: type === "$",
       type: type
@@ -146,30 +128,17 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
         onMouseEnter={() => setIsInputHover(true)}
         onMouseLeave={() => setIsInputHover(false)}
       >
-        <div 
-          className={`w-4 h-4 rounded-sm transition-all ${
-            isHighlighted ? "border border-black" : ""
-          }`} 
-          style={{ backgroundColor: recipientColor }}
+        <RecipientColorSwatch
+          color={recipientColor}
+          isHighlighted={isHighlighted}
         />
-        <div className="relative inline-block">
-          <span 
-            ref={nameRef} 
-            className="invisible absolute whitespace-nowrap"
-          >
-            {recipient.name || "Enter Name"}
-          </span>
-          <Input
-            value={recipient.name}
-            onChange={(e) => onUpdate({ name: e.target.value })}
-            className={`border-none p-0 h-auto text-base font-medium focus-visible:ring-0 ${inputHoverClass}`}
-            placeholder="Enter Name"
-            onClick={(e) => e.stopPropagation()}
-            onMouseDown={() => setIsDraggingInput(false)}
-            onMouseMove={() => setIsDraggingInput(true)}
-            style={{ width: `${nameWidth}px` }}
-          />
-        </div>
+        <RecipientName
+          name={recipient.name}
+          onUpdate={(name) => onUpdate({ name })}
+          onClick={(e) => e.stopPropagation()}
+          onMouseDown={() => setIsDraggingInput(false)}
+          onMouseMove={() => setIsDraggingInput(true)}
+        />
       </div>
 
       <div 
@@ -178,19 +147,10 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
         onMouseEnter={() => setIsInputHover(true)}
         onMouseLeave={() => setIsInputHover(false)}
       >
-        <Select 
-          value={currentType} 
-          onValueChange={handleTypeChange}
-        >
-          <SelectTrigger className="w-28">
-            <SelectValue placeholder="Type" />
-          </SelectTrigger>
-          <SelectContentNonPortal>
-            <SelectItem value="shares">Shares</SelectItem>
-            <SelectItem value="$">$</SelectItem>
-            <SelectItem value="%">%</SelectItem>
-          </SelectContentNonPortal>
-        </Select>
+        <RecipientTypeSelector
+          type={currentType}
+          onTypeChange={handleTypeChange}
+        />
       </div>
 
       <div 
@@ -199,30 +159,19 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
         onMouseEnter={() => setIsInputHover(true)}
         onMouseLeave={() => setIsInputHover(false)}
       >
-        <Input
-          type="number"
-          min="0"
-          step={currentType === "$" ? "10" : currentType === "%" ? "1" : "0.1"}
-          value={recipient.value || ""}
-          onChange={(e) => onUpdate({ value: parseFloat(e.target.value) || 0 })}
-          className={`w-24 text-right ${inputHoverClass}`}
-          placeholder={
-            currentType === "shares" ? "Shares" : 
-            currentType === "$" ? "Amount" : 
-            "Percent"
-          }
+        <RecipientValueInput
+          value={recipient.value}
+          type={currentType}
+          onValueChange={(value) => onUpdate({ value })}
           onMouseDown={() => setIsDraggingInput(false)}
           onMouseMove={() => setIsDraggingInput(true)}
         />
       </div>
 
-      <div className="w-28 text-right">
-        <span className="font-medium">
-          {recipient.type === "$" ? formatCurrency(recipient.payout) : 
-           recipient.type === "%" ? `${recipient.payout.toFixed(2)}%` : 
-           formatCurrency(recipient.payout)}
-        </span>
-      </div>
+      <RecipientPayout
+        payout={recipient.payout}
+        type={currentType}
+      />
 
       <Button
         variant="ghost"
