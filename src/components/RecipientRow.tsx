@@ -103,6 +103,26 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
   const currentType: RecipientType = recipient.type || 
     (recipient.isFixedAmount ? "$" : "shares");
 
+  // Handle dropdown opening to prevent row deselection
+  const handleDropdownOpenChange = (open: boolean) => {
+    if (open) {
+      // Use a properly typed event handler
+      const originalOnClick = document.body.onclick;
+      
+      // This timeout ensures our handler is set after the default Select behavior
+      setTimeout(() => {
+        document.body.onclick = (e: MouseEvent) => {
+          e.stopPropagation();
+          
+          // Execute any original handler that was there
+          if (originalOnClick) {
+            originalOnClick.call(document.body, e);
+          }
+        };
+      }, 0);
+    }
+  };
+
   return (
     <div 
       ref={setNodeRef} 
@@ -163,16 +183,7 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
         <Select 
           value={currentType} 
           onValueChange={handleTypeChange}
-          onOpenChange={(open) => {
-            // Prevent row deselection when opening the dropdown
-            if (open) {
-              setTimeout(() => {
-                document.body.click = function(e) {
-                  e.stopPropagation();
-                };
-              }, 0);
-            }
-          }}
+          onOpenChange={handleDropdownOpenChange}
         >
           <SelectTrigger className="w-28" onClick={(e) => e.stopPropagation()}>
             <SelectValue placeholder="Type" />
