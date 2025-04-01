@@ -72,22 +72,28 @@ const UngroupedSection: React.FC<UngroupedSectionProps> = ({
                 items={recipients.map(r => r.id)} 
                 strategy={verticalListSortingStrategy}
               >
-                {recipients.map((recipient, rowIndex) => (
-                  <RecipientRow
-                    key={recipient.id}
-                    recipient={recipient}
-                    onUpdate={(updates) => updateRecipient(recipient.id, updates)}
-                    onRemove={() => removeRecipient(recipient.id)}
-                    valuePerShare={valuePerShare}
-                    isSelected={selectedRecipients.has(recipient.id)}
-                    onToggleSelect={() => toggleSelectRecipient(recipient.id)}
-                    isHighlighted={hoveredRecipientId === recipient.id}
-                    onRecipientHover={onRecipientHover}
-                    columnWiseTabbing={columnWiseTabbing}
-                    rowIndex={rowIndex}
-                    totalRows={recipients.length}
-                  />
-                ))}
+                {recipients.length > 0 ? (
+                  recipients.map((recipient, rowIndex) => (
+                    <RecipientRow
+                      key={recipient.id}
+                      recipient={recipient}
+                      onUpdate={(updates) => updateRecipient(recipient.id, updates)}
+                      onRemove={() => removeRecipient(recipient.id)}
+                      valuePerShare={valuePerShare}
+                      isSelected={selectedRecipients.has(recipient.id)}
+                      onToggleSelect={() => toggleSelectRecipient(recipient.id)}
+                      isHighlighted={hoveredRecipientId === recipient.id}
+                      onRecipientHover={onRecipientHover}
+                      columnWiseTabbing={columnWiseTabbing}
+                      rowIndex={rowIndex}
+                      totalRows={recipients.length}
+                    />
+                  ))
+                ) : (
+                  <div className="flex items-center justify-center h-[72px] rounded-md border border-dashed border-gray-300 bg-gray-50 text-gray-400 text-sm">
+                    Drop a recipient here
+                  </div>
+                )}
               </SortableContext>
             </div>
           </TooltipTrigger>
