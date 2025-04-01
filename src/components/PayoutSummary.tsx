@@ -1,3 +1,4 @@
+
 import React, { useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/format";
@@ -301,6 +302,7 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
                         <Cell fill="#FFFFFF" />
                       </Pie>
                     </PieChart>
+                    {/* Only render the X if there's an overdraw */}
                     <div 
                       className="absolute inset-0 flex items-center justify-center"
                       style={{ pointerEvents: 'none' }}
