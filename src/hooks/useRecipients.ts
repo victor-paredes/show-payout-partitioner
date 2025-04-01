@@ -52,7 +52,6 @@ export function useRecipients() {
       return;
     }
     
-    // Remove from selections if selected
     if (selectedRecipients.has(id)) {
       const newSelectedRecipients = new Set(selectedRecipients);
       newSelectedRecipients.delete(id);
@@ -73,7 +72,6 @@ export function useRecipients() {
   };
 
   const updateRecipient = (id: string, updates: Partial<Recipient>) => {
-    // If the recipient is selected, apply the same update to all selected recipients
     if (selectedRecipients.has(id) && selectedRecipients.size > 1) {
       const updatedRecipients = recipients.map(recipient => {
         if (selectedRecipients.has(recipient.id)) {
@@ -83,7 +81,6 @@ export function useRecipients() {
       });
       setRecipients(updatedRecipients);
     } else {
-      // Otherwise, just update this one recipient
       setRecipients(
         recipients.map(recipient => 
           recipient.id === id ? { ...recipient, ...updates } : recipient
@@ -109,6 +106,7 @@ export function useRecipients() {
     recipients,
     setRecipients,
     selectedRecipients,
+    setSelectedRecipients,
     recipientCount,
     setRecipientCount,
     addRecipients,

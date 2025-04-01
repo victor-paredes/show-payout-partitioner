@@ -1,5 +1,5 @@
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import TotalPayoutInput from "./payout/TotalPayoutInput";
 import RecipientsList from "./payout/RecipientsList";
 import PayoutSummary from "./PayoutSummary";
@@ -11,6 +11,7 @@ const PayoutCalculator = () => {
     recipients,
     setRecipients,
     selectedRecipients,
+    setSelectedRecipients,
     recipientCount,
     setRecipientCount,
     addRecipients,
@@ -27,6 +28,22 @@ const PayoutCalculator = () => {
     totalShares,
     valuePerShare
   } = usePayoutCalculation(recipients);
+
+  const calculatorRef = useRef<HTMLDivElement>(null);
+
+  // Handle click outside to deselect all recipients
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (calculatorRef.current && !calculatorRef.current.contains(event.target as Node) && selectedRecipients.size > 0) {
+        setSelectedRecipients(new Set());
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [selectedRecipients, setSelectedRecipients]);
 
   // Update recipient payouts based on calculations
   useEffect(() => {
@@ -58,7 +75,7 @@ const PayoutCalculator = () => {
      valuePerShare]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" ref={calculatorRef}>
       <TotalPayoutInput 
         totalPayout={totalPayout} 
         onChange={setTotalPayout} 
