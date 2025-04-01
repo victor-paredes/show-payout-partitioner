@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -35,7 +34,6 @@ interface RecipientRowProps {
   onToggleSelect: () => void;
   isHighlighted?: boolean;
   onRecipientHover?: (id: string | null) => void;
-  selectedCount?: number; // Add prop to know how many recipients are selected
 }
 
 const RecipientRow: React.FC<RecipientRowProps> = ({
@@ -47,15 +45,10 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
   onToggleSelect,
   isHighlighted,
   onRecipientHover,
-  selectedCount = 0,
 }) => {
   const [isInputHover, setIsInputHover] = useState(false);
   const [nameWidth, setNameWidth] = useState(150); // Default width
   const nameRef = useRef<HTMLSpanElement>(null);
-  // Add state to track if dropdown is open
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  // Add a ref to track last dropdown interaction time
-  const lastDropdownInteractionRef = useRef<number>(0);
   
   const {
     attributes,
@@ -95,12 +88,10 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
     }
   };
 
-  // Handle type selection - modified to work with multiple selections
+  // Handle type selection
   const handleTypeChange = (value: string) => {
     const type = value as RecipientType;
-    lastDropdownInteractionRef.current = Date.now(); // Record interaction time
     
-    // Important: Apply update without waiting for any click events to resolve
     onUpdate({ 
       isFixedAmount: type === "$",
       type: type
@@ -110,33 +101,6 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
   // Determine current type for the select
   const currentType: RecipientType = recipient.type || 
     (recipient.isFixedAmount ? "$" : "shares");
-
-  // Handle dropdown opening to prevent row deselection
-  const handleDropdownOpenChange = (open: boolean) => {
-    setIsDropdownOpen(open);
-    lastDropdownInteractionRef.current = Date.now(); // Record interaction time
-  };
-
-  // Handle row click with special handling for dropdown
-  const handleRowClick = (e: React.MouseEvent) => {
-    // Check if the click is coming after a recent dropdown interaction
-    const timeSinceLastDropdownInteraction = Date.now() - lastDropdownInteractionRef.current;
-    
-    // Only toggle selection if dropdown is not open and 
-    // no recent dropdown interaction (within 100ms)
-    if (!isDropdownOpen && timeSinceLastDropdownInteraction > 100) {
-      onToggleSelect();
-    }
-  };
-
-  // Handle click propagation stopping for dropdown items
-  const handleSelectItemClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    lastDropdownInteractionRef.current = Date.now();
-  };
-
-  // Calculate if this is part of a multi-selection
-  const isMultiSelected = isSelected && selectedCount > 1;
 
   return (
     <div 
@@ -151,7 +115,7 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
       } ${
         isHighlighted ? "border-black" : "border"
       }`}
-      onClick={handleRowClick}
+      onClick={onToggleSelect}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
@@ -198,38 +162,14 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
         <Select 
           value={currentType} 
           onValueChange={handleTypeChange}
-          onOpenChange={handleDropdownOpenChange}
         >
-          <SelectTrigger className="w-28" onClick={(e) => e.stopPropagation()}>
+          <SelectTrigger className="w-28">
             <SelectValue placeholder="Type" />
-            {isMultiSelected && (
-              <span className="absolute -top-2 -right-2 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                {selectedCount}
-              </span>
-            )}
           </SelectTrigger>
-          <SelectContent 
-            onClick={(e) => e.stopPropagation()}
-            className="z-50" // Ensure high z-index
-          >
-            <SelectItem 
-              value="shares" 
-              onClick={handleSelectItemClick}
-            >
-              Shares
-            </SelectItem>
-            <SelectItem 
-              value="$" 
-              onClick={handleSelectItemClick}
-            >
-              $
-            </SelectItem>
-            <SelectItem 
-              value="%" 
-              onClick={handleSelectItemClick}
-            >
-              %
-            </SelectItem>
+          <SelectContent>
+            <SelectItem value="shares">Shares</SelectItem>
+            <SelectItem value="$">$</SelectItem>
+            <SelectItem value="%">%</SelectItem>
           </SelectContent>
         </Select>
       </div>

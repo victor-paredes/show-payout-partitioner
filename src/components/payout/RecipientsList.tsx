@@ -73,9 +73,6 @@ const RecipientsList = ({
 
   // Create the title with the correct singular/plural form
   const recipientsTitle = `${recipients.length} ${recipients.length === 1 ? 'Recipient' : 'Recipients'}`;
-  
-  // Get the count of selected recipients
-  const selectedCount = selectedRecipients.size;
 
   return (
     <Card>
@@ -148,7 +145,6 @@ const RecipientsList = ({
                   onToggleSelect={() => toggleSelectRecipient(recipient.id)}
                   isHighlighted={hoveredRecipientId === recipient.id}
                   onRecipientHover={onRecipientHover}
-                  selectedCount={selectedRecipients.has(recipient.id) ? selectedCount : 0}
                 />
               ))}
             </SortableContext>
