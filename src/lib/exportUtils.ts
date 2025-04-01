@@ -203,6 +203,8 @@ export const importFromCsv = async (
     
     // Process data rows (skip header, total and marker rows)
     const recipients = [];
+    let colorsImported = 0;
+    
     for (let i = 1; i < rows.length; i++) {
       const rowData = parseCSVRow(rows[i]);
       
@@ -217,18 +219,23 @@ export const importFromCsv = async (
         const type = typeIndex !== -1 ? rowData[typeIndex] : 'shares';
         let value = valueIndex !== -1 && rowData[valueIndex] ? parseFloat(rowData[valueIndex]) : 1;
         
-        // Get color if available
+        // Get color if available - be more aggressive about finding the color
         let color = undefined;
-        if (colorIndex !== -1 && colorIndex < rowData.length && rowData[colorIndex]) {
-          // Make sure the color string is properly formatted (remove quotes, trim, etc.)
-          color = rowData[colorIndex].replace(/^["']|["']$/g, '').trim();
-          
-          console.log(`Row ${i} - Found color: "${color}"`);
-          
-          // Validate it's a proper color format (hex code or named color)
-          if (!/^#[0-9A-F]{6}$/i.test(color) && !COLORS.includes(color)) {
-            console.warn(`Invalid color format: ${color}, using generated color instead`);
-            color = undefined;
+        if (colorIndex !== -1 && colorIndex < rowData.length) {
+          // Make sure to trim and clean up the color value
+          const rawColor = rowData[colorIndex];
+          if (rawColor && rawColor.trim() !== '') {
+            color = rawColor.replace(/^["']|["']$/g, '').trim();
+            
+            console.log(`Row ${i} - Found color: "${color}" for recipient "${name}"`);
+            
+            // Validate it's a proper color format (hex code or named color)
+            if (!/^#[0-9A-F]{6}$/i.test(color) && !COLORS.includes(color)) {
+              console.warn(`Invalid color format: ${color}, using generated color instead`);
+              color = undefined;
+            } else {
+              colorsImported++;
+            }
           }
         }
         
@@ -262,6 +269,8 @@ export const importFromCsv = async (
         recipients.push(recipient);
       }
     }
+    
+    console.log(`Import summary: ${colorsImported} of ${recipients.length} recipients have custom colors`);
     
     return { importedData: recipients, importedTotalPayout };
   } catch (error) {

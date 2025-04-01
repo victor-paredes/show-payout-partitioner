@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from "react";
 import TotalPayoutInput from "./payout/TotalPayoutInput";
 import RecipientsList from "./payout/RecipientsList";
@@ -6,8 +5,11 @@ import PayoutSummary from "./PayoutSummary";
 import PayoutHeaderMenu from "./payout/PayoutHeaderMenu";
 import { useRecipients, Recipient } from "@/hooks/useRecipients";
 import { usePayoutCalculation } from "@/hooks/usePayoutCalculation";
+import { useToast } from "@/hooks/use-toast";
 
 const PayoutCalculator = () => {
+  const { toast } = useToast();
+  
   const {
     recipients,
     setRecipients,
@@ -113,6 +115,19 @@ const PayoutCalculator = () => {
     if (replace) {
       // Make sure to preserve color property from imported recipients
       setRecipients(newRecipients);
+      
+      // Verify that colors were properly applied from the CSV
+      const missingColors = newRecipients.filter(r => r.color === undefined || r.color === '').length;
+      const totalWithColors = newRecipients.length - missingColors;
+      
+      console.log(`Import colors summary: ${totalWithColors} of ${newRecipients.length} recipients have custom colors`);
+      
+      if (totalWithColors > 0) {
+        toast({
+          title: "Colors imported",
+          description: `${totalWithColors} of ${newRecipients.length} recipients have custom colors applied`,
+        });
+      }
       
       let highestId = 0;
       newRecipients.forEach(recipient => {
