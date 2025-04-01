@@ -1,4 +1,3 @@
-
 import React, { useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/format";
@@ -33,7 +32,6 @@ interface PayoutSummaryProps {
   onRecipientHover?: (id: string | null) => void;
 }
 
-// Balanced and diverse color palette with 50 unique colors with better separation
 const COLORS = [
   // Primary colors and variations
   "#3B82F6", // Blue
@@ -100,9 +98,7 @@ const COLORS = [
   "#BE123C"  // Ruby
 ];
 
-// Light grey for surplus
 const SURPLUS_COLOR = "#E5E7EB";
-// Red for overdraw
 const OVERDRAW_COLOR = "#EF4444";
 
 const PayoutSummary: React.FC<PayoutSummaryProps> = ({
@@ -118,10 +114,9 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
   
   const calculatedTotal = recipients.reduce((total, r) => total + r.payout, 0);
   
-  // Calculate surplus as the difference between total payout and what's been allocated
   const difference = calculatedTotal - totalPayout;
-  const hasSurplus = difference < -0.01; // Only show surplus if it's greater than 1 cent
-  const hasOverdraw = difference > 0.01; // Only show overdraw if it's greater than 1 cent
+  const hasSurplus = difference < -0.01;
+  const hasOverdraw = difference > 0.01;
   
   const surplus = hasSurplus ? Math.abs(difference) : 0;
   const overdraw = hasOverdraw ? difference : 0;
@@ -143,9 +138,7 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
     return b.payout - a.payout;
   });
 
-  // Assign consistent colors based on recipient ID instead of chart data index
   const getRecipientColor = (recipientId: string) => {
-    // Hash the recipient ID to get a consistent color index
     const hashCode = Array.from(recipientId).reduce(
       (acc, char) => acc + char.charCodeAt(0), 0
     );
@@ -168,7 +161,6 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
       };
     });
     
-  // Add surplus to chart data if it exists
   if (hasSurplus) {
     const surplusPercentage = totalPayout > 0 
       ? ((surplus / totalPayout) * 100).toFixed(1) 
@@ -183,7 +175,6 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
     });
   }
   
-  // Add overdraw to chart data if it exists
   if (hasOverdraw) {
     const overdrawPercentage = totalPayout > 0 
       ? ((overdraw / totalPayout) * 100).toFixed(1) 
@@ -247,7 +238,6 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
     );
   }
 
-  // Create empty pie data for overdraw visualization
   const emptyPieData = [{ name: "empty", value: 1 }];
 
   return (
@@ -302,13 +292,14 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
                         <Cell fill="#FFFFFF" />
                       </Pie>
                     </PieChart>
-                    {/* Only render the X if there's an overdraw */}
-                    <div 
-                      className="absolute inset-0 flex items-center justify-center"
-                      style={{ pointerEvents: 'none' }}
-                    >
-                      <X size={60} color={OVERDRAW_COLOR} strokeWidth={3} />
-                    </div>
+                    {hasOverdraw && (
+                      <div 
+                        className="absolute inset-0 flex items-center justify-center"
+                        style={{ pointerEvents: 'none' }}
+                      >
+                        <X size={60} color={OVERDRAW_COLOR} strokeWidth={3} />
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <PieChart 
@@ -341,29 +332,26 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
             </div>
           )}
           
-          {/* Moved tags above the divider */}
-          <div className="space-y-2">
-            {hasSurplus && (
-              <div className="text-xs bg-green-100 text-green-700 py-1 px-2 rounded-md flex items-center gap-1 mb-2">
-                <span>Surplus</span>
-                <span className="text-xs text-green-500 ml-2">
-                  ({((surplus / totalPayout) * 100).toFixed(1)}%)
-                </span>
-                <span className="ml-auto">{formatCurrency(surplus)}</span>
-              </div>
-            )}
-            
-            {hasOverdraw && (
-              <div className="text-xs bg-red-100 text-red-700 py-1 px-2 rounded-md flex items-center gap-1 mb-2">
-                <span>Overdraw</span>
-                <span className="text-xs text-red-500 ml-2">
-                  ({((overdraw / totalPayout) * 100).toFixed(1)}%)
-                </span>
-                <span className="ml-auto">{formatCurrency(overdraw)}</span>
-              </div>
-            )}
-          </div>
-
+          {hasSurplus && (
+            <div className="text-xs bg-green-100 text-green-700 py-1 px-2 rounded-md flex items-center gap-1 mb-2">
+              <span>Surplus</span>
+              <span className="text-xs text-green-500 ml-2">
+                ({((surplus / totalPayout) * 100).toFixed(1)}%)
+              </span>
+              <span className="ml-auto">{formatCurrency(surplus)}</span>
+            </div>
+          )}
+          
+          {hasOverdraw && (
+            <div className="text-xs bg-red-100 text-red-700 py-1 px-2 rounded-md flex items-center gap-1 mb-2">
+              <span>Overdraw</span>
+              <span className="text-xs text-red-500 ml-2">
+                ({((overdraw / totalPayout) * 100).toFixed(1)}%)
+              </span>
+              <span className="ml-auto">{formatCurrency(overdraw)}</span>
+            </div>
+          )}
+          
           <div className="border-t pt-4 mt-4">
             <h3 className="font-semibold mb-3">Individual Payouts</h3>
             <div className="space-y-1">
@@ -379,7 +367,6 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
                 if (type === "$") {
                   valueDisplay = "($)";
                 } else if (type === "%") {
-                  // Remove the parentheses for percentage type, will show the blue percentage below
                   valueDisplay = "";
                 } else {
                   valueDisplay = `(${recipient.value} ${recipient.value === 1 ? 'share' : 'shares'})`;
