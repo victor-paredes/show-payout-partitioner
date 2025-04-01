@@ -35,6 +35,7 @@ interface RecipientRowProps {
   onToggleSelect: () => void;
   isHighlighted?: boolean;
   onRecipientHover?: (id: string | null) => void;
+  selectedCount?: number; // Add prop to know how many recipients are selected
 }
 
 const RecipientRow: React.FC<RecipientRowProps> = ({
@@ -46,6 +47,7 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
   onToggleSelect,
   isHighlighted,
   onRecipientHover,
+  selectedCount = 0,
 }) => {
   const [isInputHover, setIsInputHover] = useState(false);
   const [nameWidth, setNameWidth] = useState(150); // Default width
@@ -93,7 +95,7 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
     }
   };
 
-  // Handle type selection
+  // Handle type selection - modified to show it's updating multiple if needed
   const handleTypeChange = (value: string) => {
     const type = value as RecipientType;
     lastDropdownInteractionRef.current = Date.now(); // Record interaction time
@@ -131,6 +133,9 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
     e.stopPropagation();
     lastDropdownInteractionRef.current = Date.now();
   };
+
+  // Calculate if this is part of a multi-selection
+  const isMultiSelected = isSelected && selectedCount > 1;
 
   return (
     <div 
@@ -196,6 +201,11 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
         >
           <SelectTrigger className="w-28" onClick={(e) => e.stopPropagation()}>
             <SelectValue placeholder="Type" />
+            {isMultiSelected && (
+              <span className="absolute -top-2 -right-2 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                {selectedCount}
+              </span>
+            )}
           </SelectTrigger>
           <SelectContent 
             onClick={(e) => e.stopPropagation()}
