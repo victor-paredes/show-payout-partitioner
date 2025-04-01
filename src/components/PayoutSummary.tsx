@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { FileDown, X } from "lucide-react";
-import { exportToPdf } from "@/lib/exportUtils";
+import { exportToPdf, exportToCsv } from "@/lib/exportUtils";
 import { RecipientType } from "@/components/RecipientRow";
 
 interface Recipient {
@@ -196,6 +196,10 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
     }
   };
 
+  const handleExportCsv = () => {
+    exportToCsv(recipients, totalPayout, 'payout-summary');
+  };
+
   if (totalPayout <= 0) {
     return (
       <Card>
@@ -212,6 +216,9 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
               <DropdownMenuSeparator />
               <DropdownMenuItem disabled>
                 PDF
+              </DropdownMenuItem>
+              <DropdownMenuItem disabled>
+                CSV
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -243,8 +250,11 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
             <DropdownMenuItem onClick={handleExportPdf}>
               PDF
             </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleExportCsv}>
+              CSV
+            </DropdownMenuItem>
           </DropdownMenuContent>
-          </DropdownMenu>
+        </DropdownMenu>
       </CardHeader>
       <CardContent>
         <div className="space-y-4" ref={summaryRef}>

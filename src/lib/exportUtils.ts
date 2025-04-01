@@ -70,3 +70,67 @@ export const exportToPdf = async (element: HTMLElement, defaultFileName: string)
     console.error('Error generating PDF:', error);
   }
 };
+
+/**
+ * Exports recipients data to a CSV file and triggers download
+ * @param recipients The array of recipients with payout information
+ * @param totalPayout The total payout amount
+ * @param defaultFileName The default name for the CSV file
+ */
+export const exportToCsv = (
+  recipients: Array<{id: string; name: string; value: number; type?: string; payout: number}>,
+  totalPayout: number,
+  defaultFileName: string
+) => {
+  try {
+    // Ask user for file name
+    const fileName = prompt("Enter a name for your CSV file", defaultFileName) || defaultFileName;
+    
+    // Create CSV header row
+    const headers = ['Name', 'Type', 'Value', 'Payout ($)', 'Percentage (%)'];
+    
+    // Create CSV content
+    let csvContent = headers.join(',') + '\n';
+    
+    // Add data rows
+    recipients.forEach(recipient => {
+      const type = recipient.type || (recipient.value ? 'shares' : '$');
+      const percentage = totalPayout > 0 
+        ? ((recipient.payout / totalPayout) * 100).toFixed(2) 
+        : '0';
+      
+      // Format the row data and handle special characters
+      const row = [
+        `"${recipient.name.replace(/"/g, '""')}"`, // Escape quotes in names
+        `"${type}"`,
+        recipient.value.toString(),
+        recipient.payout.toFixed(2),
+        percentage
+      ];
+      
+      csvContent += row.join(',') + '\n';
+    });
+    
+    // Add total row
+    csvContent += `"Total",,,"${totalPayout.toFixed(2)}","100.00"\n`;
+    
+    // Create a blob and download link
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    
+    // Set link properties
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${fileName}.csv`);
+    link.style.visibility = 'hidden';
+    
+    // Add to document, trigger download and clean up
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+  } catch (error) {
+    console.error('Error generating CSV:', error);
+  }
+};
