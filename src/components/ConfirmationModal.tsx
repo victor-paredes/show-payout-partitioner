@@ -39,7 +39,6 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
         className={cn(
           variant === "destructive" && "border-2 border-[#ea384c]" // More vibrant red
         )}
-        onInteractOutside={() => onOpenChange(false)} // Close on outside click
       >
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>
