@@ -45,28 +45,24 @@ const GroupSection: React.FC<GroupSectionProps> = ({
     id: group.id
   });
 
-  const getTooltipContent = () => {
-    if (!dragSourceId || !activeDroppableId) return null;
+  // Determine the tooltip message based on drag source and drop target
+  const getTooltipType = () => {
+    if (!dragSourceId || activeDroppableId !== group.id) return null;
     
     // Add to Group: Show when dragging from ungrouped to this group
-    if (dragSourceId === 'ungrouped' && activeDroppableId === group.id) {
-      return (
-        <TooltipContent side="top" className="bg-green-50 border-green-200 text-green-600">
-          <span className="text-sm font-medium">+ Add to Group</span>
-        </TooltipContent>
-      );
+    if (dragSourceId === 'ungrouped') {
+      return 'add';
     } 
     // Moving between groups: Show when dragging from a different group to this group
-    else if (dragSourceId !== group.id && activeDroppableId === group.id && dragSourceId !== 'ungrouped') {
-      return (
-        <TooltipContent side="top" className="bg-blue-50 border-blue-200 text-blue-600">
-          <span className="text-sm font-medium">+ Move to Group</span>
-        </TooltipContent>
-      );
+    else if (dragSourceId !== group.id) {
+      return 'move';
     }
     
     return null;
   };
+
+  const tooltipType = getTooltipType();
+  const shouldShowTooltip = tooltipType !== null;
 
   // Calculate an appropriate min-height based on the number of recipients
   const calculateMinHeight = () => {
@@ -78,9 +74,6 @@ const GroupSection: React.FC<GroupSectionProps> = ({
     const minHeight = Math.max(recipients.length, minRows) * baseRowHeight;
     return `${minHeight}px`;
   };
-
-  const tooltipContent = getTooltipContent();
-  const showTooltip = !!tooltipContent;
 
   return (
     <div className="mb-6">
@@ -106,7 +99,7 @@ const GroupSection: React.FC<GroupSectionProps> = ({
       </h3>
       
       <TooltipProvider>
-        <Tooltip open={showTooltip}>
+        <Tooltip open={shouldShowTooltip}>
           <TooltipTrigger asChild>
             <div 
               ref={setNodeRef}
@@ -151,7 +144,25 @@ const GroupSection: React.FC<GroupSectionProps> = ({
               </Button>
             </div>
           </TooltipTrigger>
-          {tooltipContent}
+          {shouldShowTooltip && (
+            <TooltipContent 
+              side="top" 
+              className={
+                tooltipType === 'add' 
+                  ? "bg-green-50 border-green-200 text-green-600" 
+                  : "bg-blue-50 border-blue-200 text-blue-600"
+              }
+              sideOffset={5}
+              // Make the tooltip follow cursor position
+              avoidCollisions={false}
+              sticky="always"
+              hideWhenDetached={false}
+            >
+              <span className="text-sm font-medium">
+                {tooltipType === 'add' ? '+ Add to Group' : '+ Move to Group'}
+              </span>
+            </TooltipContent>
+          )}
         </Tooltip>
       </TooltipProvider>
     </div>

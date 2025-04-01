@@ -37,24 +37,9 @@ const UngroupedSection: React.FC<UngroupedSectionProps> = ({
     id: 'ungrouped'
   });
 
-  const getTooltipContent = () => {
-    if (!dragSourceId || !activeDroppableId) return null;
-    
-    // Only show the "Remove from Group" indicator when:
-    // 1. The drag source is a group (not ungrouped)
-    // 2. The drop target is ungrouped
-    // 3. We are hovering over the ungrouped area (activeDroppableId === 'ungrouped')
-    if (dragSourceId !== 'ungrouped' && activeDroppableId === 'ungrouped') {
-      return (
-        <TooltipContent side="top" className="bg-amber-50 border-amber-200 text-amber-600">
-          <span className="text-sm font-medium">- Remove from Group</span>
-        </TooltipContent>
-      );
-    }
-    
-    return null;
-  };
-
+  // Check if we should show tooltip - now it's simply when dragging from a group to ungrouped
+  const shouldShowTooltip = dragSourceId !== 'ungrouped' && dragSourceId !== null && activeDroppableId === 'ungrouped';
+  
   // Calculate an appropriate min-height based on the number of recipients
   const calculateMinHeight = () => {
     // Base height for each recipient row + padding
@@ -66,14 +51,11 @@ const UngroupedSection: React.FC<UngroupedSectionProps> = ({
     return `${minHeight}px`;
   };
 
-  const tooltipContent = getTooltipContent();
-  const showTooltip = !!tooltipContent;
-
   return (
     <div className="mb-6">
       <h3 className="text-sm font-medium mb-2 text-gray-600">Ungrouped</h3>
       <TooltipProvider>
-        <Tooltip open={showTooltip}>
+        <Tooltip open={shouldShowTooltip}>
           <TooltipTrigger asChild>
             <div 
               ref={setNodeRef}
@@ -107,7 +89,19 @@ const UngroupedSection: React.FC<UngroupedSectionProps> = ({
               </SortableContext>
             </div>
           </TooltipTrigger>
-          {tooltipContent}
+          {shouldShowTooltip && (
+            <TooltipContent 
+              side="top" 
+              className="bg-amber-50 border-amber-200 text-amber-600"
+              sideOffset={5}
+              // Add this to make the tooltip follow cursor position
+              avoidCollisions={false}
+              sticky="always"
+              hideWhenDetached={false}
+            >
+              <span className="text-sm font-medium">- Remove from Group</span>
+            </TooltipContent>
+          )}
         </Tooltip>
       </TooltipProvider>
     </div>
