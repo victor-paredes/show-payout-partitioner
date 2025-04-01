@@ -1,8 +1,9 @@
+
 import React, { useRef, useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/format";
 import { PieChart, Pie, Cell } from "recharts";
-import { X } from "lucide-react";
+import { ChartPie, X } from "lucide-react";
 import { RecipientType } from "@/components/RecipientRow";
 import { getRecipientColor, SURPLUS_COLOR, OVERDRAW_COLOR } from "@/lib/colorUtils";
 
@@ -139,7 +140,10 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
     return (
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle>Payout Summary</CardTitle>
+          <CardTitle className="flex items-center">
+            <ChartPie className="mr-2 h-5 w-5 text-blue-600" />
+            Payout Summary
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-center text-gray-500 italic">
@@ -155,7 +159,10 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
   return (
     <Card>
       <CardHeader className="pb-2">
-        <CardTitle>Payout Summary</CardTitle>
+        <CardTitle className="flex items-center">
+          <ChartPie className="mr-2 h-5 w-5 text-blue-600" />
+          Payout Summary
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-4" ref={summaryRef} id="payout-summary">
