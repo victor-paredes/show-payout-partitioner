@@ -6,7 +6,7 @@ import {
   HoverCardTrigger 
 } from "@/components/ui/hover-card";
 import { Button } from "@/components/ui/button";
-import { Save, FileUp, AlertTriangle } from "lucide-react"; // Updated import to include Save icon
+import { Save, FileUp, AlertTriangle } from "lucide-react";
 import { exportToPdf, exportToCsv, importFromCsv } from "@/lib/exportUtils";
 import { Recipient } from "@/hooks/useRecipients";
 import { useToast } from "@/hooks/use-toast";
@@ -177,16 +177,16 @@ const PayoutHeaderMenu: React.FC<PayoutHeaderMenuProps> = ({
         <HoverCard openDelay={0} closeDelay={100}>
           <HoverCardTrigger asChild>
             <Button variant="outline" size="sm" className="font-medium flex items-center gap-2">
-              <Save className="h-4 w-4" /> {/* Updated icon to Save */}
+              <Save className="h-4 w-4" />
               Export
             </Button>
           </HoverCardTrigger>
           <HoverCardContent className="w-32 p-0" align="end">
-            <div className="flex flex-col">
+            <div className="flex flex-col items-center">
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="justify-start rounded-none" 
+                className="justify-center rounded-none w-full" 
                 onClick={handleExportPdf}
               >
                 PDF
@@ -194,7 +194,7 @@ const PayoutHeaderMenu: React.FC<PayoutHeaderMenuProps> = ({
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="justify-start rounded-none" 
+                className="justify-center rounded-none w-full" 
                 onClick={handleExportCsv}
               >
                 CSV
@@ -222,11 +222,11 @@ const PayoutHeaderMenu: React.FC<PayoutHeaderMenuProps> = ({
             </Button>
           </HoverCardTrigger>
           <HoverCardContent className="w-32 p-0" align="end">
-            <div className="flex flex-col">
+            <div className="flex flex-col items-center">
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="justify-start rounded-none" 
+                className="justify-center rounded-none w-full" 
                 onClick={handleImportClick}
                 disabled={isImporting}
               >
@@ -269,3 +269,4 @@ const PayoutHeaderMenu: React.FC<PayoutHeaderMenuProps> = ({
 };
 
 export default PayoutHeaderMenu;
+
