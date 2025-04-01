@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Recipient } from "./useRecipients";
 
@@ -33,30 +32,6 @@ export function usePayoutCalculation(recipients: Recipient[]) {
     setTotalShares(shares);
     setValuePerShare(perShare);
   }, [totalPayout, recipients]);
-
-  // Update recipient payouts based on calculations
-  useEffect(() => {
-    if (totalPayout <= 0) {
-      return;
-    }
-
-    // Update payouts for each recipient
-    const updatedRecipients = recipients.map(recipient => {
-      if (recipient.isFixedAmount) {
-        return {
-          ...recipient,
-          payout: isNaN(recipient.value) ? 0 : recipient.value,
-        };
-      } else {
-        return {
-          ...recipient,
-          payout: isNaN(recipient.value) ? 0 : recipient.value * valuePerShare,
-        };
-      }
-    });
-
-    return updatedRecipients;
-  }, [totalPayout, recipients, valuePerShare]);
 
   return {
     totalPayout,
