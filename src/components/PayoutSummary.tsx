@@ -1,4 +1,3 @@
-
 import React, { useRef, useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/format";
@@ -24,9 +23,6 @@ interface PayoutSummaryProps {
   hoveredRecipientId?: string;
   onRecipientHover?: (id: string | null) => void;
 }
-
-const SURPLUS_COLOR = "#ecfdf5";
-const OVERDRAW_COLOR = "#EF4444";
 
 const PayoutSummary: React.FC<PayoutSummaryProps> = ({
   totalPayout,

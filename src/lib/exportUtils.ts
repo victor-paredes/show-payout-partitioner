@@ -225,7 +225,15 @@ export const importFromCsv = async (
         if (isNaN(value)) value = 1;
         
         // Create recipient with direct color property
-        const recipient = {
+        const recipient: {
+          id: string;
+          name: string;
+          value: number;
+          type: "shares" | "$" | "%";
+          payout: number;
+          isFixedAmount: boolean;
+          color?: string;
+        } = {
           id: `${idPrefix}-${i}`,
           name,
           value,
