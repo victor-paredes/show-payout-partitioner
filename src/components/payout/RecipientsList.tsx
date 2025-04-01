@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -91,7 +90,6 @@ const RecipientsList = ({
     setColumnWiseTabbing(!columnWiseTabbing);
   };
 
-  // Create the title with the correct singular/plural form
   const actualRecipientCount = recipients.length;
   const recipientsTitle = `${actualRecipientCount} ${actualRecipientCount === 1 ? 'Recipient' : 'Recipients'}`;
 
@@ -116,15 +114,18 @@ const RecipientsList = ({
             )}
           </div>
           <div className="flex items-center space-x-2">
-            <Button
-              onClick={toggleTabbingDirection}
-              variant="outline"
-              size="sm"
-              className="flex items-center"
-              title={columnWiseTabbing ? "Switch to row-wise tabbing" : "Switch to column-wise tabbing"}
-            >
-              {columnWiseTabbing ? <ArrowDown className="h-4 w-4" /> : <ArrowRight className="h-4 w-4" />}
-            </Button>
+            <div className="flex items-center gap-1">
+              <span className="text-xs font-medium text-muted-foreground">TAB</span>
+              <Button
+                onClick={toggleTabbingDirection}
+                variant="outline"
+                size="sm"
+                className="flex items-center"
+                title={columnWiseTabbing ? "Switch to row-wise tabbing" : "Switch to column-wise tabbing"}
+              >
+                {columnWiseTabbing ? <ArrowDown className="h-4 w-4" /> : <ArrowRight className="h-4 w-4" />}
+              </Button>
+            </div>
             {recipients.length > 0 && (
               <Button 
                 onClick={handleClearClick} 
