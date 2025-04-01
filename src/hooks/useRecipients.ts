@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { DragEndEvent } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
@@ -106,10 +106,6 @@ export function useRecipients() {
 
   const clearRecipients = () => {
     if (recipients.length === 1) {
-      toast({
-        title: "No changes needed",
-        description: "There's already only one recipient",
-      });
       return;
     }
     
@@ -123,11 +119,7 @@ export function useRecipients() {
     
     setRecipients([firstRecipient]);
     setSelectedRecipients(new Set());
-    
-    toast({
-      title: "Recipients cleared",
-      description: "All recipients have been removed except one",
-    });
+    setRecipientCount("1");
   };
 
   return {
