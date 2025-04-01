@@ -1,9 +1,8 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Trash2, GripVertical, ChevronDown } from "lucide-react";
+import { Trash2, GripVertical, ChevronDown, Square } from "lucide-react";
 import { formatCurrency } from "@/lib/format";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -15,6 +14,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+
+const COLORS = [
+  "#3B82F6", // Blue
+  "#F97316", // Orange
+  "#10B981", // Green
+  "#EF4444", // Red
+  "#8B5CF6", // Purple
+  "#F59E0B", // Amber
+  "#BE123C"  // Ruby
+];
 
 export type RecipientType = "shares" | "$" | "%";
 
@@ -49,7 +58,7 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
   onRecipientHover,
 }) => {
   const [isInputHover, setIsInputHover] = useState(false);
-  const [nameWidth, setNameWidth] = useState(150); // Default width
+  const [nameWidth, setNameWidth] = useState(150);
   const nameRef = useRef<HTMLSpanElement>(null);
   const [isDraggingInput, setIsDraggingInput] = useState(false);
   
@@ -91,7 +100,6 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
     }
   };
 
-  // Handle type selection
   const handleTypeChange = (value: string) => {
     const type = value as RecipientType;
     
@@ -101,19 +109,25 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
     });
   };
 
-  // Determine current type for the select
   const currentType: RecipientType = recipient.type || 
     (recipient.isFixedAmount ? "$" : "shares");
     
   const handleRowClick = (e: React.MouseEvent) => {
-    // Only toggle selection if not dragging from an input
     if (!isDraggingInput) {
       onToggleSelect();
     }
     
-    // Reset drag state after click
     setIsDraggingInput(false);
   };
+
+  const getRecipientColor = (recipientId: string) => {
+    const hashCode = Array.from(recipientId).reduce(
+      (acc, char) => acc + char.charCodeAt(0), 0
+    );
+    return COLORS[hashCode % COLORS.length];
+  };
+
+  const recipientColor = getRecipientColor(recipient.id);
 
   return (
     <div 
@@ -144,10 +158,14 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
       </Button>
       
       <div 
-        className="flex-1"
+        className="flex items-center space-x-2"
         onMouseEnter={() => setIsInputHover(true)}
         onMouseLeave={() => setIsInputHover(false)}
       >
+        <div 
+          className="w-4 h-4 rounded-sm" 
+          style={{ backgroundColor: recipientColor }}
+        />
         <div className="relative inline-block">
           <span 
             ref={nameRef} 
