@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from "react";
 import TotalPayoutInput from "./payout/TotalPayoutInput";
 import RecipientsList from "./payout/RecipientsList";
@@ -14,7 +13,6 @@ const PayoutCalculator = () => {
   const {
     recipients,
     setRecipients,
-    groups,
     selectedRecipients,
     setSelectedRecipients,
     recipientCount,
@@ -25,8 +23,7 @@ const PayoutCalculator = () => {
     updateRecipient,
     handleDragEnd,
     clearRecipients,
-    setLastUsedId,
-    createGroup
+    setLastUsedId
   } = useRecipients();
 
   const {
@@ -167,7 +164,6 @@ const PayoutCalculator = () => {
 
           <RecipientsList
             recipients={recipients}
-            groups={groups}
             recipientCount={recipientCount}
             setRecipientCount={setRecipientCount}
             addRecipients={addRecipients}
@@ -181,7 +177,6 @@ const PayoutCalculator = () => {
             hoveredRecipientId={hoveredRecipientId || undefined}
             onRecipientHover={handleRecipientHover}
             clearRecipients={clearRecipients}
-            createGroup={createGroup}
           />
         </div>
 
@@ -189,7 +184,6 @@ const PayoutCalculator = () => {
           <PayoutSummary
             totalPayout={totalPayout}
             recipients={recipients}
-            groups={groups}
             remainingAmount={remainingAmount}
             hoveredRecipientId={hoveredRecipientId || undefined}
             onRecipientHover={handleRecipientHover}

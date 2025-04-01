@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -26,7 +27,6 @@ interface Recipient {
   payout: number;
   type?: RecipientType;
   color?: string;
-  groupId?: string;
 }
 
 interface RecipientRowProps {
@@ -41,7 +41,6 @@ interface RecipientRowProps {
   columnWiseTabbing?: boolean;
   rowIndex?: number;
   totalRows?: number;
-  isInGroup?: boolean;
 }
 
 const RecipientRow: React.FC<RecipientRowProps> = ({
@@ -55,8 +54,7 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
   onRecipientHover,
   columnWiseTabbing = false,
   rowIndex = 0,
-  totalRows = 1,
-  isInGroup = false
+  totalRows = 1
 }) => {
   const [isInputHover, setIsInputHover] = useState(false);
   const [nameWidth, setNameWidth] = useState(150);
@@ -114,6 +112,8 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
     (recipient.isFixedAmount ? "$" : "shares");
     
   const handleRowClick = (e: React.MouseEvent) => {
+    // Don't check isDraggingInput anymore - this prevents double-click issues
+    // Just check if the click happened on an interactive element
     const target = e.target as HTMLElement;
     const isInteractiveElement = 
       target.tagName === 'INPUT' || 
@@ -128,28 +128,34 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
   };
 
   const handleNameInputClick = (e: React.MouseEvent<HTMLInputElement>) => {
+    // Select all text in the input when clicked
     const target = e.target as HTMLInputElement;
     target.select();
-    e.stopPropagation();
+    e.stopPropagation(); // Prevent row selection
   };
 
   const handleValueInputClick = (e: React.MouseEvent<HTMLInputElement>) => {
+    // Select all text in the input when clicked
     const target = e.target as HTMLInputElement;
     target.select();
-    e.stopPropagation();
+    e.stopPropagation(); // Prevent row selection
   };
 
+  // Use custom color if available, otherwise use the generated color
   const recipientColor = recipient.color || getRecipientColor(recipient.id);
 
+  // Calculate tab indexes based on tabbing direction
   let nameTabIndex: number;
   let typeTabIndex: number;
   let valueTabIndex: number;
 
   if (columnWiseTabbing && totalRows && totalRows > 0) {
+    // For column-wise tabbing, we go down columns: all names first, then all types, then all values
     nameTabIndex = 1 + rowIndex;
     typeTabIndex = 1 + totalRows + rowIndex;
     valueTabIndex = 1 + (2 * totalRows) + rowIndex;
   } else {
+    // For row-wise tabbing (default), we go across each row before moving to the next
     nameTabIndex = 1 + (rowIndex * 3);
     typeTabIndex = 2 + (rowIndex * 3);
     valueTabIndex = 3 + (rowIndex * 3);
@@ -168,8 +174,6 @@ const RecipientRow: React.FC<RecipientRowProps> = ({
             : ""
         } ${
           isHighlighted ? "border-black" : "border"
-        } ${
-          isInGroup ? "border-l-0 border-r-0 border-b-0 first:rounded-t-none last:rounded-b-none" : ""
         }`}
         onClick={handleRowClick}
         onMouseEnter={handleMouseEnter}

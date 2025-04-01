@@ -2,11 +2,10 @@
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Trash2, X, ArrowRight, ArrowDown, Users } from "lucide-react";
+import { Plus, Trash2, X, ArrowRight, ArrowDown } from "lucide-react";
 import RecipientRow from "../RecipientRow";
-import { Recipient, RecipientGroup } from "@/hooks/useRecipients";
+import { Recipient } from "@/hooks/useRecipients";
 import ConfirmationModal from "@/components/ConfirmationModal";
-import GroupModal from "./GroupModal";
 import {
   DndContext,
   closestCenter,
@@ -32,7 +31,6 @@ import {
 
 interface RecipientsListProps {
   recipients: Recipient[];
-  groups: RecipientGroup[];
   recipientCount: string;
   setRecipientCount: (count: string) => void;
   addRecipients: () => void;
@@ -46,12 +44,10 @@ interface RecipientsListProps {
   hoveredRecipientId?: string;
   onRecipientHover?: (id: string | null) => void;
   clearRecipients?: () => void;
-  createGroup: (groupName: string) => void;
 }
 
 const RecipientsList = ({
   recipients,
-  groups,
   recipientCount,
   setRecipientCount,
   addRecipients,
@@ -64,12 +60,10 @@ const RecipientsList = ({
   valuePerShare,
   hoveredRecipientId,
   onRecipientHover,
-  clearRecipients,
-  createGroup
+  clearRecipients
 }: RecipientsListProps) => {
   const [confirmClearOpen, setConfirmClearOpen] = useState(false);
   const [columnWiseTabbing, setColumnWiseTabbing] = useState(false);
-  const [groupModalOpen, setGroupModalOpen] = useState(false);
   
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -97,43 +91,9 @@ const RecipientsList = ({
     setColumnWiseTabbing(!columnWiseTabbing);
   };
 
-  const handleCreateGroup = () => {
-    if (selectedRecipients.size > 1) {
-      setGroupModalOpen(true);
-    }
-  };
-
-  const handleGroupConfirm = (groupName: string) => {
-    createGroup(groupName);
-  };
-
-  const getGroupForRecipient = (recipientId: string) => {
-    const recipient = recipients.find(r => r.id === recipientId);
-    if (recipient?.groupId) {
-      return groups.find(g => g.id === recipient.groupId);
-    }
-    return undefined;
-  };
-
   // Create the title with the correct singular/plural form
   const actualRecipientCount = recipients.length;
   const recipientsTitle = `${actualRecipientCount} ${actualRecipientCount === 1 ? 'Recipient' : 'Recipients'}`;
-
-  // Group recipients by their groupId
-  const recipientsByGroup: {[key: string]: Recipient[]} = {};
-  
-  // First, add all grouped recipients
-  recipients.forEach(recipient => {
-    if (recipient.groupId) {
-      if (!recipientsByGroup[recipient.groupId]) {
-        recipientsByGroup[recipient.groupId] = [];
-      }
-      recipientsByGroup[recipient.groupId].push(recipient);
-    }
-  });
-
-  // Then, add ungrouped recipients
-  const ungroupedRecipients = recipients.filter(r => !r.groupId);
 
   return (
     <Card>
@@ -156,17 +116,6 @@ const RecipientsList = ({
             )}
           </div>
           <div className="flex items-center space-x-2">
-            {selectedRecipients.size > 1 && (
-              <Button
-                onClick={handleCreateGroup}
-                variant="outline"
-                size="sm"
-                className="flex items-center"
-                title="Group selected recipients"
-              >
-                <Users className="h-4 w-4" />
-              </Button>
-            )}
             <Button
               onClick={toggleTabbingDirection}
               variant="outline"
@@ -220,41 +169,7 @@ const RecipientsList = ({
                 items={recipients.map(r => r.id)} 
                 strategy={verticalListSortingStrategy}
               >
-                {/* Render groups first */}
-                {Object.entries(recipientsByGroup).map(([groupId, groupRecipients]) => {
-                  const group = groups.find(g => g.id === groupId);
-                  if (!group) return null;
-                  
-                  return (
-                    <div key={groupId} className="mb-4 border border-gray-200 rounded-md overflow-hidden">
-                      <div className="px-3 py-1 bg-gray-50 text-xs text-gray-500">
-                        {group.name}
-                      </div>
-                      <div>
-                        {groupRecipients.map((recipient, rowIndex) => (
-                          <RecipientRow
-                            key={recipient.id}
-                            recipient={recipient}
-                            onUpdate={(updates) => updateRecipient(recipient.id, updates)}
-                            onRemove={() => removeRecipient(recipient.id)}
-                            valuePerShare={valuePerShare}
-                            isSelected={selectedRecipients.has(recipient.id)}
-                            onToggleSelect={() => toggleSelectRecipient(recipient.id)}
-                            isHighlighted={hoveredRecipientId === recipient.id}
-                            onRecipientHover={onRecipientHover}
-                            columnWiseTabbing={columnWiseTabbing}
-                            rowIndex={rowIndex}
-                            totalRows={recipients.length}
-                            isInGroup={true}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })}
-
-                {/* Then render ungrouped recipients */}
-                {ungroupedRecipients.map((recipient, rowIndex) => (
+                {recipients.map((recipient, rowIndex) => (
                   <RecipientRow
                     key={recipient.id}
                     recipient={recipient}
@@ -285,12 +200,6 @@ const RecipientsList = ({
         cancelLabel="Go Back"
         onConfirm={handleConfirmClear}
         variant="destructive"
-      />
-
-      <GroupModal
-        open={groupModalOpen}
-        onOpenChange={setGroupModalOpen}
-        onConfirm={handleGroupConfirm}
       />
     </Card>
   );
