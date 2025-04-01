@@ -38,7 +38,6 @@ const PayoutHeaderMenu: React.FC<PayoutHeaderMenuProps> = ({
   const [isImportWarningOpen, setIsImportWarningOpen] = React.useState(false);
   const [pendingImportData, setPendingImportData] = React.useState<Recipient[] | null>(null);
   const [pendingTotalPayout, setPendingTotalPayout] = React.useState<number | null>(null);
-  const [colorSummary, setColorSummary] = React.useState<{ total: number, withColors: number }>({ total: 0, withColors: 0 });
 
   const handleExportPdf = () => {
     const element = document.getElementById('payout-summary');
@@ -75,30 +74,7 @@ const PayoutHeaderMenu: React.FC<PayoutHeaderMenuProps> = ({
 
         const { importedData, importedTotalPayout } = await importFromCsv(csvContent);
         
-        // Check how many recipients have custom colors
-        const withColors = importedData.filter(r => r.color !== undefined).length;
-        
-        console.log(`CSV Import preview: ${withColors} of ${importedData.length} recipients have custom colors`);
-        setColorSummary({ total: importedData.length, withColors });
-        
-        // Process the data, ensuring color property is preserved
-        const processedData: Recipient[] = importedData.map(item => {
-          const type = item.type as RecipientType || "shares";
-          const isFixedAmount = type === "$";
-          
-          // Create recipient with explicit color property to prevent loss during conversion
-          return {
-            id: item.id,
-            name: item.name,
-            value: item.value,
-            payout: item.payout,
-            type: type,
-            isFixedAmount: isFixedAmount,
-            ...(item.color ? { color: item.color } : {})
-          };
-        });
-        
-        if (processedData.length === 0) {
+        if (importedData.length === 0) {
           toast({
             title: "Import failed",
             description: "No valid data found in the CSV file",
@@ -107,7 +83,7 @@ const PayoutHeaderMenu: React.FC<PayoutHeaderMenuProps> = ({
           return;
         }
 
-        setPendingImportData(processedData);
+        setPendingImportData(importedData);
         setPendingTotalPayout(importedTotalPayout || null);
         setIsImportWarningOpen(true);
       } catch (error) {
@@ -133,22 +109,13 @@ const PayoutHeaderMenu: React.FC<PayoutHeaderMenuProps> = ({
       onImport(pendingImportData, true);
       setIsImportWarningOpen(false);
       
-      // Show toast with color summary if colors were imported
-      if (colorSummary.withColors > 0) {
-        toast({
-          title: "Import successful",
-          description: `Imported ${pendingImportData.length} recipients with ${colorSummary.withColors} custom colors`,
-        });
-      } else {
-        toast({
-          title: "Import successful",
-          description: `Imported ${pendingImportData.length} recipients`,
-        });
-      }
+      toast({
+        title: "Import successful",
+        description: `Imported ${pendingImportData.length} recipients`,
+      });
       
       setPendingImportData(null);
       setPendingTotalPayout(null);
-      setColorSummary({ total: 0, withColors: 0 });
     }
   };
 
@@ -221,11 +188,6 @@ const PayoutHeaderMenu: React.FC<PayoutHeaderMenuProps> = ({
             <AlertDialogDescription>
               All current recipients and their data will be replaced with the imported data. 
               This action cannot be undone.
-              {colorSummary.withColors > 0 && (
-                <p className="mt-2 text-green-600">
-                  {colorSummary.withColors} of {colorSummary.total} recipients have custom colors that will be imported.
-                </p>
-              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           
