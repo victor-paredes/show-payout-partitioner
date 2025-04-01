@@ -1,3 +1,4 @@
+
 import React, { useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/format";
@@ -33,6 +34,7 @@ interface PayoutSummaryProps {
 }
 
 const COLORS = [
+  // Original colors
   "#8B5CF6", // Vivid Purple
   "#D946EF", // Magenta Pink
   "#F97316", // Bright Orange
@@ -43,6 +45,30 @@ const COLORS = [
   "#6366F1", // Indigo
   "#EC4899", // Pink
   "#14B8A6", // Teal
+  
+  // Additional colors - Set 1
+  "#3B82F6", // Blue
+  "#22C55E", // Green
+  "#F59E0B", // Amber
+  "#64748B", // Slate
+  "#A855F7", // Purple
+  "#F43F5E", // Rose
+  "#06B6D4", // Cyan
+  "#84CC16", // Lime
+  "#8B5CF6", // Purple (slightly different shade)
+  "#FB7185", // Light Red
+  
+  // Additional colors - Set 2
+  "#4ADE80", // Lighter Green
+  "#A78BFA", // Lavender
+  "#FB923C", // Light Orange
+  "#38BDF8", // Sky Blue
+  "#2DD4BF", // Teal
+  "#FBBF24", // Yellow
+  "#818CF8", // Indigo
+  "#C084FC", // Purple
+  "#34D399", // Emerald
+  "#F472B6", // Pink
 ];
 
 // Light grey for surplus
