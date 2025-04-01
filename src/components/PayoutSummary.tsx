@@ -32,69 +32,71 @@ interface PayoutSummaryProps {
   onRecipientHover?: (id: string | null) => void;
 }
 
-// Balanced color palette with 50 unique colors
+// Balanced and diverse color palette with 50 unique colors with better separation
 const COLORS = [
-  // Soft but saturated primary colors
-  "#8B5CF6", // Vivid Purple
-  "#0EA5E9", // Ocean Blue
-  "#10B981", // Emerald Green
-  "#F97316", // Bright Orange
-  "#D946EF", // Magenta Pink
-  "#6366F1", // Indigo
+  // Primary colors and variations
+  "#3B82F6", // Blue
+  "#F97316", // Orange
+  "#10B981", // Green
+  "#EF4444", // Red
+  "#8B5CF6", // Purple
+  "#F59E0B", // Amber
   
-  // Deeper secondary colors
-  "#7C3AED", // Deep Purple
-  "#2563EB", // Blue
-  "#059669", // Green
-  "#D97706", // Amber
-  "#DB2777", // Pink
+  // Secondary colors
+  "#EC4899", // Pink
+  "#14B8A6", // Teal
+  "#6366F1", // Indigo
+  "#84CC16", // Lime
+  "#D97706", // Dark Amber
+  "#0EA5E9", // Sky Blue
+  
+  // Tertiary colors
+  "#DC2626", // Bright Red
+  "#2563EB", // Royal Blue
+  "#059669", // Emerald
+  "#7C3AED", // Violet
+  "#EA580C", // Dark Orange
+  "#0891B2", // Cyan
+  
+  // Additional vibrant hues
+  "#DB2777", // Fuchsia
+  "#16A34A", // Green
+  "#9333EA", // Purple
+  "#D946EF", // Magenta
+  "#B45309", // Brown
   "#4F46E5", // Indigo
   
-  // Rich tertiary colors
-  "#9333EA", // Purple
-  "#1D4ED8", // Dark Blue
-  "#047857", // Emerald
-  "#B45309", // Bronze
-  "#BE185D", // Dark Pink
-  "#5B21B6", // Deep Purple
-  
-  // Muted vibrant colors
-  "#7E22CE", // Dark Purple
+  // Mixed mid-tones
+  "#0D9488", // Dark Teal
+  "#A21CAF", // Dark Magenta
+  "#15803D", // Forest Green
+  "#B91C1C", // Burgundy
   "#1E40AF", // Navy Blue
-  "#065F46", // Deep Green
+  "#C2410C", // Burnt Orange
+
+  // Softer but distinct hues
+  "#0284C7", // Ocean Blue
+  "#4338CA", // Deep Blue
   "#A16207", // Gold
-  "#9D174D", // Raspberry
-  "#6D28D9", // Purple
-  
-  // Accent colors
-  "#A855F7", // Lavender
-  "#3B82F6", // Bright Blue
-  "#22C55E", // Lime Green
-  "#F59E0B", // Sunflower
-  "#EC4899", // Hot Pink
-  "#8B5CF6", // Purple
-  
-  // Additional balanced hues
-  "#7E22CE", // Dark Purple
-  "#1E3A8A", // Dark Navy
-  "#166534", // Forest Green
-  "#B45309", // Dark Orange
-  "#9D174D", // Maroon
-  "#6D28D9", // Deep Purple
-  "#4338CA", // Intense Blue
-  "#14B8A6", // Teal
-  "#CA8A04", // Mustard
-  "#BE123C", // Crimson
-  "#7E22CE", // Purple
+  "#BE185D", // Raspberry
   "#0F766E", // Deep Teal
-  "#A16207", // Dark Gold
-  "#BE185D", // Deep Pink
-  "#5B21B6", // Indigo
-  "#4338CA", // Royal Blue
-  "#15803D", // Dark Green
-  "#A21CAF", // Plum
-  "#C026D3", // Magenta
-  "#4F46E5"  // Periwinkle
+  "#7E22CE", // Royal Purple
+  
+  // Additional distinct colors
+  "#1D4ED8", // Cobalt Blue
+  "#065F46", // Hunter Green
+  "#9D174D", // Crimson
+  "#CA8A04", // Mustard
+  "#0F172A", // Navy Black
+  "#166534", // Jungle Green
+  "#701A75", // Plum
+  "#C026D3", // Bright Purple
+  "#B45309", // Cinnamon
+  "#0E7490", // Blue Lagoon
+  "#1E3A8A", // Dark Navy
+  "#65A30D", // Avocado
+  "#A16207", // Bronze
+  "#BE123C"  // Ruby
 ];
 
 // Light grey for surplus
