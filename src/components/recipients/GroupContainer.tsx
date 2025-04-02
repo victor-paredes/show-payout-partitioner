@@ -23,6 +23,7 @@ interface GroupContainerProps {
   onDrop: (e: React.DragEvent) => void;
   onUpdateGroup: (id: string, updates: Partial<Group>) => void;
   columnWiseTabbing?: boolean;
+  tabIndexOffset?: number; // Add offset for proper sequencing
 }
 
 const GroupContainer: React.FC<GroupContainerProps> = ({
@@ -41,7 +42,8 @@ const GroupContainer: React.FC<GroupContainerProps> = ({
   onDragOver,
   onDrop,
   onUpdateGroup,
-  columnWiseTabbing = false
+  columnWiseTabbing = false,
+  tabIndexOffset = 0
 }) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const [isEditingName, setIsEditingName] = useState(false);
@@ -84,7 +86,7 @@ const GroupContainer: React.FC<GroupContainerProps> = ({
             size="icon"
             className="w-5 h-5 p-0 mr-1"
             onClick={toggleExpanded}
-            tabIndex={0}
+            tabIndex={tabIndexOffset}
           >
             {isExpanded ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
           </Button>
@@ -97,11 +99,19 @@ const GroupContainer: React.FC<GroupContainerProps> = ({
               onKeyDown={handleGroupNameKeyDown}
               className="h-6 px-1 py-0 text-sm font-medium w-40"
               autoFocus
+              tabIndex={tabIndexOffset + 1}
             />
           ) : (
             <div 
               className="flex items-center cursor-pointer" 
               onClick={() => setIsEditingName(true)}
+              tabIndex={tabIndexOffset + 1}
+              role="button"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  setIsEditingName(true);
+                }
+              }}
             >
               <div 
                 className="h-2 w-2 rounded-full mr-2"
@@ -120,6 +130,7 @@ const GroupContainer: React.FC<GroupContainerProps> = ({
           size="sm"
           className="h-6 w-6 p-0 hover:text-red-500"
           onClick={() => onRemoveGroup(group.id)}
+          tabIndex={tabIndexOffset + 2}
         >
           <Trash2 className="h-3 w-3" />
         </Button>
@@ -154,6 +165,7 @@ const GroupContainer: React.FC<GroupContainerProps> = ({
                 columnWiseTabbing={columnWiseTabbing}
                 rowIndex={index}
                 totalRows={recipients.length}
+                tabIndexOffset={tabIndexOffset + 3} // Pass the offset with adjustment for group header elements
               />
             ))
           ) : (
@@ -167,6 +179,7 @@ const GroupContainer: React.FC<GroupContainerProps> = ({
             size="sm"
             className="w-full text-xs h-6 justify-start"
             onClick={() => onAddRecipients(group.id)}
+            tabIndex={tabIndexOffset + 3 + (recipients.length > 0 ? recipients.length * 3 : 0)}
           >
             <Plus className="h-3 w-3 mr-1" />
             Add Recipients

@@ -16,6 +16,7 @@ interface UngroupedContainerProps {
   onDragOver: (e: React.DragEvent) => void;
   onDrop: (e: React.DragEvent) => void;
   columnWiseTabbing?: boolean;
+  tabIndexOffset?: number; // Add offset for proper sequencing
 }
 
 const UngroupedContainer: React.FC<UngroupedContainerProps> = ({
@@ -30,7 +31,8 @@ const UngroupedContainer: React.FC<UngroupedContainerProps> = ({
   onDragStart,
   onDragOver,
   onDrop,
-  columnWiseTabbing = false
+  columnWiseTabbing = false,
+  tabIndexOffset = 0
 }) => {
   const isActiveDropTarget = 
     draggedRecipientId !== null && 
@@ -72,6 +74,7 @@ const UngroupedContainer: React.FC<UngroupedContainerProps> = ({
             columnWiseTabbing={columnWiseTabbing}
             rowIndex={index}
             totalRows={recipients.length}
+            tabIndexOffset={tabIndexOffset} // Pass the offset
           />
         ))}
       </div>

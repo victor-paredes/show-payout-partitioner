@@ -29,6 +29,7 @@ interface RecipientItemProps {
   columnWiseTabbing?: boolean;
   rowIndex?: number;
   totalRows?: number;
+  tabIndexOffset?: number; // Add offset for proper sequencing
 }
 
 const RecipientItem: React.FC<RecipientItemProps> = ({
@@ -43,7 +44,8 @@ const RecipientItem: React.FC<RecipientItemProps> = ({
   isDragging,
   columnWiseTabbing = false,
   rowIndex = 0,
-  totalRows = 1
+  totalRows = 1,
+  tabIndexOffset = 0
 }) => {
   const [nameWidth, setNameWidth] = useState(150);
   const [colorPickerOpen, setColorPickerOpen] = useState(false);
@@ -88,21 +90,21 @@ const RecipientItem: React.FC<RecipientItemProps> = ({
     }
   };
   
-  // Calculate tab indexes based on tabbing direction
+  // Calculate tab indexes based on tabbing direction and offset
   let nameTabIndex: number;
   let typeTabIndex: number;
   let valueTabIndex: number;
 
   if (columnWiseTabbing && totalRows > 0) {
     // For column-wise tabbing, we go down columns: all names first, then all types, then all values
-    nameTabIndex = 1 + rowIndex;
-    typeTabIndex = 1 + totalRows + rowIndex;
-    valueTabIndex = 1 + (2 * totalRows) + rowIndex;
+    nameTabIndex = tabIndexOffset + 1 + rowIndex;
+    typeTabIndex = tabIndexOffset + 1 + totalRows + rowIndex;
+    valueTabIndex = tabIndexOffset + 1 + (2 * totalRows) + rowIndex;
   } else {
     // For row-wise tabbing (default), we go across each row before moving to the next
-    nameTabIndex = 1 + (rowIndex * 3);
-    typeTabIndex = 2 + (rowIndex * 3);
-    valueTabIndex = 3 + (rowIndex * 3);
+    nameTabIndex = tabIndexOffset + 1 + (rowIndex * 3);
+    typeTabIndex = tabIndexOffset + 2 + (rowIndex * 3);
+    valueTabIndex = tabIndexOffset + 3 + (rowIndex * 3);
   }
   
   // Use custom color if available, otherwise use the generated color
@@ -129,6 +131,7 @@ const RecipientItem: React.FC<RecipientItemProps> = ({
             variant="ghost"
             size="icon"
             className="cursor-grab text-gray-400 hover:text-gray-600 p-0 h-auto"
+            tabIndex={nameTabIndex - 1}
           >
             <GripVertical className="h-4 w-4" />
           </Button>
@@ -141,6 +144,7 @@ const RecipientItem: React.FC<RecipientItemProps> = ({
               e.stopPropagation();
               setColorPickerOpen(true);
             }}
+            tabIndex={nameTabIndex - 0.5}
           >
             <div 
               className="w-4 h-4 rounded-sm"
@@ -214,6 +218,7 @@ const RecipientItem: React.FC<RecipientItemProps> = ({
               onRemove();
             }}
             className="text-gray-400 hover:text-red-500"
+            tabIndex={valueTabIndex + 1}
           >
             <Trash2 className="h-4 w-4" />
           </Button>

@@ -74,6 +74,31 @@ const RecipientsList: React.FC<RecipientsListProps> = ({
   const menuRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   
+  // Calculate base tab index for each group
+  const calculateTabIndices = () => {
+    let currentOffset = 0;
+    const groupOffsets: Record<string, number> = {};
+    
+    // First pass: assign offsets to groups
+    groupedRecipients.recipientsByGroup.forEach(({ group, recipients }, idx) => {
+      groupOffsets[group.id] = currentOffset;
+      
+      // Base elements in group header (toggle, name, remove) + recipients + add button
+      const groupElementCount = 3 + (recipients.length * 3) + 1;
+      currentOffset += groupElementCount;
+    });
+    
+    // Assign offset for ungrouped section
+    const ungroupedOffset = currentOffset;
+    
+    return {
+      groupOffsets,
+      ungroupedOffset
+    };
+  };
+  
+  const { groupOffsets, ungroupedOffset } = calculateTabIndices();
+  
   const onRecipientDragStart = (recipientId: string, sourceId: string) => {
     handleDragStart(recipientId);
     setDragSourceId(sourceId);
@@ -374,7 +399,7 @@ const RecipientsList: React.FC<RecipientsListProps> = ({
             </div>
           ) : (
             <>
-              {groupedRecipients.recipientsByGroup.map(({ group, recipients }) => (
+              {groupedRecipients.recipientsByGroup.map(({ group, recipients }, index) => (
                 <GroupContainer
                   key={group.id}
                   group={group}
@@ -393,6 +418,7 @@ const RecipientsList: React.FC<RecipientsListProps> = ({
                   draggedRecipientId={draggedRecipientId}
                   onUpdateGroup={updateGroup}
                   columnWiseTabbing={columnWiseTabbing}
+                  tabIndexOffset={groupOffsets[group.id] || 0}
                 />
               ))}
               
@@ -409,6 +435,7 @@ const RecipientsList: React.FC<RecipientsListProps> = ({
                 onDrop={handleDrop}
                 draggedRecipientId={draggedRecipientId}
                 columnWiseTabbing={columnWiseTabbing}
+                tabIndexOffset={ungroupedOffset}
               />
             </>
           )}
