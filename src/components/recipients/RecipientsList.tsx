@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -116,7 +117,7 @@ const RecipientsList: React.FC<RecipientsListProps> = ({
   };
 
   const toggleTabbingDirection = () => {
-    setColumnWiseTabbing(!columnWiseTabbing);
+    setColumnWiseTabbing(prevState => !prevState);
   };
 
   const toggleMobileMenu = () => {
@@ -391,6 +392,7 @@ const RecipientsList: React.FC<RecipientsListProps> = ({
                   onDrop={handleDrop}
                   draggedRecipientId={draggedRecipientId}
                   onUpdateGroup={updateGroup}
+                  columnWiseTabbing={columnWiseTabbing}
                 />
               ))}
               
@@ -406,6 +408,7 @@ const RecipientsList: React.FC<RecipientsListProps> = ({
                 onDragOver={handleDragOver}
                 onDrop={handleDrop}
                 draggedRecipientId={draggedRecipientId}
+                columnWiseTabbing={columnWiseTabbing}
               />
             </>
           )}

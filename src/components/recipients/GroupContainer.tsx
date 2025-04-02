@@ -1,16 +1,9 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2, Edit2 } from "lucide-react";
+import { Plus, Trash2, ChevronDown, ChevronRight } from "lucide-react";
+import { Recipient, Group } from "@/hooks/useRecipientsManager";
 import RecipientItem from "./RecipientItem";
-import { Group, Recipient } from "@/hooks/useRecipientsManager";
-import { 
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 
 interface GroupContainerProps {
@@ -19,6 +12,7 @@ interface GroupContainerProps {
   selectedRecipients: Set<string>;
   valuePerShare: number;
   hoveredRecipientId?: string;
+  draggedRecipientId: string | null;
   onRemoveGroup: (id: string) => void;
   onAddRecipients: (groupId: string) => void;
   onUpdateRecipient: (id: string, updates: Partial<Recipient>) => void;
@@ -27,8 +21,8 @@ interface GroupContainerProps {
   onDragStart: (recipientId: string, sourceId: string) => void;
   onDragOver: (e: React.DragEvent) => void;
   onDrop: (e: React.DragEvent) => void;
-  draggedRecipientId: string | null;
-  onUpdateGroup?: (id: string, updates: Partial<Group>) => void;
+  onUpdateGroup: (id: string, updates: Partial<Group>) => void;
+  columnWiseTabbing?: boolean;
 }
 
 const GroupContainer: React.FC<GroupContainerProps> = ({
@@ -37,6 +31,7 @@ const GroupContainer: React.FC<GroupContainerProps> = ({
   selectedRecipients,
   valuePerShare,
   hoveredRecipientId,
+  draggedRecipientId,
   onRemoveGroup,
   onAddRecipients,
   onUpdateRecipient,
@@ -45,149 +40,139 @@ const GroupContainer: React.FC<GroupContainerProps> = ({
   onDragStart,
   onDragOver,
   onDrop,
-  draggedRecipientId,
-  onUpdateGroup
+  onUpdateGroup,
+  columnWiseTabbing = false
 }) => {
-  const [isDragOver, setIsDragOver] = useState(false);
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true);
+  const [isEditingName, setIsEditingName] = useState(false);
   const [groupName, setGroupName] = useState(group.name);
   
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragOver(true);
-    onDragOver(e);
+  const toggleExpanded = () => {
+    setIsExpanded(!isExpanded);
   };
   
-  const handleDragLeave = () => {
-    setIsDragOver(false);
+  const handleGroupNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setGroupName(e.target.value);
   };
   
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragOver(false);
-    onDrop(e);
+  const handleGroupNameBlur = () => {
+    onUpdateGroup(group.id, { name: groupName });
+    setIsEditingName(false);
   };
-
-  const handleEditSave = () => {
-    // Only update if there's a valid name and the onUpdateGroup prop is provided
-    if (groupName.trim() && onUpdateGroup) {
-      onUpdateGroup(group.id, { name: groupName.trim() });
+  
+  const handleGroupNameKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleGroupNameBlur();
     }
-    
-    // Return to original name if empty
-    if (!groupName.trim()) {
-      setGroupName(group.name);
-    }
-    
-    setEditDialogOpen(false);
   };
-
-  // Calculate minimum height for the container
-  const calculateMinHeight = () => {
-    const baseRowHeight = 72; // Height of one row in pixels
-    const minRows = 1; // Minimum number of rows to display
-    const minHeight = Math.max(recipients.length, minRows) * baseRowHeight;
-    return `${minHeight}px`;
-  };
-
+  
+  const isActiveDropTarget = 
+    draggedRecipientId !== null && 
+    draggedRecipientId !== group.id && 
+    !recipients.some(r => r.id === draggedRecipientId);
+  
+  const dropTargetStyle = isActiveDropTarget 
+    ? { background: `${group.color}15`, borderColor: `${group.color}50` }
+    : {};
+  
   return (
-    <div className="mb-6">
-      <h3 className="text-sm font-medium mb-2 text-gray-600 flex items-center justify-between">
+    <div className="mb-6 select-none">
+      <div className="flex items-center justify-between mb-2">
         <div className="flex items-center">
-          {group.name}
-          <span className="text-xs ml-2 text-gray-500">
-            ({recipients.length} recipient{recipients.length !== 1 ? 's' : ''})
-          </span>
-        </div>
-        <div className="flex items-center space-x-1">
           <Button
             variant="ghost"
-            size="sm"
-            className="h-6 w-6 p-0"
-            onClick={() => setEditDialogOpen(true)}
+            size="icon"
+            className="w-5 h-5 p-0 mr-1"
+            onClick={toggleExpanded}
+            tabIndex={0}
           >
-            <Edit2 className="h-3 w-3 text-gray-500" />
+            {isExpanded ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-6 w-6 p-0 hover:text-red-500"
-            onClick={() => onRemoveGroup(group.id)}
-          >
-            <Trash2 className="h-3 w-3" />
-          </Button>
-        </div>
-      </h3>
-      
-      <div 
-        className="space-y-2 p-2 rounded-md border-2 border-dashed transition-all"
-        style={{ 
-          borderColor: isDragOver ? "#94a3b8" : "#e2e8f0",
-          background: isDragOver ? "#f8fafc" : 'transparent',
-          minHeight: calculateMinHeight(),
-          transition: "all 0.15s ease-in-out"
-        }}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-        data-group-id={group.id}
-      >
-        {recipients.length > 0 ? (
-          recipients.map((recipient) => (
-            <RecipientItem
-              key={recipient.id}
-              recipient={recipient}
-              onUpdate={(updates) => onUpdateRecipient(recipient.id, updates)}
-              onRemove={() => onRemoveRecipient(recipient.id)}
-              valuePerShare={valuePerShare}
-              isSelected={selectedRecipients.has(recipient.id)}
-              onSelect={() => onToggleSelectRecipient(recipient.id)}
-              isHighlighted={hoveredRecipientId === recipient.id}
-              onDragStart={() => onDragStart(recipient.id, group.id)}
-              isDragging={draggedRecipientId === recipient.id}
+          
+          {isEditingName ? (
+            <Input
+              value={groupName}
+              onChange={handleGroupNameChange}
+              onBlur={handleGroupNameBlur}
+              onKeyDown={handleGroupNameKeyDown}
+              className="h-6 px-1 py-0 text-sm font-medium w-40"
+              autoFocus
             />
-          ))
-        ) : (
-          <div className="flex items-center justify-center h-[72px] rounded-md border border-dashed border-gray-300 bg-gray-50 text-gray-400 text-sm">
-            Drop a recipient here
-          </div>
-        )}
+          ) : (
+            <div 
+              className="flex items-center cursor-pointer" 
+              onClick={() => setIsEditingName(true)}
+            >
+              <div 
+                className="h-2 w-2 rounded-full mr-2"
+                style={{ backgroundColor: group.color }}
+              ></div>
+              <span className="text-sm font-medium text-gray-700">{group.name}</span>
+              <span className="text-xs ml-2 text-gray-500">
+                ({recipients.length} recipient{recipients.length !== 1 ? 's' : ''})
+              </span>
+            </div>
+          )}
+        </div>
         
         <Button
           variant="ghost"
           size="sm"
-          className="w-full text-xs h-6 justify-start"
-          onClick={() => onAddRecipients(group.id)}
+          className="h-6 w-6 p-0 hover:text-red-500"
+          onClick={() => onRemoveGroup(group.id)}
         >
-          <Plus className="h-3 w-3 mr-1" />
-          Add Recipients
+          <Trash2 className="h-3 w-3" />
         </Button>
       </div>
-
-      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Edit Group Name</DialogTitle>
-          </DialogHeader>
-          <div className="py-4">
-            <Input
-              value={groupName}
-              onChange={(e) => setGroupName(e.target.value)}
-              placeholder="Enter group name"
-              className="mt-2"
-              autoFocus
-            />
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleEditSave}>
-              Save
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      
+      {isExpanded && (
+        <div 
+          className="space-y-2 p-2 rounded-md border-2 border-dashed"
+          style={{ 
+            borderColor: group.color + '40',
+            ...dropTargetStyle,
+            minHeight: recipients.length > 0 ? 'auto' : '72px',
+            transition: "all 0.15s ease-in-out"
+          }}
+          onDragOver={onDragOver}
+          onDrop={onDrop}
+          data-group-id={group.id}
+        >
+          {recipients.length > 0 ? (
+            recipients.map((recipient, index) => (
+              <RecipientItem
+                key={recipient.id}
+                recipient={recipient}
+                onUpdate={(updates) => onUpdateRecipient(recipient.id, updates)}
+                onRemove={() => onRemoveRecipient(recipient.id)}
+                valuePerShare={valuePerShare}
+                isSelected={selectedRecipients.has(recipient.id)}
+                onToggleSelect={() => onToggleSelectRecipient(recipient.id)}
+                isHighlighted={hoveredRecipientId === recipient.id}
+                onDragStart={(id) => onDragStart(id, group.id)}
+                isDragging={draggedRecipientId === recipient.id}
+                columnWiseTabbing={columnWiseTabbing}
+                rowIndex={index}
+                totalRows={recipients.length}
+              />
+            ))
+          ) : (
+            <div className="flex items-center justify-center h-[72px] rounded-md border border-dashed border-gray-300 bg-gray-50 text-gray-400 text-sm">
+              Drop a recipient here
+            </div>
+          )}
+          
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full text-xs h-6 justify-start"
+            onClick={() => onAddRecipients(group.id)}
+          >
+            <Plus className="h-3 w-3 mr-1" />
+            Add Recipients
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

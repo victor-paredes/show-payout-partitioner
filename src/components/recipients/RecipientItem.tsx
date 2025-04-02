@@ -1,11 +1,10 @@
 
 import React, { useState, useRef, useEffect } from "react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Trash2, GripVertical, Palette } from "lucide-react";
-import { formatCurrency } from "@/lib/format";
+import { Button } from "@/components/ui/button";
+import { Trash2, GripVertical } from "lucide-react";
+import { Recipient } from "@/hooks/useRecipientsManager";
 import { getRecipientColor } from "@/lib/colorUtils";
-import ColorPickerModal from "../ColorPickerModal";
 import {
   Select,
   SelectContent,
@@ -13,47 +12,69 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Recipient, RecipientType } from "@/hooks/useRecipientsManager";
+import ColorPickerModal from "../ColorPickerModal";
+
+export type RecipientType = "shares" | "$" | "%";
 
 interface RecipientItemProps {
   recipient: Recipient;
   onUpdate: (updates: Partial<Recipient>) => void;
   onRemove: () => void;
-  isSelected: boolean;
-  onSelect: () => void;
-  isHighlighted?: boolean;
   valuePerShare: number;
-  onDragStart: () => void;
+  isSelected: boolean;
+  onToggleSelect: () => void;
+  isHighlighted?: boolean;
+  onDragStart: (id: string) => void;
   isDragging: boolean;
+  columnWiseTabbing?: boolean;
+  rowIndex?: number;
+  totalRows?: number;
 }
 
 const RecipientItem: React.FC<RecipientItemProps> = ({
   recipient,
   onUpdate,
   onRemove,
-  isSelected,
-  onSelect,
-  isHighlighted,
   valuePerShare,
+  isSelected,
+  onToggleSelect,
+  isHighlighted,
   onDragStart,
-  isDragging
+  isDragging,
+  columnWiseTabbing = false,
+  rowIndex = 0,
+  totalRows = 1
 }) => {
   const [nameWidth, setNameWidth] = useState(150);
-  const nameRef = useRef<HTMLSpanElement>(null);
   const [colorPickerOpen, setColorPickerOpen] = useState(false);
-
+  const nameRef = useRef<HTMLSpanElement>(null);
+  
   useEffect(() => {
     if (nameRef.current) {
       const newWidth = Math.max(150, nameRef.current.scrollWidth + 20);
       setNameWidth(newWidth);
     }
   }, [recipient.name]);
-
-  const handleTypeChange = (value: string) => {
-    onUpdate({ type: value as RecipientType });
+  
+  const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', recipient.id);
+    onDragStart(recipient.id);
   };
-
-  const handleClick = (e: React.MouseEvent) => {
+  
+  const handleTypeChange = (value: string) => {
+    const type = value as RecipientType;
+    
+    onUpdate({ 
+      isFixedAmount: type === "$",
+      type: type
+    });
+  };
+  
+  const currentType: RecipientType = recipient.type || 
+    (recipient.isFixedAmount ? "$" : "shares");
+  
+  const handleRowClick = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
     const isInteractiveElement = 
       target.tagName === 'INPUT' || 
@@ -63,34 +84,51 @@ const RecipientItem: React.FC<RecipientItemProps> = ({
       target.closest('[role="combobox"]') !== null;
     
     if (!isInteractiveElement) {
-      onSelect();
+      onToggleSelect();
     }
   };
+  
+  // Calculate tab indexes based on tabbing direction
+  let nameTabIndex: number;
+  let typeTabIndex: number;
+  let valueTabIndex: number;
 
+  if (columnWiseTabbing && totalRows > 0) {
+    // For column-wise tabbing, we go down columns: all names first, then all types, then all values
+    nameTabIndex = 1 + rowIndex;
+    typeTabIndex = 1 + totalRows + rowIndex;
+    valueTabIndex = 1 + (2 * totalRows) + rowIndex;
+  } else {
+    // For row-wise tabbing (default), we go across each row before moving to the next
+    nameTabIndex = 1 + (rowIndex * 3);
+    typeTabIndex = 2 + (rowIndex * 3);
+    valueTabIndex = 3 + (rowIndex * 3);
+  }
+  
   // Use custom color if available, otherwise use the generated color
   const recipientColor = recipient.color || getRecipientColor(recipient.id);
-
+  
   return (
     <>
       <div 
-        draggable
-        onDragStart={onDragStart}
         className={`flex items-center justify-between bg-white rounded-md shadow-sm p-4 gap-4 cursor-pointer transition-colors border ${
           isSelected 
             ? "bg-blue-50 border-blue-300 hover:bg-blue-50 hover:border-blue-500" 
-            : "border-gray-200 hover:border-black"
+            : "border-gray-200 hover:border-gray-400"
         } ${
-          isHighlighted ? "border-black" : ""
+          isHighlighted ? "border-gray-700" : ""
         } ${
           isDragging ? "opacity-50" : ""
         }`}
-        onClick={handleClick}
+        onClick={handleRowClick}
+        draggable={true}
+        onDragStart={handleDragStart}
       >
-        <div className="flex items-center">
+        <div className="flex items-center gap-2">
           <Button
             variant="ghost"
             size="icon"
-            className="cursor-grab text-gray-400 hover:text-gray-600"
+            className="cursor-grab text-gray-400 hover:text-gray-600 p-0 h-auto"
           >
             <GripVertical className="h-4 w-4" />
           </Button>
@@ -98,21 +136,19 @@ const RecipientItem: React.FC<RecipientItemProps> = ({
           <Button
             variant="ghost"
             size="icon"
-            className="p-0 h-auto ml-2"
+            className="p-0 h-auto"
             onClick={(e) => {
               e.stopPropagation();
               setColorPickerOpen(true);
             }}
           >
             <div 
-              className={`w-4 h-4 rounded-sm transition-all ${
-                isHighlighted ? "ring-1 ring-black" : ""
-              }`} 
+              className="w-4 h-4 rounded-sm"
               style={{ backgroundColor: recipientColor }}
             />
           </Button>
           
-          <div className="relative inline-block ml-2">
+          <div className="relative">
             <span 
               ref={nameRef} 
               className="invisible absolute whitespace-nowrap"
@@ -120,9 +156,10 @@ const RecipientItem: React.FC<RecipientItemProps> = ({
               {recipient.name || "Enter Name"}
             </span>
             <Input
+              tabIndex={nameTabIndex}
               value={recipient.name}
               onChange={(e) => onUpdate({ name: e.target.value })}
-              className="w-full text-base font-medium"
+              className="text-base font-medium"
               placeholder="Enter Name"
               onClick={(e) => {
                 const target = e.target as HTMLInputElement;
@@ -133,21 +170,19 @@ const RecipientItem: React.FC<RecipientItemProps> = ({
             />
           </div>
         </div>
-
-        <div 
-          className="flex items-center space-x-2" 
-          onClick={(e) => e.stopPropagation()}
-        >
+        
+        <div className="flex items-center gap-2">
           <Input
+            tabIndex={valueTabIndex}
             type="number"
             min="0"
-            step={recipient.type === "$" ? "10" : recipient.type === "%" ? "1" : "0.1"}
+            step={currentType === "$" ? "10" : currentType === "%" ? "1" : "0.1"}
             value={recipient.value || ""}
             onChange={(e) => onUpdate({ value: parseFloat(e.target.value) || 0 })}
             className="w-24 text-right"
             placeholder={
-              recipient.type === "shares" ? "Shares" : 
-              recipient.type === "$" ? "Amount" : 
+              currentType === "shares" ? "Shares" : 
+              currentType === "$" ? "Amount" : 
               "Percent"
             }
             onClick={(e) => {
@@ -158,10 +193,10 @@ const RecipientItem: React.FC<RecipientItemProps> = ({
           />
           
           <Select 
-            value={recipient.type} 
+            value={currentType} 
             onValueChange={handleTypeChange}
           >
-            <SelectTrigger className="w-28">
+            <SelectTrigger tabIndex={typeTabIndex} className="w-28">
               <SelectValue placeholder="Type" />
             </SelectTrigger>
             <SelectContent>
@@ -170,21 +205,21 @@ const RecipientItem: React.FC<RecipientItemProps> = ({
               <SelectItem value="%">%</SelectItem>
             </SelectContent>
           </Select>
+          
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={(e) => {
+              e.stopPropagation();
+              onRemove();
+            }}
+            className="text-gray-400 hover:text-red-500"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
         </div>
-
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={(e) => {
-            e.stopPropagation();
-            onRemove();
-          }}
-          className="text-gray-400 hover:text-red-500"
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
       </div>
-
+      
       <ColorPickerModal
         open={colorPickerOpen}
         onOpenChange={setColorPickerOpen}
