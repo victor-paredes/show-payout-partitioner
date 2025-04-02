@@ -310,7 +310,6 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
               <h3 className="font-semibold mb-3">Payouts</h3>
               
               {nonEmptyGroups.map(({ groupId, recipients, groupName }) => {
-                // Calculate group totals
                 const groupInfo = groupTotals.find(g => g.group.id === groupId);
                 const totalValue = groupInfo ? groupInfo.totalPayout : 0;
                 const percentageOfTotal = totalPayout > 0 
@@ -318,39 +317,44 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
                   : "0";
                 
                 return (
-                  <div key={groupId} className="space-y-1 mb-3">
-                    <div className="flex justify-between items-center">
+                  <div 
+                    key={groupId} 
+                    className="border border-gray-200 rounded-md mb-3 overflow-hidden"
+                  >
+                    <div className="flex justify-between items-center bg-gray-50 p-2 border-b border-gray-200">
                       <h4 className="text-sm font-medium text-gray-600">{groupName}</h4>
                       <div className="text-sm text-gray-500">
                         <span className="text-blue-500 mr-2">{percentageOfTotal}%</span>
                         <span>{formatCurrency(totalValue)}</span>
                       </div>
                     </div>
-                    {recipients.map((recipient) => {
-                      const percentage = totalPayout > 0 
-                        ? ((recipient.payout / totalPayout) * 100).toFixed(1) 
-                        : "0";
-                      
-                      const recipientColor = recipient.color || getRecipientColor(recipient.id);
-                      const type = recipient.type || (recipient.isFixedAmount ? "$" : "shares");
-                      
-                      return (
-                        <RecipientSummaryItem
-                          key={recipient.id}
-                          id={recipient.id}
-                          name={recipient.name}
-                          payout={recipient.payout}
-                          value={recipient.value}
-                          type={type}
-                          color={recipientColor}
-                          percentage={percentage}
-                          totalPayout={totalPayout}
-                          isHighlighted={hoveredRecipientId === recipient.id}
-                          onMouseEnter={() => onRecipientHover?.(recipient.id)}
-                          onMouseLeave={() => onRecipientHover?.(null)}
-                        />
-                      );
-                    })}
+                    <div className="space-y-1 p-2">
+                      {recipients.map((recipient) => {
+                        const percentage = totalPayout > 0 
+                          ? ((recipient.payout / totalPayout) * 100).toFixed(1) 
+                          : "0";
+                        
+                        const recipientColor = recipient.color || getRecipientColor(recipient.id);
+                        const type = recipient.type || (recipient.isFixedAmount ? "$" : "shares");
+                        
+                        return (
+                          <RecipientSummaryItem
+                            key={recipient.id}
+                            id={recipient.id}
+                            name={recipient.name}
+                            payout={recipient.payout}
+                            value={recipient.value}
+                            type={type}
+                            color={recipientColor}
+                            percentage={percentage}
+                            totalPayout={totalPayout}
+                            isHighlighted={hoveredRecipientId === recipient.id}
+                            onMouseEnter={() => onRecipientHover?.(recipient.id)}
+                            onMouseLeave={() => onRecipientHover?.(null)}
+                          />
+                        );
+                      })}
+                    </div>
                   </div>
                 );
               })}
