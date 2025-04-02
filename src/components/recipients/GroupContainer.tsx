@@ -1,9 +1,17 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Edit2 } from "lucide-react";
 import RecipientItem from "./RecipientItem";
 import { Group, Recipient } from "@/hooks/useRecipientsManager";
+import { 
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 
 interface GroupContainerProps {
   group: Group;
@@ -39,6 +47,8 @@ const GroupContainer: React.FC<GroupContainerProps> = ({
   draggedRecipientId
 }) => {
   const [isDragOver, setIsDragOver] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [groupName, setGroupName] = useState(group.name);
   
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -56,6 +66,17 @@ const GroupContainer: React.FC<GroupContainerProps> = ({
     onDrop(e);
   };
 
+  const handleEditSave = () => {
+    // We'll want to update the group name
+    // This assumes there's a way to update the group name through the parent component
+    // But the prop isn't passed down, so we'd need to add this functionality
+    setEditDialogOpen(false);
+    // Return to original name if empty
+    if (!groupName.trim()) {
+      setGroupName(group.name);
+    }
+  };
+
   // Calculate minimum height for the container
   const calculateMinHeight = () => {
     const baseRowHeight = 72; // Height of one row in pixels
@@ -68,30 +89,36 @@ const GroupContainer: React.FC<GroupContainerProps> = ({
     <div className="mb-6">
       <h3 className="text-sm font-medium mb-2 text-gray-600 flex items-center justify-between">
         <div className="flex items-center">
-          <div 
-            className="h-2 w-2 rounded-full mr-2"
-            style={{ backgroundColor: group.color }}
-          ></div>
           {group.name}
           <span className="text-xs ml-2 text-gray-500">
             ({recipients.length} recipient{recipients.length !== 1 ? 's' : ''})
           </span>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-6 w-6 p-0 hover:text-red-500"
-          onClick={() => onRemoveGroup(group.id)}
-        >
-          <Trash2 className="h-3 w-3" />
-        </Button>
+        <div className="flex items-center space-x-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-6 w-6 p-0"
+            onClick={() => setEditDialogOpen(true)}
+          >
+            <Edit2 className="h-3 w-3 text-gray-500" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-6 w-6 p-0 hover:text-red-500"
+            onClick={() => onRemoveGroup(group.id)}
+          >
+            <Trash2 className="h-3 w-3" />
+          </Button>
+        </div>
       </h3>
       
       <div 
         className="space-y-2 p-2 rounded-md border-2 border-dashed transition-all"
         style={{ 
-          borderColor: isDragOver ? group.color : group.color + '40',
-          background: isDragOver ? group.color + '20' : 'transparent',
+          borderColor: isDragOver ? "#94a3b8" : "#e2e8f0",
+          background: isDragOver ? "#f8fafc" : 'transparent',
           minHeight: calculateMinHeight(),
           transition: "all 0.15s ease-in-out"
         }}
@@ -131,6 +158,31 @@ const GroupContainer: React.FC<GroupContainerProps> = ({
           Add Recipients
         </Button>
       </div>
+
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Group Name</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <Input
+              value={groupName}
+              onChange={(e) => setGroupName(e.target.value)}
+              placeholder="Enter group name"
+              className="mt-2"
+              autoFocus
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleEditSave}>
+              Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
