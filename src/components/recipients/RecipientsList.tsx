@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, Trash2, X, ArrowRight, ArrowDown, Users, Menu } from "lucide-react";
@@ -70,6 +70,8 @@ const RecipientsList: React.FC<RecipientsListProps> = ({
   const [dragSourceId, setDragSourceId] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const isMobile = useIsMobile();
+  const menuRef = useRef<HTMLDivElement>(null);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
   
   const onRecipientDragStart = (recipientId: string, sourceId: string) => {
     handleDragStart(recipientId);
@@ -121,9 +123,24 @@ const RecipientsList: React.FC<RecipientsListProps> = ({
     setMobileMenuOpen(!mobileMenuOpen);
   };
 
+  const closeMobileMenu = () => {
+    setMobileMenuOpen(false);
+  };
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
+      
+      if (
+        mobileMenuOpen && 
+        menuRef.current && 
+        !menuRef.current.contains(target) && 
+        menuButtonRef.current && 
+        !menuButtonRef.current.contains(target)
+      ) {
+        closeMobileMenu();
+      }
+      
       if (!target.closest('.recipients-list') && selectedRecipients.size > 0) {
         setSelectedRecipients(new Set());
       }
@@ -133,7 +150,7 @@ const RecipientsList: React.FC<RecipientsListProps> = ({
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [selectedRecipients, setSelectedRecipients]);
+  }, [selectedRecipients, setSelectedRecipients, mobileMenuOpen]);
 
   useEffect(() => {
     const handleEscapeKey = (event: KeyboardEvent) => {
@@ -187,6 +204,7 @@ const RecipientsList: React.FC<RecipientsListProps> = ({
           {isMobile ? (
             <div className="flex items-center">
               <Button
+                ref={menuButtonRef}
                 onClick={toggleMobileMenu}
                 variant="outline"
                 size="sm"
@@ -196,10 +214,28 @@ const RecipientsList: React.FC<RecipientsListProps> = ({
               </Button>
               
               {mobileMenuOpen && (
-                <div className="absolute right-4 mt-28 bg-white border border-gray-200 rounded-md shadow-lg z-50 p-3 space-y-2 w-56">
+                <div 
+                  ref={menuRef}
+                  className="absolute right-4 mt-28 bg-white border border-gray-200 rounded-md shadow-lg z-50 p-3 space-y-2 w-56"
+                >
+                  <div className="flex justify-between items-center pb-2 border-b border-gray-100 mb-2">
+                    <span className="font-medium text-sm">Menu</span>
+                    <Button 
+                      onClick={closeMobileMenu} 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-6 w-6"
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                  
                   {recipients.length > 0 && (
                     <Button
-                      onClick={toggleTabbingDirection}
+                      onClick={() => {
+                        toggleTabbingDirection();
+                        closeMobileMenu();
+                      }}
                       variant="outline"
                       size="sm"
                       className="flex items-center w-full justify-between"
@@ -211,7 +247,10 @@ const RecipientsList: React.FC<RecipientsListProps> = ({
                   
                   {recipients.length > 0 && (
                     <Button 
-                      onClick={handleClearClick} 
+                      onClick={() => {
+                        handleClearClick();
+                        closeMobileMenu();
+                      }} 
                       variant="outline" 
                       size="sm" 
                       className="flex items-center w-full justify-between"
@@ -222,7 +261,10 @@ const RecipientsList: React.FC<RecipientsListProps> = ({
                   )}
                   
                   <Button 
-                    onClick={addGroup} 
+                    onClick={() => {
+                      addGroup();
+                      closeMobileMenu();
+                    }} 
                     variant="outline" 
                     size="sm" 
                     className="flex items-center w-full justify-between"
@@ -250,7 +292,7 @@ const RecipientsList: React.FC<RecipientsListProps> = ({
                       <Button 
                         onClick={() => {
                           addRecipients();
-                          setMobileMenuOpen(false);
+                          closeMobileMenu();
                         }} 
                         variant="outline" 
                         size="sm" 
