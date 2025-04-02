@@ -6,6 +6,7 @@ import { ChartPie, X, ChevronRight, ChevronDown } from "lucide-react";
 import { RecipientType } from "@/components/RecipientRow";
 import { getRecipientColor, SURPLUS_COLOR, OVERDRAW_COLOR } from "@/lib/colorUtils";
 import { Group } from "@/hooks/useRecipients";
+import { Separator } from "@/components/ui/separator";
 
 interface Recipient {
   id: string;
@@ -194,6 +195,12 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
       groupName: groupsById[groupId]?.name || "Unknown Group"
     }));
 
+  const nonEmptyGroups = groupedRecipientsForDisplay.filter(group => group.recipients.length > 0);
+  
+  const hasNonEmptyGroups = nonEmptyGroups.length > 0;
+  const hasUngroupedRecipients = recipientsByGroup['ungrouped'].length > 0;
+  const shouldShowDivider = hasNonEmptyGroups && hasUngroupedRecipients;
+
   return (
     <Card>
       <CardHeader className="pb-2">
@@ -300,7 +307,7 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
             <div className="border-t pt-4 mt-4">
               <h3 className="font-semibold mb-3">Payouts</h3>
               
-              {groupedRecipientsForDisplay.map(({ groupId, recipients, groupName }) => (
+              {nonEmptyGroups.map(({ groupId, recipients, groupName }) => (
                 <div key={groupId} className="space-y-1">
                   <h4 className="text-sm font-medium text-gray-600">{groupName}</h4>
                   {recipients.map((recipient) => {
@@ -359,9 +366,12 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
                 </div>
               ))}
               
-              {recipientsByGroup['ungrouped'].length > 0 && (
+              {shouldShowDivider && (
+                <Separator className="my-3 bg-gray-200" />
+              )}
+              
+              {hasUngroupedRecipients && (
                 <div className="space-y-1">
-                  <h4 className="text-sm font-medium text-gray-600">Ungrouped</h4>
                   {recipientsByGroup['ungrouped'].map((recipient) => {
                     const percentage = totalPayout > 0 
                       ? ((recipient.payout / totalPayout) * 100).toFixed(1) 
