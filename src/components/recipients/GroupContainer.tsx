@@ -77,6 +77,12 @@ const GroupContainer: React.FC<GroupContainerProps> = ({
     ? { background: `${group.color}15`, borderColor: `${group.color}50` }
     : {};
   
+  // Calculate the base index for group header controls
+  const groupToggleIndex = tabIndexOffset + 1;
+  const groupNameIndex = tabIndexOffset + 2;
+  const groupRemoveIndex = tabIndexOffset + 3;
+  const recipientsStartIndex = tabIndexOffset + 4;
+  
   return (
     <div className="mb-6 select-none">
       <div className="flex items-center justify-between mb-2">
@@ -86,7 +92,7 @@ const GroupContainer: React.FC<GroupContainerProps> = ({
             size="icon"
             className="w-5 h-5 p-0 mr-1"
             onClick={toggleExpanded}
-            tabIndex={tabIndexOffset}
+            tabIndex={groupToggleIndex}
           >
             {isExpanded ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
           </Button>
@@ -99,13 +105,13 @@ const GroupContainer: React.FC<GroupContainerProps> = ({
               onKeyDown={handleGroupNameKeyDown}
               className="h-6 px-1 py-0 text-sm font-medium w-40"
               autoFocus
-              tabIndex={tabIndexOffset + 1}
+              tabIndex={groupNameIndex}
             />
           ) : (
             <div 
               className="flex items-center cursor-pointer" 
               onClick={() => setIsEditingName(true)}
-              tabIndex={tabIndexOffset + 1}
+              tabIndex={groupNameIndex}
               role="button"
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
@@ -130,7 +136,7 @@ const GroupContainer: React.FC<GroupContainerProps> = ({
           size="sm"
           className="h-6 w-6 p-0 hover:text-red-500"
           onClick={() => onRemoveGroup(group.id)}
-          tabIndex={tabIndexOffset + 2}
+          tabIndex={groupRemoveIndex}
         >
           <Trash2 className="h-3 w-3" />
         </Button>
@@ -165,7 +171,7 @@ const GroupContainer: React.FC<GroupContainerProps> = ({
                 columnWiseTabbing={columnWiseTabbing}
                 rowIndex={index}
                 totalRows={recipients.length}
-                tabIndexOffset={tabIndexOffset + 3} // Pass the offset with adjustment for group header elements
+                tabIndexOffset={recipientsStartIndex}
               />
             ))
           ) : (
@@ -179,7 +185,7 @@ const GroupContainer: React.FC<GroupContainerProps> = ({
             size="sm"
             className="w-full text-xs h-6 justify-start"
             onClick={() => onAddRecipients(group.id)}
-            tabIndex={tabIndexOffset + 3 + (recipients.length > 0 ? recipients.length * 3 : 0)}
+            tabIndex={recipientsStartIndex + (recipients.length * (columnWiseTabbing ? 3 : 3))}
           >
             <Plus className="h-3 w-3 mr-1" />
             Add Recipients

@@ -96,15 +96,17 @@ const RecipientItem: React.FC<RecipientItemProps> = ({
   let valueTabIndex: number;
 
   if (columnWiseTabbing && totalRows > 0) {
-    // For column-wise tabbing, we go down columns: all names first, then all types, then all values
+    // Column-wise (vertical) tabbing
+    // First all names (1 to totalRows), then all values (totalRows+1 to 2*totalRows), then all types (2*totalRows+1 to 3*totalRows)
     nameTabIndex = tabIndexOffset + 1 + rowIndex;
-    typeTabIndex = tabIndexOffset + 1 + totalRows + rowIndex;
-    valueTabIndex = tabIndexOffset + 1 + (2 * totalRows) + rowIndex;
+    valueTabIndex = tabIndexOffset + 1 + totalRows + rowIndex;
+    typeTabIndex = tabIndexOffset + 1 + (2 * totalRows) + rowIndex;
   } else {
-    // For row-wise tabbing (default), we go across each row before moving to the next
+    // Row-wise (horizontal) tabbing
+    // Name, value, type for each recipient before moving to the next
     nameTabIndex = tabIndexOffset + 1 + (rowIndex * 3);
-    typeTabIndex = tabIndexOffset + 2 + (rowIndex * 3);
-    valueTabIndex = tabIndexOffset + 3 + (rowIndex * 3);
+    valueTabIndex = tabIndexOffset + 2 + (rowIndex * 3);
+    typeTabIndex = tabIndexOffset + 3 + (rowIndex * 3);
   }
   
   // Use custom color if available, otherwise use the generated color

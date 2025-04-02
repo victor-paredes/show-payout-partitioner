@@ -74,7 +74,7 @@ const UngroupedContainer: React.FC<UngroupedContainerProps> = ({
             columnWiseTabbing={columnWiseTabbing}
             rowIndex={index}
             totalRows={recipients.length}
-            tabIndexOffset={tabIndexOffset} // Pass the offset
+            tabIndexOffset={tabIndexOffset}
           />
         ))}
       </div>
