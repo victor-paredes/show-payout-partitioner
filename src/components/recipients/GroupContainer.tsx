@@ -28,6 +28,7 @@ interface GroupContainerProps {
   onDragOver: (e: React.DragEvent) => void;
   onDrop: (e: React.DragEvent) => void;
   draggedRecipientId: string | null;
+  onUpdateGroup?: (id: string, updates: Partial<Group>) => void;
 }
 
 const GroupContainer: React.FC<GroupContainerProps> = ({
@@ -44,7 +45,8 @@ const GroupContainer: React.FC<GroupContainerProps> = ({
   onDragStart,
   onDragOver,
   onDrop,
-  draggedRecipientId
+  draggedRecipientId,
+  onUpdateGroup
 }) => {
   const [isDragOver, setIsDragOver] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -67,14 +69,17 @@ const GroupContainer: React.FC<GroupContainerProps> = ({
   };
 
   const handleEditSave = () => {
-    // We'll want to update the group name
-    // This assumes there's a way to update the group name through the parent component
-    // But the prop isn't passed down, so we'd need to add this functionality
-    setEditDialogOpen(false);
+    // Only update if there's a valid name and the onUpdateGroup prop is provided
+    if (groupName.trim() && onUpdateGroup) {
+      onUpdateGroup(group.id, { name: groupName.trim() });
+    }
+    
     // Return to original name if empty
     if (!groupName.trim()) {
       setGroupName(group.name);
     }
+    
+    setEditDialogOpen(false);
   };
 
   // Calculate minimum height for the container

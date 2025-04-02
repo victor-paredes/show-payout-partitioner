@@ -11,6 +11,7 @@ export interface Recipient {
   value: number;
   payout: number;
   type: RecipientType;
+  isFixedAmount: boolean;  // Added isFixedAmount property to match useRecipients interface
   color?: string;
   groupId?: string;
 }
@@ -71,6 +72,7 @@ export function useRecipientsManager() {
         value: 1,
         payout: 0,
         type: "shares" as RecipientType,
+        isFixedAmount: false,  // Added isFixedAmount with default value
         groupId
       };
     });
@@ -100,6 +102,13 @@ export function useRecipientsManager() {
 
   // Update a recipient
   const updateRecipient = (id: string, updates: Partial<Recipient>) => {
+    // Ensure type and isFixedAmount are consistent
+    if (updates.type === "$" && updates.isFixedAmount === undefined) {
+      updates.isFixedAmount = true;
+    } else if (updates.type && updates.type !== "$" && updates.isFixedAmount === undefined) {
+      updates.isFixedAmount = false;
+    }
+    
     // Sanitize name if present
     if (updates.name) {
       updates.name = updates.name.replace(/<[^>]*>/g, '');

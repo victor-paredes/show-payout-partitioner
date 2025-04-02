@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -69,18 +68,15 @@ const RecipientsList: React.FC<RecipientsListProps> = ({
   const [columnWiseTabbing, setColumnWiseTabbing] = useState(false);
   const [dragSourceId, setDragSourceId] = useState<string | null>(null);
   
-  // Handle recipient drag start
   const onRecipientDragStart = (recipientId: string, sourceId: string) => {
     handleDragStart(recipientId);
     setDragSourceId(sourceId);
   };
   
-  // Handle drag over for any container
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
   };
   
-  // Handle drop on any container
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     
@@ -118,7 +114,6 @@ const RecipientsList: React.FC<RecipientsListProps> = ({
     setColumnWiseTabbing(!columnWiseTabbing);
   };
 
-  // Event listener to clear selection when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
@@ -133,7 +128,6 @@ const RecipientsList: React.FC<RecipientsListProps> = ({
     };
   }, [selectedRecipients, setSelectedRecipients]);
 
-  // Event listener to clear selection on escape key
   useEffect(() => {
     const handleEscapeKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && selectedRecipients.size > 0) {
@@ -147,7 +141,6 @@ const RecipientsList: React.FC<RecipientsListProps> = ({
     };
   }, [selectedRecipients, setSelectedRecipients]);
 
-  // Event listener to handle drag end
   useEffect(() => {
     const handleDragEndEvent = () => {
       handleDragEnd();
@@ -249,7 +242,6 @@ const RecipientsList: React.FC<RecipientsListProps> = ({
             </div>
           ) : (
             <>
-              {/* Groups */}
               {groupedRecipients.recipientsByGroup.map(({ group, recipients }) => (
                 <GroupContainer
                   key={group.id}
@@ -267,10 +259,10 @@ const RecipientsList: React.FC<RecipientsListProps> = ({
                   onDragOver={handleDragOver}
                   onDrop={handleDrop}
                   draggedRecipientId={draggedRecipientId}
+                  onUpdateGroup={updateGroup}
                 />
               ))}
               
-              {/* Ungrouped section */}
               <UngroupedContainer
                 recipients={groupedRecipients.ungroupedRecipients}
                 selectedRecipients={selectedRecipients}
