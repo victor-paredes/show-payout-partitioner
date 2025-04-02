@@ -24,6 +24,7 @@ interface GroupContainerProps {
   onUpdateGroup: (id: string, updates: Partial<Group>) => void;
   columnWiseTabbing?: boolean;
   tabIndexOffset?: number; // Add offset for proper sequencing
+  totalRecipients?: number; // Total recipients for column-wise tabbing
 }
 
 const GroupContainer: React.FC<GroupContainerProps> = ({
@@ -43,7 +44,8 @@ const GroupContainer: React.FC<GroupContainerProps> = ({
   onDrop,
   onUpdateGroup,
   columnWiseTabbing = false,
-  tabIndexOffset = 0
+  tabIndexOffset = 0,
+  totalRecipients = 0
 }) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const [isEditingName, setIsEditingName] = useState(false);
@@ -78,21 +80,24 @@ const GroupContainer: React.FC<GroupContainerProps> = ({
     : {};
   
   // Calculate the base index for group header controls
+  // For column-wise tabbing, group headers come first sequentially
   const groupToggleIndex = tabIndexOffset + 1;
   const groupNameIndex = tabIndexOffset + 2;
   const groupRemoveIndex = tabIndexOffset + 3;
-  const recipientsStartIndex = tabIndexOffset + 4;
+  
+  // For column-wise tabbing, recipient names start after all group headers
+  // For row-wise tabbing, they start right after this group's header
+  const recipientsStartIndex = columnWiseTabbing ? (tabIndexOffset + 4) : (tabIndexOffset + 4);
   
   // Calculate the "Add Recipients" button tab index based on tabbing mode
   let addRecipientsTabIndex: number;
   
   if (columnWiseTabbing && recipients.length > 0) {
     // In column-wise mode, the "Add Recipients" button should be after all form elements
-    // Total tab stops for recipients: number of recipients × 3 (name, value, type)
-    addRecipientsTabIndex = recipientsStartIndex + (recipients.length * 3);
+    // across all groups and ungrouped sections
+    addRecipientsTabIndex = recipientsStartIndex + (totalRecipients * 3);
   } else {
-    // In row-wise mode, the "Add Recipients" button should be after all recipients
-    // Each recipient has 3 tabbable elements (name, value, type)
+    // In row-wise mode, the "Add Recipients" button should be after all recipients in this group
     addRecipientsTabIndex = recipientsStartIndex + (recipients.length * 3);
   }
   
@@ -183,8 +188,9 @@ const GroupContainer: React.FC<GroupContainerProps> = ({
                 isDragging={draggedRecipientId === recipient.id}
                 columnWiseTabbing={columnWiseTabbing}
                 rowIndex={index}
-                totalRows={recipients.length}
+                totalRows={columnWiseTabbing ? totalRecipients : recipients.length}
                 tabIndexOffset={recipientsStartIndex}
+                sectionIndex={index}
               />
             ))
           ) : (

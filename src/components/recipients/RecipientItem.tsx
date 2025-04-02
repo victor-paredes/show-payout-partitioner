@@ -30,6 +30,7 @@ interface RecipientItemProps {
   rowIndex?: number;
   totalRows?: number;
   tabIndexOffset?: number; // Add offset for proper sequencing
+  sectionIndex?: number; // Position within the section for better ordering
 }
 
 const RecipientItem: React.FC<RecipientItemProps> = ({
@@ -45,7 +46,8 @@ const RecipientItem: React.FC<RecipientItemProps> = ({
   columnWiseTabbing = false,
   rowIndex = 0,
   totalRows = 1,
-  tabIndexOffset = 0
+  tabIndexOffset = 0,
+  sectionIndex = 0
 }) => {
   const [nameWidth, setNameWidth] = useState(150);
   const [colorPickerOpen, setColorPickerOpen] = useState(false);
@@ -96,9 +98,8 @@ const RecipientItem: React.FC<RecipientItemProps> = ({
   let valueTabIndex: number;
 
   if (columnWiseTabbing && totalRows > 0) {
-    // Column-wise (vertical) tabbing logic
+    // Column-wise (vertical) tabbing across all recipients
     // First all names, then all values, then all types
-    // Each column has totalRows elements
     nameTabIndex = tabIndexOffset + rowIndex;
     valueTabIndex = tabIndexOffset + totalRows + rowIndex;
     typeTabIndex = tabIndexOffset + (2 * totalRows) + rowIndex;

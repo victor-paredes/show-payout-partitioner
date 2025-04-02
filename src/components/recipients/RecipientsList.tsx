@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -74,30 +73,80 @@ const RecipientsList: React.FC<RecipientsListProps> = ({
   const menuRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   
-  // Calculate base tab index for each group
+  // Calculate tab indices across all groups and ungrouped sections
   const calculateTabIndices = () => {
     let currentOffset = 0;
     const groupOffsets: Record<string, number> = {};
+    const recipientCount: Record<string, number> = {};
+    let totalRecipients = 0;
     
-    // First pass: assign offsets to groups
-    groupedRecipients.recipientsByGroup.forEach(({ group, recipients }, idx) => {
-      groupOffsets[group.id] = currentOffset;
-      
-      // Base elements in group header (toggle, name, remove) + recipients + add button
-      const groupElementCount = 3 + (recipients.length * 3) + 1;
-      currentOffset += groupElementCount;
+    // Count total recipients for column-wise tabbing calculation
+    const allRecipientsBySection: { sectionId: string, recipients: Recipient[] }[] = [];
+    
+    // Add grouped recipients
+    groupedRecipients.recipientsByGroup.forEach(({ group, recipients }) => {
+      recipientCount[group.id] = recipients.length;
+      totalRecipients += recipients.length;
+      allRecipientsBySection.push({ sectionId: group.id, recipients });
     });
     
-    // Assign offset for ungrouped section
-    const ungroupedOffset = currentOffset;
+    // Add ungrouped recipients
+    const ungroupedRecipientsCount = groupedRecipients.ungroupedRecipients.length;
+    recipientCount['ungrouped'] = ungroupedRecipientsCount;
+    totalRecipients += ungroupedRecipientsCount;
+    allRecipientsBySection.push({ 
+      sectionId: 'ungrouped', 
+      recipients: groupedRecipients.ungroupedRecipients 
+    });
     
-    return {
-      groupOffsets,
-      ungroupedOffset
-    };
+    if (columnWiseTabbing) {
+      // For column-wise tabbing across all groups and ungrouped:
+      // - First all group headers (3 elements per group)
+      // - Then all recipient names
+      // - Then all recipient values
+      // - Then all recipient types
+      // - Finally all "Add Recipients" buttons
+      
+      // Start with group headers (3 elements per group: toggle, name, remove)
+      const groupHeadersCount = groupedRecipients.recipientsByGroup.length * 3;
+      currentOffset = groupHeadersCount;
+      
+      // Calculate offsets for group headers
+      groupedRecipients.recipientsByGroup.forEach(({ group }, idx) => {
+        groupOffsets[group.id] = idx * 3; // 3 elements per group header
+      });
+      
+      // Ungrouped section comes after all group headers
+      const ungroupedOffset = currentOffset;
+      
+      return {
+        groupOffsets,
+        ungroupedOffset,
+        totalRecipients
+      };
+    } else {
+      // For row-wise tabbing, calculate offsets as before
+      // First pass: assign offsets to groups
+      groupedRecipients.recipientsByGroup.forEach(({ group, recipients }, idx) => {
+        groupOffsets[group.id] = currentOffset;
+        
+        // Base elements in group header (toggle, name, remove) + recipients + add button
+        const groupElementCount = 3 + (recipients.length * 3) + 1;
+        currentOffset += groupElementCount;
+      });
+      
+      // Assign offset for ungrouped section
+      const ungroupedOffset = currentOffset;
+      
+      return {
+        groupOffsets,
+        ungroupedOffset,
+        totalRecipients
+      };
+    }
   };
   
-  const { groupOffsets, ungroupedOffset } = calculateTabIndices();
+  const { groupOffsets, ungroupedOffset, totalRecipients } = calculateTabIndices();
   
   const onRecipientDragStart = (recipientId: string, sourceId: string) => {
     handleDragStart(recipientId);
@@ -419,6 +468,7 @@ const RecipientsList: React.FC<RecipientsListProps> = ({
                   onUpdateGroup={updateGroup}
                   columnWiseTabbing={columnWiseTabbing}
                   tabIndexOffset={groupOffsets[group.id] || 0}
+                  totalRecipients={totalRecipients}
                 />
               ))}
               
@@ -436,6 +486,7 @@ const RecipientsList: React.FC<RecipientsListProps> = ({
                 draggedRecipientId={draggedRecipientId}
                 columnWiseTabbing={columnWiseTabbing}
                 tabIndexOffset={ungroupedOffset}
+                totalRecipients={totalRecipients}
               />
             </>
           )}

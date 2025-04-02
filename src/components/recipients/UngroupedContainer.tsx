@@ -17,6 +17,7 @@ interface UngroupedContainerProps {
   onDrop: (e: React.DragEvent) => void;
   columnWiseTabbing?: boolean;
   tabIndexOffset?: number; // Add offset for proper sequencing
+  totalRecipients?: number; // Total recipients across all sections for column-wise tabbing
 }
 
 const UngroupedContainer: React.FC<UngroupedContainerProps> = ({
@@ -32,7 +33,8 @@ const UngroupedContainer: React.FC<UngroupedContainerProps> = ({
   onDragOver,
   onDrop,
   columnWiseTabbing = false,
-  tabIndexOffset = 0
+  tabIndexOffset = 0,
+  totalRecipients = 0
 }) => {
   const isActiveDropTarget = 
     draggedRecipientId !== null && 
@@ -41,6 +43,9 @@ const UngroupedContainer: React.FC<UngroupedContainerProps> = ({
   if (recipients.length === 0) {
     return null;
   }
+  
+  // For column-wise tabbing, the start index for ungrouped recipients is based on global position
+  const recipientsStartOffset = columnWiseTabbing ? tabIndexOffset : tabIndexOffset;
   
   return (
     <div className="space-y-2 mb-6">
@@ -73,8 +78,9 @@ const UngroupedContainer: React.FC<UngroupedContainerProps> = ({
             isDragging={draggedRecipientId === recipient.id}
             columnWiseTabbing={columnWiseTabbing}
             rowIndex={index}
-            totalRows={recipients.length}
-            tabIndexOffset={tabIndexOffset}
+            totalRows={columnWiseTabbing ? totalRecipients : recipients.length}
+            tabIndexOffset={recipientsStartOffset}
+            sectionIndex={recipients.length - 1 - index} // Inverted for better ordering in column-wise mode
           />
         ))}
       </div>
