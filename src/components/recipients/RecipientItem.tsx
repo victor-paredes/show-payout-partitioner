@@ -96,17 +96,18 @@ const RecipientItem: React.FC<RecipientItemProps> = ({
   let valueTabIndex: number;
 
   if (columnWiseTabbing && totalRows > 0) {
-    // Column-wise (vertical) tabbing
-    // First all names (1 to totalRows), then all values (totalRows+1 to 2*totalRows), then all types (2*totalRows+1 to 3*totalRows)
-    nameTabIndex = tabIndexOffset + 1 + rowIndex;
-    valueTabIndex = tabIndexOffset + 1 + totalRows + rowIndex;
-    typeTabIndex = tabIndexOffset + 1 + (2 * totalRows) + rowIndex;
+    // Column-wise (vertical) tabbing logic
+    // First all names, then all values, then all types
+    // Each column has totalRows elements
+    nameTabIndex = tabIndexOffset + rowIndex;
+    valueTabIndex = tabIndexOffset + totalRows + rowIndex;
+    typeTabIndex = tabIndexOffset + (2 * totalRows) + rowIndex;
   } else {
-    // Row-wise (horizontal) tabbing
-    // Name, value, type for each recipient before moving to the next
-    nameTabIndex = tabIndexOffset + 1 + (rowIndex * 3);
-    valueTabIndex = tabIndexOffset + 2 + (rowIndex * 3);
-    typeTabIndex = tabIndexOffset + 3 + (rowIndex * 3);
+    // Row-wise (horizontal) tabbing logic
+    // Each row has 3 elements (name, value, type)
+    nameTabIndex = tabIndexOffset + (rowIndex * 3);
+    valueTabIndex = tabIndexOffset + (rowIndex * 3) + 1;
+    typeTabIndex = tabIndexOffset + (rowIndex * 3) + 2;
   }
   
   // Use custom color if available, otherwise use the generated color
@@ -133,7 +134,7 @@ const RecipientItem: React.FC<RecipientItemProps> = ({
             variant="ghost"
             size="icon"
             className="cursor-grab text-gray-400 hover:text-gray-600 p-0 h-auto"
-            tabIndex={nameTabIndex - 1}
+            tabIndex={-1} // Make drag handle not tabbable
           >
             <GripVertical className="h-4 w-4" />
           </Button>
@@ -146,7 +147,7 @@ const RecipientItem: React.FC<RecipientItemProps> = ({
               e.stopPropagation();
               setColorPickerOpen(true);
             }}
-            tabIndex={nameTabIndex - 0.5}
+            tabIndex={-1} // Make color button not tabbable
           >
             <div 
               className="w-4 h-4 rounded-sm"
@@ -220,7 +221,7 @@ const RecipientItem: React.FC<RecipientItemProps> = ({
               onRemove();
             }}
             className="text-gray-400 hover:text-red-500"
-            tabIndex={valueTabIndex + 1}
+            tabIndex={-1} // Make remove button not tabbable
           >
             <Trash2 className="h-4 w-4" />
           </Button>

@@ -83,6 +83,19 @@ const GroupContainer: React.FC<GroupContainerProps> = ({
   const groupRemoveIndex = tabIndexOffset + 3;
   const recipientsStartIndex = tabIndexOffset + 4;
   
+  // Calculate the "Add Recipients" button tab index based on tabbing mode
+  let addRecipientsTabIndex: number;
+  
+  if (columnWiseTabbing && recipients.length > 0) {
+    // In column-wise mode, the "Add Recipients" button should be after all form elements
+    // Total tab stops for recipients: number of recipients × 3 (name, value, type)
+    addRecipientsTabIndex = recipientsStartIndex + (recipients.length * 3);
+  } else {
+    // In row-wise mode, the "Add Recipients" button should be after all recipients
+    // Each recipient has 3 tabbable elements (name, value, type)
+    addRecipientsTabIndex = recipientsStartIndex + (recipients.length * 3);
+  }
+  
   return (
     <div className="mb-6 select-none">
       <div className="flex items-center justify-between mb-2">
@@ -185,7 +198,7 @@ const GroupContainer: React.FC<GroupContainerProps> = ({
             size="sm"
             className="w-full text-xs h-6 justify-start"
             onClick={() => onAddRecipients(group.id)}
-            tabIndex={recipientsStartIndex + (recipients.length * (columnWiseTabbing ? 3 : 3))}
+            tabIndex={addRecipientsTabIndex}
           >
             <Plus className="h-3 w-3 mr-1" />
             Add Recipients
