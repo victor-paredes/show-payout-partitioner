@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Trash2, X, ArrowRight, ArrowDown, Users } from "lucide-react";
+import { Plus, Trash2, X, ArrowRight, ArrowDown, Users, Menu } from "lucide-react";
 import { Group, Recipient } from "@/hooks/useRecipientsManager";
 import ConfirmationModal from "@/components/ConfirmationModal";
 import {
@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import GroupContainer from './GroupContainer';
 import UngroupedContainer from './UngroupedContainer';
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface RecipientsListProps {
   recipients: Recipient[];
@@ -67,6 +68,8 @@ const RecipientsList: React.FC<RecipientsListProps> = ({
   const [confirmClearOpen, setConfirmClearOpen] = useState(false);
   const [columnWiseTabbing, setColumnWiseTabbing] = useState(false);
   const [dragSourceId, setDragSourceId] = useState<string | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const isMobile = useIsMobile();
   
   const onRecipientDragStart = (recipientId: string, sourceId: string) => {
     handleDragStart(recipientId);
@@ -112,6 +115,10 @@ const RecipientsList: React.FC<RecipientsListProps> = ({
 
   const toggleTabbingDirection = () => {
     setColumnWiseTabbing(!columnWiseTabbing);
+  };
+
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
   };
 
   useEffect(() => {
@@ -176,62 +183,144 @@ const RecipientsList: React.FC<RecipientsListProps> = ({
               </div>
             )}
           </div>
-          <div className="flex items-center space-x-2">
-            {recipients.length > 0 && (
+          
+          {isMobile ? (
+            <div className="flex items-center">
               <Button
-                onClick={toggleTabbingDirection}
+                onClick={toggleMobileMenu}
                 variant="outline"
                 size="sm"
                 className="flex items-center"
-                title={columnWiseTabbing ? "Switch to row-wise tabbing" : "Switch to column-wise tabbing"}
               >
-                <span className="mr-1">Tab</span>
-                {columnWiseTabbing ? <ArrowDown className="h-4 w-4" /> : <ArrowRight className="h-4 w-4" />}
+                <Menu className="h-4 w-4 mr-1" /> Menu
               </Button>
-            )}
-            {recipients.length > 0 && (
+              
+              {mobileMenuOpen && (
+                <div className="absolute right-4 mt-28 bg-white border border-gray-200 rounded-md shadow-lg z-50 p-3 space-y-2 w-56">
+                  {recipients.length > 0 && (
+                    <Button
+                      onClick={toggleTabbingDirection}
+                      variant="outline"
+                      size="sm"
+                      className="flex items-center w-full justify-between"
+                    >
+                      <span>Tab Direction</span>
+                      {columnWiseTabbing ? <ArrowDown className="h-4 w-4" /> : <ArrowRight className="h-4 w-4" />}
+                    </Button>
+                  )}
+                  
+                  {recipients.length > 0 && (
+                    <Button 
+                      onClick={handleClearClick} 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex items-center w-full justify-between"
+                    >
+                      <span>Clear All</span>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
+                  
+                  <Button 
+                    onClick={addGroup} 
+                    variant="outline" 
+                    size="sm" 
+                    className="flex items-center w-full justify-between"
+                  >
+                    <span>Add Group</span>
+                    <Users className="h-4 w-4" />
+                  </Button>
+                  
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">Add:</span>
+                    <div className="flex items-center gap-2">
+                      <Select value={recipientCount} onValueChange={setRecipientCount}>
+                        <SelectTrigger className="w-16">
+                          <SelectValue placeholder="1" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Array.from({ length: 10 }, (_, i) => (
+                            <SelectItem key={i + 1} value={(i + 1).toString()}>
+                              {i + 1}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      
+                      <Button 
+                        onClick={() => {
+                          addRecipients();
+                          setMobileMenuOpen(false);
+                        }} 
+                        variant="outline" 
+                        size="sm" 
+                        className="flex items-center"
+                      >
+                        <Plus className="mr-1 h-4 w-4" /> Add
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="flex items-center space-x-2">
+              {recipients.length > 0 && (
+                <Button
+                  onClick={toggleTabbingDirection}
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center"
+                  title={columnWiseTabbing ? "Switch to row-wise tabbing" : "Switch to column-wise tabbing"}
+                >
+                  <span className="mr-1">Tab</span>
+                  {columnWiseTabbing ? <ArrowDown className="h-4 w-4" /> : <ArrowRight className="h-4 w-4" />}
+                </Button>
+              )}
+              {recipients.length > 0 && (
+                <Button 
+                  onClick={handleClearClick} 
+                  variant="outline" 
+                  size="sm" 
+                  className="flex items-center"
+                >
+                  <Trash2 className="mr-1 h-4 w-4" /> Clear
+                </Button>
+              )}
+              
               <Button 
-                onClick={handleClearClick} 
+                onClick={addGroup} 
+                variant="outline" 
+                size="sm" 
+                className="flex items-center"
+                title="Add Group"
+              >
+                <Users className="mr-1 h-4 w-4" /> Add Group
+              </Button>
+              
+              <Select value={recipientCount} onValueChange={setRecipientCount}>
+                <SelectTrigger className="w-16">
+                  <SelectValue placeholder="1" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Array.from({ length: 10 }, (_, i) => (
+                    <SelectItem key={i + 1} value={(i + 1).toString()}>
+                      {i + 1}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              
+              <Button 
+                onClick={() => addRecipients()} 
                 variant="outline" 
                 size="sm" 
                 className="flex items-center"
               >
-                <Trash2 className="mr-1 h-4 w-4" /> Clear
+                <Plus className="mr-1 h-4 w-4" /> Add Recipient{parseInt(recipientCount) > 1 ? 's' : ''}
               </Button>
-            )}
-            
-            <Button 
-              onClick={addGroup} 
-              variant="outline" 
-              size="sm" 
-              className="flex items-center"
-              title="Add Group"
-            >
-              <Users className="mr-1 h-4 w-4" /> Add Group
-            </Button>
-            
-            <Select value={recipientCount} onValueChange={setRecipientCount}>
-              <SelectTrigger className="w-16">
-                <SelectValue placeholder="1" />
-              </SelectTrigger>
-              <SelectContent>
-                {Array.from({ length: 10 }, (_, i) => (
-                  <SelectItem key={i + 1} value={(i + 1).toString()}>
-                    {i + 1}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            
-            <Button 
-              onClick={() => addRecipients()} 
-              variant="outline" 
-              size="sm" 
-              className="flex items-center"
-            >
-              <Plus className="mr-1 h-4 w-4" /> Add Recipient{parseInt(recipientCount) > 1 ? 's' : ''}
-            </Button>
-          </div>
+            </div>
+          )}
         </CardTitle>
       </CardHeader>
       <CardContent>

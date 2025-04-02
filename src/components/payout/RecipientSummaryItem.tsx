@@ -2,6 +2,7 @@
 import React from "react";
 import { formatCurrency } from "@/lib/format";
 import { RecipientType } from "@/components/RecipientRow";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface RecipientSummaryItemProps {
   id: string;
@@ -30,6 +31,8 @@ const RecipientSummaryItem: React.FC<RecipientSummaryItemProps> = ({
   onMouseEnter,
   onMouseLeave
 }) => {
+  const isMobile = useIsMobile();
+  
   let valueDisplay = "";
   if (type === "$") {
     valueDisplay = "($)";
@@ -54,7 +57,7 @@ const RecipientSummaryItem: React.FC<RecipientSummaryItemProps> = ({
           }`}
           style={{ backgroundColor: color }}
         />
-        <span className="truncate">{name}</span>
+        <span className={`truncate ${isMobile ? 'max-w-[120px]' : ''}`}>{name}</span>
         {valueDisplay && (
           <span className="text-xs text-gray-500 ml-2 hidden sm:inline flex-shrink-0">
             {valueDisplay}
