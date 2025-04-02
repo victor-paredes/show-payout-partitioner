@@ -1,4 +1,3 @@
-
 import React, { useRef, useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/format";
@@ -8,6 +7,7 @@ import { RecipientType } from "@/components/RecipientRow";
 import { getRecipientColor, SURPLUS_COLOR, OVERDRAW_COLOR } from "@/lib/colorUtils";
 import { Group } from "@/hooks/useRecipients";
 import { Separator } from "@/components/ui/separator";
+import RecipientSummaryItem from "./payout/RecipientSummaryItem";
 
 interface Recipient {
   id: string;
@@ -196,6 +196,7 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
       groupName: groupsById[groupId]?.name || "Unknown Group"
     }));
 
+  // Get only groups with recipients
   const nonEmptyGroups = groupedRecipientsForDisplay.filter(group => group.recipients.length > 0);
   
   const hasNonEmptyGroups = nonEmptyGroups.length > 0;
@@ -333,49 +334,21 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
                       const recipientColor = recipient.color || getRecipientColor(recipient.id);
                       const type = recipient.type || (recipient.isFixedAmount ? "$" : "shares");
                       
-                      let valueDisplay = "";
-                      if (type === "$") {
-                        valueDisplay = "($)";
-                      } else if (type === "%") {
-                        valueDisplay = "";
-                      } else {
-                        valueDisplay = `(${recipient.value} ${recipient.value === 1 ? 'share' : 'shares'})`;
-                      }
-                      
                       return (
-                        <div 
-                          key={recipient.id} 
-                          className={`flex justify-between p-1 rounded ${
-                            hoveredRecipientId === recipient.id 
-                              ? 'bg-gray-100' 
-                              : ''
-                          }`}
+                        <RecipientSummaryItem
+                          key={recipient.id}
+                          id={recipient.id}
+                          name={recipient.name}
+                          payout={recipient.payout}
+                          value={recipient.value}
+                          type={type}
+                          color={recipientColor}
+                          percentage={percentage}
+                          totalPayout={totalPayout}
+                          isHighlighted={hoveredRecipientId === recipient.id}
                           onMouseEnter={() => onRecipientHover?.(recipient.id)}
                           onMouseLeave={() => onRecipientHover?.(null)}
-                        >
-                          <div className="flex items-center">
-                            <div 
-                              className={`w-3 h-3 rounded-sm mr-2 ${
-                                hoveredRecipientId === recipient.id 
-                                  ? 'ring-1 ring-black' 
-                                  : ''
-                              }`}
-                              style={{ backgroundColor: recipientColor }}
-                            />
-                            <span>{recipient.name}</span>
-                            {valueDisplay && (
-                              <span className="text-xs text-gray-500 ml-2">
-                                {valueDisplay}
-                              </span>
-                            )}
-                            <span className={`text-xs text-blue-500 ${type === '%' ? 'ml-2' : 'ml-1'}`}>
-                              {percentage}%
-                            </span>
-                          </div>
-                          <div className="font-medium">
-                            {formatCurrency(recipient.payout)}
-                          </div>
-                        </div>
+                        />
                       );
                     })}
                   </div>
@@ -396,49 +369,21 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
                     const recipientColor = recipient.color || getRecipientColor(recipient.id);
                     const type = recipient.type || (recipient.isFixedAmount ? "$" : "shares");
                     
-                    let valueDisplay = "";
-                    if (type === "$") {
-                      valueDisplay = "($)";
-                    } else if (type === "%") {
-                      valueDisplay = "";
-                    } else {
-                      valueDisplay = `(${recipient.value} ${recipient.value === 1 ? 'share' : 'shares'})`;
-                    }
-                    
                     return (
-                      <div 
-                        key={recipient.id} 
-                        className={`flex justify-between p-1 rounded ${
-                          hoveredRecipientId === recipient.id 
-                            ? 'bg-gray-100' 
-                            : ''
-                        }`}
+                      <RecipientSummaryItem
+                        key={recipient.id}
+                        id={recipient.id}
+                        name={recipient.name}
+                        payout={recipient.payout}
+                        value={recipient.value}
+                        type={type}
+                        color={recipientColor}
+                        percentage={percentage}
+                        totalPayout={totalPayout}
+                        isHighlighted={hoveredRecipientId === recipient.id}
                         onMouseEnter={() => onRecipientHover?.(recipient.id)}
                         onMouseLeave={() => onRecipientHover?.(null)}
-                      >
-                        <div className="flex items-center">
-                          <div 
-                            className={`w-3 h-3 rounded-sm mr-2 ${
-                              hoveredRecipientId === recipient.id 
-                                ? 'ring-1 ring-black' 
-                                : ''
-                            }`}
-                            style={{ backgroundColor: recipientColor }}
-                          />
-                          <span>{recipient.name}</span>
-                          {valueDisplay && (
-                            <span className="text-xs text-gray-500 ml-2">
-                              {valueDisplay}
-                            </span>
-                          )}
-                          <span className={`text-xs text-blue-500 ${type === '%' ? 'ml-2' : 'ml-1'}`}>
-                            {percentage}%
-                          </span>
-                        </div>
-                        <div className="font-medium">
-                          {formatCurrency(recipient.payout)}
-                        </div>
-                      </div>
+                      />
                     );
                   })}
                 </div>
