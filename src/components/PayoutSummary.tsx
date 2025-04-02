@@ -1,3 +1,4 @@
+
 import React, { useRef, useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/format";
@@ -307,64 +308,79 @@ const PayoutSummary: React.FC<PayoutSummaryProps> = ({
             <div className="border-t pt-4 mt-4">
               <h3 className="font-semibold mb-3">Payouts</h3>
               
-              {nonEmptyGroups.map(({ groupId, recipients, groupName }) => (
-                <div key={groupId} className="space-y-1">
-                  <h4 className="text-sm font-medium text-gray-600">{groupName}</h4>
-                  {recipients.map((recipient) => {
-                    const percentage = totalPayout > 0 
-                      ? ((recipient.payout / totalPayout) * 100).toFixed(1) 
-                      : "0";
-                    
-                    const recipientColor = recipient.color || getRecipientColor(recipient.id);
-                    const type = recipient.type || (recipient.isFixedAmount ? "$" : "shares");
-                    
-                    let valueDisplay = "";
-                    if (type === "$") {
-                      valueDisplay = "($)";
-                    } else if (type === "%") {
-                      valueDisplay = "";
-                    } else {
-                      valueDisplay = `(${recipient.value} ${recipient.value === 1 ? 'share' : 'shares'})`;
-                    }
-                    
-                    return (
-                      <div 
-                        key={recipient.id} 
-                        className={`flex justify-between p-1 rounded ${
-                          hoveredRecipientId === recipient.id 
-                            ? 'bg-gray-100' 
-                            : ''
-                        }`}
-                        onMouseEnter={() => onRecipientHover?.(recipient.id)}
-                        onMouseLeave={() => onRecipientHover?.(null)}
-                      >
-                        <div className="flex items-center">
-                          <div 
-                            className={`w-3 h-3 rounded-sm mr-2 ${
-                              hoveredRecipientId === recipient.id 
-                                ? 'ring-1 ring-black' 
-                                : ''
-                            }`}
-                            style={{ backgroundColor: recipientColor }}
-                          />
-                          <span>{recipient.name}</span>
-                          {valueDisplay && (
-                            <span className="text-xs text-gray-500 ml-2">
-                              {valueDisplay}
-                            </span>
-                          )}
-                          <span className={`text-xs text-blue-500 ${type === '%' ? 'ml-2' : 'ml-1'}`}>
-                            {percentage}%
-                          </span>
-                        </div>
-                        <div className="font-medium">
-                          {formatCurrency(recipient.payout)}
-                        </div>
+              {nonEmptyGroups.map(({ groupId, recipients, groupName }) => {
+                // Calculate group totals
+                const groupInfo = groupTotals.find(g => g.group.id === groupId);
+                const totalValue = groupInfo ? groupInfo.totalPayout : 0;
+                const percentageOfTotal = totalPayout > 0 
+                  ? ((totalValue / totalPayout) * 100).toFixed(1) 
+                  : "0";
+                
+                return (
+                  <div key={groupId} className="space-y-1 mb-3">
+                    <div className="flex justify-between items-center">
+                      <h4 className="text-sm font-medium text-gray-600">{groupName}</h4>
+                      <div className="text-sm text-gray-500">
+                        <span className="text-blue-500 mr-2">{percentageOfTotal}%</span>
+                        <span>{formatCurrency(totalValue)}</span>
                       </div>
-                    );
-                  })}
-                </div>
-              ))}
+                    </div>
+                    {recipients.map((recipient) => {
+                      const percentage = totalPayout > 0 
+                        ? ((recipient.payout / totalPayout) * 100).toFixed(1) 
+                        : "0";
+                      
+                      const recipientColor = recipient.color || getRecipientColor(recipient.id);
+                      const type = recipient.type || (recipient.isFixedAmount ? "$" : "shares");
+                      
+                      let valueDisplay = "";
+                      if (type === "$") {
+                        valueDisplay = "($)";
+                      } else if (type === "%") {
+                        valueDisplay = "";
+                      } else {
+                        valueDisplay = `(${recipient.value} ${recipient.value === 1 ? 'share' : 'shares'})`;
+                      }
+                      
+                      return (
+                        <div 
+                          key={recipient.id} 
+                          className={`flex justify-between p-1 rounded ${
+                            hoveredRecipientId === recipient.id 
+                              ? 'bg-gray-100' 
+                              : ''
+                          }`}
+                          onMouseEnter={() => onRecipientHover?.(recipient.id)}
+                          onMouseLeave={() => onRecipientHover?.(null)}
+                        >
+                          <div className="flex items-center">
+                            <div 
+                              className={`w-3 h-3 rounded-sm mr-2 ${
+                                hoveredRecipientId === recipient.id 
+                                  ? 'ring-1 ring-black' 
+                                  : ''
+                              }`}
+                              style={{ backgroundColor: recipientColor }}
+                            />
+                            <span>{recipient.name}</span>
+                            {valueDisplay && (
+                              <span className="text-xs text-gray-500 ml-2">
+                                {valueDisplay}
+                              </span>
+                            )}
+                            <span className={`text-xs text-blue-500 ${type === '%' ? 'ml-2' : 'ml-1'}`}>
+                              {percentage}%
+                            </span>
+                          </div>
+                          <div className="font-medium">
+                            {formatCurrency(recipient.payout)}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })}
               
               {shouldShowDivider && (
                 <Separator className="my-3 bg-gray-200" />
